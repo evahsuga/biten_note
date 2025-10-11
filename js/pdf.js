@@ -73,7 +73,7 @@ const PDF = {
     generateHTMLContent(personsWithBitens) {
         const html = document.createElement('div');
         html.style.fontFamily = 'sans-serif';
-        html.style.fontSize = '12pt';
+        html.style.fontSize = '10pt';
 
         // 表紙
         html.innerHTML += `
@@ -96,7 +96,7 @@ const PDF = {
         personsWithBitens.forEach((item, index) => {
             const pageNumber = index + 3;
             html.innerHTML += `
-                <li style="margin-bottom: 10px;">
+                <li style="margin-bottom: 10px; font-size: 12pt;">
                     ${index + 1}. ${item.person.name} (${item.bitens.length}個) ......... ${pageNumber}
                 </li>
             `;
@@ -108,39 +108,106 @@ const PDF = {
             <div style="page-break-after: always;"></div>
         `;
 
-        // 各人物のページ
+        // 各人物のページ（1人物1ページ）
         personsWithBitens.forEach((item, index) => {
             const person = item.person;
             const bitens = item.bitens;
-            const maxBitens = CONFIG.LIMITS.TARGET_BITEN_COUNT;
+            const maxBitens = CONFIG.LIMITS.TARGET_BITEN_COUNT; // 100
+
+            // 写真データ（あれば表示）
+            const photoSrc = person.photo || '';
+            const photoHTML = photoSrc
+                ? `<img src="${photoSrc}" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid #ccc;">`
+                : `<div style="width: 80px; height: 80px; border: 1px dashed #ccc; background: #f5f5f5;"></div>`;
+
+            // 出会った日付（あれば表示）
+            const metDateText = person.metDate ? Utils.formatDate(person.metDate) : '';
 
             html.innerHTML += `
-                <div style="padding: 20px;">
-                    <h2 style="color: #667eea; font-size: 20pt; margin-bottom: 5px;">
-                        ${index + 1}. ${person.name}
-                    </h2>
-                    <p style="color: #666; font-size: 10pt; margin-bottom: 20px;">
-                        (${person.relationship})
-                    </p>
-                    <hr style="border: none; border-top: 1px solid #ccc; margin-bottom: 20px;">
-                    <ol style="padding-left: 20px;">
-            `;
+                <div style="padding: 15px; font-size: 9pt;">
+                    <!-- ヘッダー部分: 写真 + 名前・関係性・日付 -->
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start;">
+                        <!-- 写真 -->
+                        <div style="flex-shrink: 0;">
+                            ${photoHTML}
+                        </div>
+                        <!-- 名前・関係性・日付 -->
+                        <div style="flex-grow: 1;">
+                            <h2 style="margin: 0 0 5px 0; font-size: 18pt; color: #667eea;">
+                                ${person.name}
+                            </h2>
+                            <p style="margin: 3px 0; font-size: 10pt; color: #666;">
+                                関係性: ${person.relationship}
+                            </p>
+                            <p style="margin: 3px 0; font-size: 10pt; color: #666;">
+                                出会った日: ${metDateText || '未設定'}
+                            </p>
+                        </div>
+                    </div>
 
-            for (let i = 0; i < maxBitens; i++) {
-                const content = bitens[i] ? bitens[i].content : '';
-                html.innerHTML += `
-                    <li style="margin-bottom: 5px; font-size: 12pt;">
-                        ${content}
-                    </li>
-                `;
-            }
+                    <hr style="border: none; border-top: 1px solid #ccc; margin-bottom: 10px;">
 
-            html.innerHTML += `
-                    </ol>
+                    <!-- 美点100個を4列×5段×5ブロック = 100個 -->
+                    <div style="margin-bottom: 10px;">
+                        ${this.generateBitenBlocks(bitens)}
+                    </div>
+
+                    <!-- 手書きメモスペース（3行） -->
+                    <div style="margin-top: 10px;">
+                        <p style="margin: 5px 0 3px 0; font-size: 9pt; font-weight: bold;">メモ:</p>
+                        <div style="border: 1px solid #ccc; padding: 5px; min-height: 60px; background: #fafafa;">
+                            <div style="border-bottom: 1px dotted #ccc; height: 18px;"></div>
+                            <div style="border-bottom: 1px dotted #ccc; height: 18px;"></div>
+                            <div style="height: 18px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- ページフッター -->
+                    <div style="text-align: center; margin-top: 10px; font-size: 8pt; color: #999;">
+                        - ${index + 3} - 美点ノート
+                    </div>
                 </div>
                 <div style="page-break-after: always;"></div>
             `;
         });
+
+        return html;
+    },
+
+    // 美点100個を4列×5段×5ブロックで生成
+    generateBitenBlocks(bitens) {
+        let html = '';
+        const blocksCount = 5; // 5ブロック
+        const itemsPerBlock = 20; // 各ブロック20個（4列×5段）
+        const cols = 4;
+        const rows = 5;
+
+        for (let block = 0; block < blocksCount; block++) {
+            html += `<div style="margin-bottom: 8px;">`;
+
+            // ブロック内の行
+            for (let row = 0; row < rows; row++) {
+                html += `<div style="display: flex; gap: 2px; margin-bottom: 2px;">`;
+
+                // 各行の列
+                for (let col = 0; col < cols; col++) {
+                    const index = block * itemsPerBlock + row * cols + col;
+                    const content = bitens[index] ? bitens[index].content : '';
+                    const number = index + 1;
+
+                    html += `
+                        <div style="flex: 1; border: 1px solid #ddd; padding: 2px 4px; font-size: 8pt; min-height: 18px; background: ${content ? '#fff' : '#f9f9f9'};">
+                            <span style="font-weight: bold; color: #667eea;">${number}.</span>
+                            <span style="color: #333;">${content}</span>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+        }
 
         return html;
     },

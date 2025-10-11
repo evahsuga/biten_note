@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    
+    <title>美点ノート</title>
+    <meta name="description" content="あなたの周りの人の美点を発見・記録するアプリ">
+    
+    <!-- Cropper.js CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- アプリケーションコンテナ -->
+    <div id="app">
+        <!-- 画面がここに動的に表示されます -->
+    </div>
+
+    <!-- ローディング表示 -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>読み込み中...</p>
+    </div>
+
+    <!-- Pro版モーダル -->
+    <div id="proModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✨ Pro版へのアップグレード</h2>
+                <button class="modal-close" onclick="closeProModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>無料版では最大3人まで登録できます。</p>
+                <p>更に多くの人の美点を記録するには、Pro版（¥500/月）へのアップグレードが必要です。</p>
+                <div class="pro-features">
+                    <h3>Pro版の特典</h3>
+                    <ul>
+                        <li>✅ 無制限の人物登録</li>
+                        <li>✅ クラウド同期機能</li>
+                        <li>✅ 複数デバイス対応</li>
+                        <li>✅ 高度な統計機能</li>
+                    </ul>
+                </div>
+                <p class="coming-soon">※ Pro版は現在開発中です（Phase 3でリリース予定）</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeProModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- エラーメッセージ表示用 -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/person.js"></script>
+    <script src="js/biten.js"></script>
+    <script src="js/photo.js"></script>
+    <script src="js/pdf.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Global Functions -->
+    <script>
+        // Pro版モーダルを閉じる
+        function closeProModal() {
+            document.getElementById('proModal').classList.add('hidden');
+        }
+
+        // トースト通知を表示
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // ローディング表示
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        // エラーハンドリング
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            showToast('エラーが発生しました', 'error');
+        });
+
+        // IndexedDB未対応ブラウザの検出
+        if (!window.indexedDB) {
+            alert('お使いのブラウザはこのアプリをサポートしていません。最新のChrome、Safari、Firefox、Edgeをご利用ください。');
+        }
+    </script>
+</body>
+</html>

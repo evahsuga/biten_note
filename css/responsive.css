@@ -1,0 +1,513 @@
+/* ================================
+   美点ノート Phase 1 - レスポンシブ対応
+   モバイルファースト設計
+   ================================ */
+
+/* ===========================
+   ベースライン（モバイル）
+   すでに style.css で定義済み
+   =========================== */
+
+/* ===========================
+   小型スマホ（〜360px）
+   =========================== */
+
+@media (max-width: 360px) {
+    :root {
+        --font-size-3xl: 36px;
+        --font-size-2xl: 28px;
+        --font-size-xl: 20px;
+        --spacing-lg: 20px;
+        --spacing-xl: 28px;
+    }
+    
+    #app {
+        padding: var(--spacing-sm);
+    }
+    
+    .page {
+        padding: var(--spacing-md) 0;
+    }
+    
+    .page-title {
+        font-size: 36px;
+    }
+    
+    .card {
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius-lg);
+    }
+    
+    .btn {
+        font-size: var(--font-size-sm);
+        padding: var(--spacing-sm) var(--spacing-lg);
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        margin: var(--spacing-sm);
+    }
+}
+
+/* ===========================
+   標準スマホ（361px〜）
+   =========================== */
+
+@media (min-width: 361px) {
+    /* style.css のデフォルトスタイルを使用 */
+}
+
+/* ===========================
+   大型スマホ（414px〜）
+   iPhone Pro Max, Pixel XL など
+   =========================== */
+
+@media (min-width: 414px) {
+    .page {
+        max-width: 520px;
+    }
+    
+    .card {
+        padding: var(--spacing-xl);
+    }
+    
+    .stats-grid {
+        gap: var(--spacing-lg);
+    }
+    
+    .list-item {
+        padding: var(--spacing-xl);
+    }
+}
+
+/* ===========================
+   タブレット縦（768px〜）
+   iPad, Android Tablet など
+   =========================== */
+
+@media (min-width: 768px) {
+    :root {
+        --font-size-3xl: 56px;
+        --font-size-2xl: 40px;
+        --font-size-xl: 28px;
+        --spacing-2xl: 64px;
+    }
+    
+    #app {
+        padding: var(--spacing-xl);
+    }
+    
+    .page {
+        max-width: 600px;
+        padding: var(--spacing-2xl) 0;
+    }
+    
+    .page-title {
+        font-size: 56px;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .page-subtitle {
+        font-size: var(--font-size-xl);
+    }
+    
+    .card {
+        padding: var(--spacing-2xl);
+        border-radius: var(--border-radius-xl);
+    }
+    
+    .btn {
+        font-size: var(--font-size-lg);
+        padding: var(--spacing-lg) var(--spacing-2xl);
+        min-height: 48px;
+    }
+    
+    .btn-icon {
+        width: 48px;
+        min-height: 48px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-xl);
+    }
+    
+    .stat-card {
+        padding: var(--spacing-xl);
+    }
+    
+    .stat-value {
+        font-size: 48px;
+    }
+    
+    .list-item {
+        padding: var(--spacing-xl);
+        border-radius: var(--border-radius-lg);
+    }
+    
+    .list-item-title {
+        font-size: var(--font-size-xl);
+    }
+    
+    .list-item-subtitle {
+        font-size: var(--font-size-base);
+    }
+    
+    .chat-container {
+        max-height: 600px;
+        padding: var(--spacing-xl);
+    }
+    
+    .chat-bubble {
+        max-width: 70%;
+        padding: var(--spacing-lg);
+    }
+    
+    .chat-bubble-content {
+        font-size: var(--font-size-lg);
+    }
+    
+    .chat-input-container {
+        padding: var(--spacing-lg) var(--spacing-xl);
+    }
+    
+    .chat-input-wrapper {
+        max-width: 600px;
+    }
+    
+    .chat-input {
+        font-size: var(--font-size-lg);
+        padding: var(--spacing-lg);
+    }
+    
+    .chat-send-btn {
+        width: 48px;
+        height: 48px;
+        font-size: var(--font-size-xl);
+    }
+    
+    .modal-content {
+        max-width: 500px;
+    }
+    
+    .modal-header h2 {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: var(--font-size-lg);
+        padding: var(--spacing-lg);
+    }
+}
+
+/* ===========================
+   タブレット横・小型PC（1024px〜）
+   =========================== */
+
+@media (min-width: 1024px) {
+    .page {
+        max-width: 720px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .chat-input-wrapper {
+        max-width: 720px;
+    }
+    
+    /* ホバーエフェクト強化（マウス環境） */
+    .card:hover {
+        transform: translateY(-4px);
+    }
+    
+    .list-item:hover {
+        transform: translateX(8px);
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px);
+    }
+}
+
+/* ===========================
+   PC・大画面（1280px〜）
+   =========================== */
+
+@media (min-width: 1280px) {
+    .page {
+        max-width: 800px;
+    }
+    
+    .page-header {
+        margin-bottom: 80px;
+    }
+    
+    .card {
+        padding: 40px;
+    }
+    
+    .stats-grid {
+        gap: 32px;
+    }
+    
+    .chat-container {
+        max-height: 700px;
+    }
+}
+
+/* ===========================
+   横向き（ランドスケープ）対応
+   =========================== */
+
+@media (orientation: landscape) and (max-height: 600px) {
+    /* 横向きで画面が低い場合の調整 */
+    .page-title {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .page-subtitle {
+        font-size: var(--font-size-base);
+    }
+    
+    .page-header {
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .card {
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .chat-container {
+        max-height: 300px;
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+    }
+}
+
+/* ===========================
+   高解像度ディスプレイ対応
+   Retina, 4K など
+   =========================== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* より精細なレンダリング */
+    body {
+        -webkit-font-smoothing: subpixel-antialiased;
+    }
+    
+    .card {
+        border: 0.5px solid rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* ===========================
+   ダークモード対応（将来拡張用）
+   =========================== */
+
+@media (prefers-color-scheme: dark) {
+    /* Phase 2以降で実装予定 */
+    /* 現在は実装しない（Phase 1は明るいテーマのみ） */
+}
+
+/* ===========================
+   アニメーション削減設定
+   ユーザーが動きを減らす設定をしている場合
+   =========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .spinner {
+        animation: none;
+        border-top-color: var(--primary);
+    }
+}
+
+/* ===========================
+   プリント対応
+   =========================== */
+
+@media print {
+    /* プリント時は背景グラデーションを削除 */
+    body {
+        background: white;
+    }
+    
+    /* 不要な要素を非表示 */
+    .btn,
+    .modal,
+    .toast,
+    .loading,
+    .chat-input-container {
+        display: none !important;
+    }
+    
+    /* プリント用スタイル調整 */
+    .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+    }
+    
+    .page {
+        max-width: 100%;
+    }
+}
+
+/* ===========================
+   タッチデバイス専用調整
+   =========================== */
+
+@media (hover: none) and (pointer: coarse) {
+    /* タッチデバイスではホバーエフェクトを無効化 */
+    .card:hover,
+    .list-item:hover,
+    .btn:hover {
+        transform: none;
+    }
+    
+    /* タップ時の視覚フィードバックを強化 */
+    .btn:active {
+        transform: scale(0.95);
+    }
+    
+    .list-item:active {
+        background: var(--gray-200);
+    }
+    
+    /* タップエリアを広めに確保 */
+    .btn {
+        min-height: 48px;
+        padding: var(--spacing-md) var(--spacing-xl);
+    }
+    
+    .list-item {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+}
+
+/* ===========================
+   マウスデバイス専用調整
+   =========================== */
+
+@media (hover: hover) and (pointer: fine) {
+    /* スクロールバーのスタイリング（Webkit系） */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: var(--gray-200);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: var(--gray-500);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--gray-700);
+    }
+}
+
+/* ===========================
+   iPhone X 以降のノッチ対応
+   =========================== */
+
+@supports (padding: max(0px)) {
+    #app {
+        padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+        padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+    }
+    
+    .chat-input-container {
+        padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
+    }
+}
+
+/* ===========================
+   特定デバイス対応
+   =========================== */
+
+/* iPhone SE (375px) */
+@media (width: 375px) {
+    .page-title {
+        font-size: 42px;
+    }
+}
+
+/* iPhone 12/13/14 (390px) */
+@media (width: 390px) {
+    .page {
+        max-width: 480px;
+    }
+}
+
+/* iPhone 14 Plus/Pro Max (428px) */
+@media (width: 428px) {
+    .page {
+        max-width: 520px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* iPad Mini (744px) */
+@media (width: 744px) {
+    .page {
+        max-width: 600px;
+    }
+}
+
+/* iPad (810px) */
+@media (width: 810px) {
+    .page {
+        max-width: 640px;
+    }
+}
+
+/* ===========================
+   ユーティリティ - レスポンシブ表示制御
+   =========================== */
+
+/* モバイルのみ表示 */
+@media (min-width: 768px) {
+    .mobile-only {
+        display: none !important;
+    }
+}
+
+/* タブレット以上で表示 */
+@media (max-width: 767px) {
+    .tablet-up {
+        display: none !important;
+    }
+}
+
+/* デスクトップのみ表示 */
+@media (max-width: 1023px) {
+    .desktop-only {
+        display: none !important;
+    }
+}

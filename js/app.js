@@ -341,11 +341,22 @@ const App = {
                     </div>
                     
                     <!-- 写真表示 -->
-                    ${person.photo ? `
-                        <div class="card text-center">
-                            <img src="${person.photo}" alt="${person.name}" style="width: 200px; height: 200px; border-radius: 12px; object-fit: cover; margin: 0 auto;">
-                        </div>
-                    ` : ''}
+                    <div class="card text-center">
+                        ${person.photo ? `
+                            <img src="${person.photo}" alt="${person.name}" style="width: 200px; height: 200px; border-radius: 12px; object-fit: cover; margin: 0 auto; display: block;">
+                            <button class="btn btn-outline btn-block mt-md" onclick="Person.openPhotoEditor('${personId}')">
+                                📷 写真を変更
+                            </button>
+                        ` : `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📷</div>
+                                <h3 class="empty-state-title">写真が未登録です</h3>
+                            </div>
+                            <button class="btn btn-primary btn-block mt-md" onclick="Person.openPhotoEditor('${personId}')">
+                                📷 写真を追加
+                            </button>
+                        `}
+                    </div>
                     
                     <!-- 統計 -->
                     <div class="card">
@@ -426,7 +437,8 @@ const App = {
             }
             
             const bitens = await DB.getBitensByPersonId(personId);
-            bitens.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            // 新しい順（降順）にソート - 新しい記入が上に表示される
+            bitens.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             // 日付ごとにグループ化
             const bitensByDate = {};
@@ -442,7 +454,7 @@ const App = {
                 <div class="page" style="padding-bottom: 100px;">
                     <div class="page-header">
                         <h1 class="page-title">${person.name}さんの美点</h1>
-                        <p class="page-subtitle">LINE風チャット形式</p>
+                        <p class="page-subtitle">100個書き出してみよう！ (${bitens.length}/100)</p>
                     </div>
                     
                     <!-- チャット表示エリア -->
@@ -458,14 +470,18 @@ const App = {
                                 <div class="chat-date-separator">
                                     <span class="chat-date-text">${Utils.formatDate(date)}</span>
                                 </div>
-                                ${bitensByDate[date].map(biten => `
+                                ${bitensByDate[date].map((biten) => {
+                                    // 全体での番号を計算（日付順の累計）
+                                    const totalIndex = bitens.findIndex(b => b.id === biten.id) + 1;
+                                    return `
                                     <div class="chat-message">
                                         <div class="chat-bubble">
+                                            <div class="chat-bubble-number">${totalIndex}</div>
                                             <div class="chat-bubble-content">${biten.content}</div>
-                                            <div class="chat-bubble-time">${new Date(biten.createdAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                             `).join('')}
                         `}
                     </div>
@@ -474,11 +490,11 @@ const App = {
                 <!-- 固定入力欄 -->
                 <div class="chat-input-container">
                     <div class="chat-input-wrapper">
-                        <input 
-                            type="text" 
-                            class="chat-input" 
-                            id="bitenInput" 
-                            placeholder="美点を入力（最大20文字）"
+                        <input
+                            type="text"
+                            class="chat-input"
+                            id="bitenInput"
+                            placeholder="美点を入力（最大15文字）"
                             maxlength="${CONFIG.LIMITS.MAX_BITEN_LENGTH}"
                             onkeypress="if(event.key === 'Enter') Biten.handleSubmit('${personId}')"
                         >
@@ -493,12 +509,12 @@ const App = {
             `;
             
             document.getElementById('app').innerHTML = html;
-            
-            // チャット最下部へスクロール
+
+            // チャット最上部へスクロール（新しいメッセージが上にあるため）
             setTimeout(() => {
                 const chatContainer = document.getElementById('chatContainer');
                 if (chatContainer) {
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    chatContainer.scrollTop = 0;
                 }
             }, 100);
         } catch (error) {

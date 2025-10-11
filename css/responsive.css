@@ -14,23 +14,23 @@
 
 @media (max-width: 360px) {
     :root {
-        --font-size-3xl: 36px;
-        --font-size-2xl: 28px;
+        --font-size-3xl: 28px;
+        --font-size-2xl: 24px;
         --font-size-xl: 20px;
         --spacing-lg: 20px;
         --spacing-xl: 28px;
     }
-    
+
     #app {
         padding: var(--spacing-sm);
     }
-    
+
     .page {
         padding: var(--spacing-md) 0;
     }
-    
+
     .page-title {
-        font-size: 36px;
+        font-size: 28px;
     }
     
     .card {
@@ -451,7 +451,7 @@
 /* iPhone SE (375px) */
 @media (width: 375px) {
     .page-title {
-        font-size: 42px;
+        font-size: 32px;
     }
 }
 

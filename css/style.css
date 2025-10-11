@@ -45,7 +45,7 @@
     --font-size-lg: 18px;
     --font-size-xl: 24px;
     --font-size-2xl: 32px;
-    --font-size-3xl: 48px;
+    --font-size-3xl: 32px; /* モバイルデフォルトを小さく */
     
     /* スペーシング */
     --spacing-xs: 4px;
@@ -136,6 +136,9 @@ body {
     color: var(--white);
     margin-bottom: var(--spacing-sm);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .page-subtitle {
@@ -454,6 +457,7 @@ body {
 
 .chat-message {
     display: flex;
+    justify-content: flex-end; /* 右寄せ */
     margin-bottom: var(--spacing-md);
     animation: slideIn var(--transition-base);
 }
@@ -470,6 +474,7 @@ body {
 }
 
 .chat-bubble {
+    position: relative;
     max-width: 80%;
     padding: var(--spacing-md);
     border-radius: var(--border-radius-lg);
@@ -477,10 +482,31 @@ body {
     box-shadow: var(--shadow-sm);
 }
 
+.chat-bubble-number {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+}
+
 .chat-bubble-content {
     font-size: var(--font-size-base);
     color: var(--gray-900);
     line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .chat-bubble-time {

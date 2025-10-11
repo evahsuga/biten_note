@@ -29,6 +29,59 @@
         <p>読み込み中...</p>
     </div>
 
+    <!-- 写真編集モーダル -->
+    <div id="photoEditModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📷 写真を編集</h2>
+                <button class="modal-close" onclick="Person.closePhotoEditor()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">写真を選択</label>
+                    <input
+                        type="file"
+                        class="form-input"
+                        id="photoEditInput"
+                        accept="image/*"
+                        onchange="Photo.handlePhotoSelect(event)"
+                    >
+                    <span class="form-hint">正方形にトリミングされます（最大150KB）</span>
+                </div>
+
+                <!-- 写真プレビュー・トリミングエリア -->
+                <div id="photoPreviewArea" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">写真をトリミング</label>
+                        <div id="cropperContainer" style="max-height: 400px;"></div>
+                        <div style="margin-top: 16px; display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-outline" onclick="Photo.resetCropper()">
+                                リセット
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="Photo.cropAndSave()">
+                                トリミング確定
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="croppedPhotoPreview" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">トリミング済み写真</label>
+                        <img id="croppedImage" style="width: 200px; height: 200px; border-radius: 12px; object-fit: cover; display: block; margin: 0 auto;">
+                        <button type="button" class="btn btn-outline btn-block mt-sm" onclick="Photo.removeCroppedPhoto()">
+                            写真を削除
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="Person.savePhoto()">保存</button>
+                <button class="btn btn-secondary" onclick="Person.closePhotoEditor()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Pro版モーダル -->
     <div id="proModal" class="modal hidden">
         <div class="modal-content">

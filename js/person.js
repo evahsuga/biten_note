@@ -121,6 +121,64 @@ const Person = {
     clearCroppedPhoto() {
         this.currentPhoto = null;
         Utils.log('トリミング済み写真クリア');
+    },
+
+    // 写真編集モーダルを開く
+    openPhotoEditor(personId) {
+        this.editingPersonId = personId;
+        const modal = document.getElementById('photoEditModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    },
+
+    // 写真編集モーダルを閉じる
+    closePhotoEditor() {
+        const modal = document.getElementById('photoEditModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+        // クロッパーとプレビューをリセット
+        Photo.resetCropper();
+        this.currentPhoto = null;
+    },
+
+    // 写真を保存（更新）
+    async savePhoto() {
+        if (!this.currentPhoto) {
+            showToast('写真を選択してトリミングしてください', 'error');
+            return;
+        }
+
+        try {
+            showLoading();
+
+            // 人物データを取得
+            const person = await DB.getPersonById(this.editingPersonId);
+
+            // 写真を更新
+            const updateData = {
+                ...person,
+                photo: this.currentPhoto,
+                updatedAt: Utils.getCurrentDateTime()
+            };
+
+            await DB.updatePerson(this.editingPersonId, updateData);
+
+            hideLoading();
+            showToast('写真を更新しました', 'success');
+
+            // モーダルを閉じる
+            this.closePhotoEditor();
+
+            // ページをリロード
+            App.navigate(`#/person/${this.editingPersonId}`);
+
+        } catch (error) {
+            Utils.error('写真更新エラー', error);
+            hideLoading();
+            showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
     }
 };
 

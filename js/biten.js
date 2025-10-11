@@ -32,10 +32,7 @@ const Biten = {
             
             // チャットに追加表示
             this.appendBitenToChat(newBiten);
-            
-            // 成功メッセージ
-            showToast(CONFIG.MESSAGES.SUCCESS.BITEN_ADDED, 'success');
-            
+
             // 入力欄にフォーカス
             input.focus();
             
@@ -48,46 +45,52 @@ const Biten = {
     // チャットに美点を追加表示
     appendBitenToChat(biten) {
         const chatContainer = document.getElementById('chatContainer');
-        
+
         // 空状態を削除
         const emptyState = chatContainer.querySelector('.empty-state');
         if (emptyState) {
             emptyState.remove();
         }
-        
+
         // 今日の日付セパレーターを確認
         const today = Utils.getCurrentDate();
         const existingSeparator = chatContainer.querySelector(`[data-date="${today}"]`);
-        
+
+        // 現在の美点数を計算（既存のメッセージ数 + 1）
+        const existingMessages = chatContainer.querySelectorAll('.chat-message').length;
+        const bitenNumber = existingMessages + 1;
+
         if (!existingSeparator) {
-            // 日付セパレーター追加
+            // 日付セパレーター追加（先頭に）
             const separatorHTML = `
                 <div class="chat-date-separator" data-date="${today}">
                     <span class="chat-date-text">${Utils.formatDate(today)}</span>
                 </div>
             `;
-            chatContainer.insertAdjacentHTML('beforeend', separatorHTML);
+            chatContainer.insertAdjacentHTML('afterbegin', separatorHTML);
         }
-        
-        // 美点メッセージ追加
-        const time = new Date(biten.createdAt).toLocaleTimeString('ja-JP', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-        
+
+        // 美点メッセージ追加（日付セパレーターの直後に）
         const messageHTML = `
             <div class="chat-message" data-biten-id="${biten.id}">
                 <div class="chat-bubble">
+                    <div class="chat-bubble-number">${bitenNumber}</div>
                     <div class="chat-bubble-content">${biten.content}</div>
-                    <div class="chat-bubble-time">${time}</div>
                 </div>
             </div>
         `;
-        
-        chatContainer.insertAdjacentHTML('beforeend', messageHTML);
-        
-        // 最下部へスクロール
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // 今日のセパレーターの直後に挿入
+        if (existingSeparator) {
+            existingSeparator.insertAdjacentHTML('afterend', messageHTML);
+        } else {
+            // 新しく作成したセパレーターの直後に挿入
+            const newSeparator = chatContainer.querySelector(`[data-date="${today}"]`);
+            newSeparator.insertAdjacentHTML('afterend', messageHTML);
+        }
+
+        // 最上部へスクロール（新しいメッセージが見えるように）
+        chatContainer.scrollTop = 0;
     },
     
     // 美点削除（Phase 2以降で実装予定）

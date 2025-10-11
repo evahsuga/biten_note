@@ -3,14 +3,15 @@
 // ================================
 
 const PDF = {
-    // PDF生成・ダウンロード
+    // PDF生成・ダウンロード（ブラウザ印刷機能を使用）
     async generatePDF() {
         try {
             showLoading();
-            Utils.log('PDF生成開始');
+            Utils.log('PDF生成開始（ブラウザ印刷方式）');
 
             // 全人物と美点を取得
             const persons = await DB.getAllPersons();
+            Utils.log('取得した人物数:', persons.length);
 
             if (persons.length === 0) {
                 hideLoading();
@@ -33,184 +34,524 @@ const PDF = {
                 });
             }
 
-            // HTML要素を作成してPDF化
-            const htmlContent = this.generateHTMLContent(personsWithBitens);
+            // 印刷用HTMLを新しいウィンドウで開く
+            this.openPrintWindow(personsWithBitens);
 
-            // jsPDF インスタンス作成
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4',
-                compress: true
-            });
-
-            // HTMLをPDFに変換（日本語対応）
-            await doc.html(htmlContent, {
-                callback: function (doc) {
-                    // PDF保存
-                    const filename = `美点ノート_${Utils.getCurrentDate()}.pdf`;
-                    doc.save(filename);
-
-                    hideLoading();
-                    showToast(CONFIG.MESSAGES.SUCCESS.PDF_GENERATED, 'success');
-                    Utils.log('PDF生成完了', filename);
-                },
-                x: 10,
-                y: 10,
-                width: 190,
-                windowWidth: 800
-            });
+            hideLoading();
+            showToast('PDF印刷画面を開きました', 'success');
+            Utils.log('PDF印刷画面表示完了');
 
         } catch (error) {
             Utils.error('PDF生成エラー', error);
             hideLoading();
-            showToast('PDF生成に失敗しました', 'error');
+
+            // 詳細なエラーメッセージを表示
+            let errorMessage = 'PDF生成に失敗しました';
+            if (error.message) {
+                errorMessage += ': ' + error.message;
+            }
+
+            showToast(errorMessage, 'error');
+
+            // コンソールにスタックトレースも出力
+            if (error.stack) {
+                console.error('スタックトレース:', error.stack);
+            }
         }
     },
 
-    // HTML形式でコンテンツを生成
-    generateHTMLContent(personsWithBitens) {
-        const html = document.createElement('div');
-        html.style.fontFamily = 'sans-serif';
-        html.style.fontSize = '10pt';
+    // 印刷用ウィンドウを開く（ポップアップブロック回避版）
+    openPrintWindow(personsWithBitens) {
+        try {
+            Utils.log('印刷ページ作成開始');
 
-        // 表紙
-        html.innerHTML += `
-            <div style="text-align: center; padding: 100px 0;">
-                <h1 style="font-size: 36pt; color: #667eea; margin-bottom: 20px;">美点ノート</h1>
-                <h2 style="font-size: 18pt; color: #667eea; margin-bottom: 40px;">Biten Note</h2>
-                <p style="font-size: 14pt;">${Utils.formatDate(Utils.getCurrentDate())}</p>
-                <p style="margin-top: 80px; font-size: 12pt; color: #666;">大切な人の美点を記録した宝物</p>
+            // HTMLコンテンツ生成
+            Utils.log('HTMLコンテンツ生成開始');
+            const htmlContent = this.generatePrintHTML(personsWithBitens);
+            Utils.log('HTMLコンテンツ生成完了');
+
+            // 現在のページを一時保存
+            const currentHTML = document.documentElement.innerHTML;
+            const currentTitle = document.title;
+
+            // ページを印刷用HTMLに置き換え
+            document.open();
+            document.write(htmlContent);
+            document.close();
+
+            Utils.log('印刷ページ表示完了');
+
+            // 印刷ダイアログを開く
+            setTimeout(() => {
+                window.print();
+
+                // 印刷後、元のページに戻る
+                window.onafterprint = () => {
+                    Utils.log('印刷完了、元のページに戻ります');
+                    document.open();
+                    document.write('<!DOCTYPE html><html>' + currentHTML.substring(currentHTML.indexOf('<html>') + 6));
+                    document.close();
+                    document.title = currentTitle;
+
+                    // ページをリロードして完全に元に戻す
+                    setTimeout(() => {
+                        location.reload();
+                    }, 100);
+                };
+            }, 500);
+
+        } catch (error) {
+            Utils.error('印刷ページ作成エラー', error);
+            throw error;
+        }
+    },
+
+    // 印刷用HTML生成（完全なHTMLドキュメント）
+    generatePrintHTML(personsWithBitens) {
+        try {
+            Utils.log('generatePrintHTML開始', { personsCount: personsWithBitens.length });
+
+            const today = new Date().toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            let bodyHTML = '';
+
+        // 表紙ページ
+        bodyHTML += `
+            <div class="page cover-page">
+                <h1 class="title">美点ノート</h1>
+                <h2 class="subtitle">Biten Note</h2>
+                <p class="date">${today}</p>
+                <p class="description">大切な人の美点を記録した宝物</p>
             </div>
-            <div style="page-break-after: always;"></div>
         `;
 
-        // 目次
-        html.innerHTML += `
-            <div style="padding: 20px;">
-                <h2 style="text-align: center; font-size: 24pt; margin-bottom: 30px;">目次</h2>
-                <ul style="list-style: none; padding: 0;">
+        // 目次ページ
+        bodyHTML += `
+            <div class="page toc-page">
+                <h2 class="page-title">目次</h2>
+                <ul class="toc-list">
         `;
 
         personsWithBitens.forEach((item, index) => {
-            const pageNumber = index + 3;
-            html.innerHTML += `
-                <li style="margin-bottom: 10px; font-size: 12pt;">
-                    ${index + 1}. ${item.person.name} (${item.bitens.length}個) ......... ${pageNumber}
+            const pageNum = index + 3;
+            bodyHTML += `
+                <li class="toc-item">
+                    <span class="toc-number">${index + 1}.</span>
+                    <span class="toc-name">${this.escapeHtml(item.person.name)}</span>
+                    <span class="toc-count">(${item.bitens.length}個)</span>
+                    <span class="toc-dots">..........................................</span>
+                    <span class="toc-page">${pageNum}</span>
                 </li>
             `;
         });
 
-        html.innerHTML += `
+        bodyHTML += `
                 </ul>
             </div>
-            <div style="page-break-after: always;"></div>
         `;
 
-        // 各人物のページ（1人物1ページ）
+        // 各人物のページ
         personsWithBitens.forEach((item, index) => {
+            bodyHTML += this.generatePersonPage(item, index + 3);
+        });
+
+        // 完全なHTMLドキュメントを返す
+        const html = `
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>美点ノート - ${today}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'メイリオ', Meiryo, 'MS PGothic', sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #333;
+            background: white;
+        }
+
+        .page {
+            page-break-inside: avoid;
+            width: 100%;
+            min-height: 277mm; /* A4高さ - マージン */
+            max-height: 277mm;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 表紙と目次のみ改ページ */
+        .cover-page, .toc-page {
+            page-break-after: always;
+        }
+
+        /* 人物ページは最後以外改ページ */
+        .person-page {
+            page-break-after: always;
+        }
+
+        .person-page:last-of-type {
+            page-break-after: avoid;
+        }
+
+        /* 表紙 */
+        .cover-page {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 48pt;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 24pt;
+            color: #667eea;
+            margin-bottom: 60px;
+        }
+
+        .date {
+            font-size: 14pt;
+            margin-bottom: 100px;
+        }
+
+        .description {
+            font-size: 12pt;
+            color: #666;
+        }
+
+        /* 目次 */
+        .toc-page {
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 24pt;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #667eea;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            margin-bottom: 15px;
+            font-size: 12pt;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .toc-number {
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .toc-name {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .toc-count {
+            color: #666;
+            margin-right: 8px;
+        }
+
+        .toc-dots {
+            flex: 1;
+            overflow: hidden;
+            color: #ccc;
+        }
+
+        .toc-page {
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        /* 個人ページ */
+        .person-page {
+            padding: 12px;
+        }
+
+        .person-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: flex-start;
+        }
+
+        .person-photo {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+            border: 1px solid #ddd;
+            object-fit: cover;
+        }
+
+        .person-photo-placeholder {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+            border: 1px dashed #ccc;
+            background: #f5f5f5;
+        }
+
+        .person-info {
+            flex: 1;
+        }
+
+        .person-name {
+            font-size: 16pt;
+            color: #667eea;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .person-detail {
+            font-size: 8pt;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 8px 0;
+        }
+
+        /* 美点グリッド */
+        .bitens-grid {
+            margin-bottom: 6px;
+        }
+
+        .biten-block {
+            margin-bottom: 3px;
+        }
+
+        .biten-row {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 2px;
+        }
+
+        .biten-cell {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 2px 4px;
+            font-size: 9pt;
+            min-height: 18px;
+            line-height: 1.3;
+            background: white;
+        }
+
+        .biten-cell.empty {
+            background: #f9f9f9;
+        }
+
+        .biten-number {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 3px;
+            font-size: 8pt;
+        }
+
+        .biten-content {
+            color: #333;
+            font-size: 9pt;
+        }
+
+        /* メモ欄 */
+        .memo-section {
+            margin-top: 6px;
+        }
+
+        .memo-title {
+            font-size: 9pt;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .memo-lines {
+            border: 1px solid #ccc;
+            padding: 4px;
+            min-height: 40px;
+            background: #fafafa;
+        }
+
+        .memo-line {
+            border-bottom: 1px dotted #ccc;
+            height: 12px;
+        }
+
+        .memo-line:last-child {
+            border-bottom: none;
+        }
+
+        /* ページフッター */
+        .page-footer {
+            text-align: center;
+            margin-top: auto;
+            padding-top: 6px;
+            font-size: 8pt;
+            color: #999;
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page {
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    ${bodyHTML}
+</body>
+</html>
+        `;
+
+            Utils.log('generatePrintHTML完了');
+            return html;
+
+        } catch (error) {
+            Utils.error('generatePrintHTMLエラー', error);
+            throw error;
+        }
+    },
+
+    // 個人ページHTML生成
+    generatePersonPage(item, pageNumber) {
+        try {
+            Utils.log('generatePersonPage開始', {
+                personName: item.person.name,
+                bitenCount: item.bitens.length,
+                pageNumber
+            });
+
             const person = item.person;
             const bitens = item.bitens;
 
-            // 写真データ（あれば表示）
-            const photoSrc = person.photo || '';
-            const photoHTML = photoSrc
-                ? `<img src="${photoSrc}" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid #ccc;">`
-                : `<div style="width: 80px; height: 80px; border: 1px dashed #ccc; background: #f5f5f5;"></div>`;
+            const photoHTML = person.photo
+                ? `<img src="${person.photo}" class="person-photo" alt="${this.escapeHtml(person.name)}">`
+                : `<div class="person-photo-placeholder"></div>`;
 
-            // 出会った日付（あれば表示）
-            const metDateText = person.metDate ? Utils.formatDate(person.metDate) : '';
+            const metDateText = person.metDate
+                ? new Date(person.metDate).toLocaleDateString('ja-JP')
+                : '未設定';
 
-            html.innerHTML += `
-                <div style="padding: 15px; font-size: 9pt;">
-                    <!-- ヘッダー部分: 写真 + 名前・関係性・日付 -->
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start;">
-                        <!-- 写真 -->
-                        <div style="flex-shrink: 0;">
-                            ${photoHTML}
-                        </div>
-                        <!-- 名前・関係性・日付 -->
-                        <div style="flex-grow: 1;">
-                            <h2 style="margin: 0 0 5px 0; font-size: 18pt; color: #667eea;">
-                                ${person.name}
-                            </h2>
-                            <p style="margin: 3px 0; font-size: 10pt; color: #666;">
-                                関係性: ${person.relationship}
-                            </p>
-                            <p style="margin: 3px 0; font-size: 10pt; color: #666;">
-                                出会った日: ${metDateText || '未設定'}
-                            </p>
-                        </div>
-                    </div>
+            Utils.log('美点グリッド生成開始');
+            let bitenGridHTML = this.generateBitenGrid(bitens);
+            Utils.log('美点グリッド生成完了');
 
-                    <hr style="border: none; border-top: 1px solid #ccc; margin-bottom: 10px;">
-
-                    <!-- 美点100個を4列×5段×5ブロック = 100個 -->
-                    <div style="margin-bottom: 10px;">
-                        ${this.generateBitenBlocks(bitens)}
-                    </div>
-
-                    <!-- 手書きメモスペース（3行） -->
-                    <div style="margin-top: 10px;">
-                        <p style="margin: 5px 0 3px 0; font-size: 9pt; font-weight: bold;">メモ:</p>
-                        <div style="border: 1px solid #ccc; padding: 5px; min-height: 60px; background: #fafafa;">
-                            <div style="border-bottom: 1px dotted #ccc; height: 18px;"></div>
-                            <div style="border-bottom: 1px dotted #ccc; height: 18px;"></div>
-                            <div style="height: 18px;"></div>
-                        </div>
-                    </div>
-
-                    <!-- ページフッター -->
-                    <div style="text-align: center; margin-top: 10px; font-size: 8pt; color: #999;">
-                        - ${index + 3} - 美点ノート
+            return `
+            <div class="page person-page">
+                <div class="person-header">
+                    ${photoHTML}
+                    <div class="person-info">
+                        <div class="person-name">${this.escapeHtml(person.name)}</div>
+                        <div class="person-detail">関係性: ${this.escapeHtml(person.relationship)}</div>
+                        <div class="person-detail">出会った日: ${metDateText}</div>
                     </div>
                 </div>
-                <div style="page-break-after: always;"></div>
-            `;
-        });
 
-        return html;
+                <hr class="divider">
+
+                <div class="bitens-grid">
+                    ${bitenGridHTML}
+                </div>
+
+                <div class="memo-section">
+                    <div class="memo-title">メモ:</div>
+                    <div class="memo-lines">
+                        <div class="memo-line"></div>
+                        <div class="memo-line"></div>
+                        <div class="memo-line"></div>
+                    </div>
+                </div>
+
+                <div class="page-footer">
+                    - ${pageNumber} - 美点ノート
+                </div>
+            </div>
+        `;
+
+        } catch (error) {
+            Utils.error('generatePersonPageエラー', error);
+            throw error;
+        }
     },
 
-    // 美点100個を4列×5段×5ブロックで生成
-    generateBitenBlocks(bitens) {
+    // 美点グリッド生成（4列×5段×5ブロック = 100個）
+    generateBitenGrid(bitens) {
         let html = '';
-        const blocksCount = 5; // 5ブロック
-        const itemsPerBlock = 20; // 各ブロック20個（4列×5段）
+        const blocksCount = 5;
+        const itemsPerBlock = 20;
         const cols = 4;
         const rows = 5;
 
         for (let block = 0; block < blocksCount; block++) {
-            html += `<div style="margin-bottom: 8px;">`;
+            html += '<div class="biten-block">';
 
-            // ブロック内の行
             for (let row = 0; row < rows; row++) {
-                html += `<div style="display: flex; gap: 2px; margin-bottom: 2px;">`;
+                html += '<div class="biten-row">';
 
-                // 各行の列
                 for (let col = 0; col < cols; col++) {
                     const index = block * itemsPerBlock + row * cols + col;
-                    const content = bitens[index] ? bitens[index].content : '';
+                    const biten = bitens[index];
                     const number = index + 1;
 
+                    const cellClass = biten ? 'biten-cell' : 'biten-cell empty';
+                    const content = biten ? this.escapeHtml(biten.content) : '';
+
                     html += `
-                        <div style="flex: 1; border: 1px solid #ddd; padding: 2px 4px; font-size: 8pt; min-height: 18px; background: ${content ? '#fff' : '#f9f9f9'};">
-                            <span style="font-weight: bold; color: #667eea;">${number}.</span>
-                            <span style="color: #333;">${content}</span>
+                        <div class="${cellClass}">
+                            <span class="biten-number">${number}.</span>
+                            <span class="biten-content">${content}</span>
                         </div>
                     `;
                 }
 
-                html += `</div>`;
+                html += '</div>';
             }
 
-            html += `</div>`;
+            html += '</div>';
         }
 
         return html;
     },
-    
+
+    // HTMLエスケープ
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
     // 写真をPDFに追加（Phase 2以降で実装予定）
     addPhotoToPDF(doc, photoBase64, x, y, width, height) {
         try {

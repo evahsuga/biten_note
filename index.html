@@ -29,6 +29,62 @@
         <p>読み込み中...</p>
     </div>
 
+    <!-- 名前編集モーダル -->
+    <div id="nameEditModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ 名前を編集</h2>
+                <button class="modal-close" onclick="Person.closeNameEditor()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">名前</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        id="nameEditInput"
+                        maxlength="50"
+                        placeholder="名前を入力"
+                        onkeypress="if(event.key === 'Enter') Person.saveName()"
+                    >
+                    <span class="form-hint">1〜50文字</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="Person.saveName()">保存</button>
+                <button class="btn btn-secondary" onclick="Person.closeNameEditor()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 関係性編集モーダル -->
+    <div id="relationshipEditModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ 関係性を編集</h2>
+                <button class="modal-close" onclick="Person.closeRelationshipEditor()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">関係性</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        id="relationshipEditInput"
+                        maxlength="20"
+                        placeholder="例: 同僚、友人、家族"
+                        onkeypress="if(event.key === 'Enter') Person.saveRelationship()"
+                    >
+                    <span class="form-hint">1〜20文字</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="Person.saveRelationship()">保存</button>
+                <button class="btn btn-secondary" onclick="Person.closeRelationshipEditor()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 写真編集モーダル -->
     <div id="photoEditModal" class="modal hidden">
         <div class="modal-content">
@@ -115,6 +171,8 @@
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF日本語フォント対応 -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/polyfills.umd.js"></script>
 
     <!-- Application Scripts -->
     <script src="js/config.js"></script>

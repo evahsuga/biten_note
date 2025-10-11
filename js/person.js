@@ -16,13 +16,24 @@ const Person = {
             const name = document.getElementById('personName').value.trim();
             const relationship = document.getElementById('personRelationship').value.trim() || CONFIG.DEFAULTS.RELATIONSHIP;
             const metDate = document.getElementById('personMetDate').value;
-            
+
             // バリデーション: 名前
             const nameValidation = Utils.validateName(name);
             if (!nameValidation.valid) {
                 hideLoading();
                 showToast(nameValidation.message, 'error');
                 return;
+            }
+
+            // バリデーション: 出会った日（未来日付チェック）
+            if (metDate) {
+                const selectedDate = new Date(metDate);
+                const today = new Date(Utils.getCurrentDate());
+                if (selectedDate > today) {
+                    hideLoading();
+                    showToast('未来の日付は選択できません', 'error');
+                    return;
+                }
             }
             
             // 人数制限チェック
@@ -176,6 +187,151 @@ const Person = {
 
         } catch (error) {
             Utils.error('写真更新エラー', error);
+            hideLoading();
+            showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
+    },
+
+    // 名前編集開始
+    startEditName(personId) {
+        this.editingPersonId = personId;
+        const modal = document.getElementById('nameEditModal');
+        if (modal) {
+            // 現在の名前を取得してモーダルに表示
+            DB.getPersonById(personId).then(person => {
+                const nameInput = document.getElementById('nameEditInput');
+                if (nameInput) {
+                    nameInput.value = person.name;
+                }
+            });
+            modal.classList.remove('hidden');
+            // 入力欄にフォーカス
+            setTimeout(() => {
+                document.getElementById('nameEditInput')?.focus();
+            }, 100);
+        }
+    },
+
+    // 名前編集モーダルを閉じる
+    closeNameEditor() {
+        const modal = document.getElementById('nameEditModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    },
+
+    // 名前を保存
+    async saveName() {
+        const nameInput = document.getElementById('nameEditInput');
+        const newName = nameInput.value.trim();
+
+        // バリデーション
+        const validation = Utils.validateName(newName);
+        if (!validation.valid) {
+            showToast(validation.message, 'error');
+            return;
+        }
+
+        try {
+            showLoading();
+
+            // 人物データを取得
+            const person = await DB.getPersonById(this.editingPersonId);
+
+            // 名前を更新
+            const updateData = {
+                ...person,
+                name: newName,
+                updatedAt: Utils.getCurrentDateTime()
+            };
+
+            await DB.updatePerson(this.editingPersonId, updateData);
+
+            hideLoading();
+            showToast('名前を更新しました', 'success');
+
+            // モーダルを閉じる
+            this.closeNameEditor();
+
+            // ページをリロード
+            App.navigate(`#/person/${this.editingPersonId}`);
+
+        } catch (error) {
+            Utils.error('名前更新エラー', error);
+            hideLoading();
+            showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
+    },
+
+    // 関係性編集開始
+    startEditRelationship(personId) {
+        this.editingPersonId = personId;
+        const modal = document.getElementById('relationshipEditModal');
+        if (modal) {
+            // 現在の関係性を取得してモーダルに表示
+            DB.getPersonById(personId).then(person => {
+                const relationshipInput = document.getElementById('relationshipEditInput');
+                if (relationshipInput) {
+                    relationshipInput.value = person.relationship;
+                }
+            });
+            modal.classList.remove('hidden');
+            // 入力欄にフォーカス
+            setTimeout(() => {
+                document.getElementById('relationshipEditInput')?.focus();
+            }, 100);
+        }
+    },
+
+    // 関係性編集モーダルを閉じる
+    closeRelationshipEditor() {
+        const modal = document.getElementById('relationshipEditModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    },
+
+    // 関係性を保存
+    async saveRelationship() {
+        const relationshipInput = document.getElementById('relationshipEditInput');
+        const newRelationship = relationshipInput.value.trim();
+
+        // バリデーション
+        if (!newRelationship) {
+            showToast('関係性を入力してください', 'error');
+            return;
+        }
+        if (newRelationship.length > CONFIG.LIMITS.MAX_RELATIONSHIP_LENGTH) {
+            showToast(`関係性は${CONFIG.LIMITS.MAX_RELATIONSHIP_LENGTH}文字以内で入力してください`, 'error');
+            return;
+        }
+
+        try {
+            showLoading();
+
+            // 人物データを取得
+            const person = await DB.getPersonById(this.editingPersonId);
+
+            // 関係性を更新
+            const updateData = {
+                ...person,
+                relationship: newRelationship,
+                updatedAt: Utils.getCurrentDateTime()
+            };
+
+            await DB.updatePerson(this.editingPersonId, updateData);
+
+            hideLoading();
+            showToast('関係性を更新しました', 'success');
+
+            // モーダルを閉じる
+            this.closeRelationshipEditor();
+
+            // ページをリロード
+            App.navigate(`#/person/${this.editingPersonId}`);
+
+        } catch (error) {
+            Utils.error('関係性更新エラー', error);
             hideLoading();
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
         }

@@ -209,7 +209,7 @@ const App = {
                         `}
                     </div>
                     
-                    <button class="btn btn-outline btn-block" onclick="App.navigate('#/')">
+                    <button class="btn btn-ghost btn-block" onclick="App.navigate('#/')">
                         ← ホームに戻る
                     </button>
                 </div>
@@ -258,12 +258,14 @@ const App = {
                         
                         <div class="form-group">
                             <label class="form-label">出会った日</label>
-                            <input 
-                                type="date" 
-                                class="form-input" 
+                            <input
+                                type="date"
+                                class="form-input"
                                 id="personMetDate"
                                 value="${Utils.getCurrentDate()}"
+                                max="${Utils.getCurrentDate()}"
                             >
+                            <span class="form-hint">未来の日付は選択できません（年の部分をタップすると年選択ができます）</span>
                         </div>
                         
                         <div class="form-group">
@@ -336,8 +338,12 @@ const App = {
             const html = `
                 <div class="page">
                     <div class="page-header">
-                        <h1 class="page-title">${person.name}</h1>
-                        <p class="page-subtitle">${person.relationship}</p>
+                        <h1 class="page-title" onclick="Person.startEditName('${personId}')" style="cursor: pointer;" title="クリックして名前を編集">
+                            ${person.name}
+                        </h1>
+                        <p class="page-subtitle" onclick="Person.startEditRelationship('${personId}')" style="cursor: pointer;" title="クリックして関係性を編集">
+                            ${person.relationship}
+                        </p>
                     </div>
                     
                     <!-- 写真表示 -->
@@ -396,7 +402,6 @@ const App = {
                                         <li class="list-item">
                                             <div class="list-item-content">
                                                 <div class="list-item-title">${biten.content}</div>
-                                                <div class="list-item-subtitle">${Utils.formatDate(biten.date)}</div>
                                             </div>
                                         </li>
                                     `).join('')}

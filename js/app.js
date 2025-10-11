@@ -123,9 +123,22 @@ const App = {
                                     📄 PDFで出力
                                 </button>
                             ` : ''}
-                            <button class="btn btn-ghost btn-block" onclick="App.navigate('#/guide')">
-                                📖 使い方を見る
+                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/guide')">
+                                📖 使い方
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- フィードバックリンク -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline btn-block"
+                               style="text-decoration: none;">
+                                💬 ご意見・ご感想をお聞かせください
+                            </a>
                         </div>
                     </div>
                     

@@ -112,7 +112,6 @@ const PDF = {
         personsWithBitens.forEach((item, index) => {
             const person = item.person;
             const bitens = item.bitens;
-            const maxBitens = CONFIG.LIMITS.TARGET_BITEN_COUNT; // 100
 
             // 写真データ（あれば表示）
             const photoSrc = person.photo || '';

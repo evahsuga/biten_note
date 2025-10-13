@@ -455,9 +455,23 @@ const App = {
             }
             
             const bitens = await DB.getBitensByPersonId(personId);
+            // 古い順にソートして番号を割り当て（記入順の番号）
+            const bitensOldest = [...bitens].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const bitenNumberMap = {};
+            bitensOldest.forEach((biten, index) => {
+                bitenNumberMap[biten.id] = index + 1; // 記入順の番号（1から始まる）
+            });
+
+            // デバッグ情報
+            console.log('=== 美点番号デバッグ ===');
+            console.log('総数:', bitens.length);
+            bitensOldest.forEach((biten, index) => {
+                console.log(`${index + 1}番: ${biten.content} (作成日時: ${biten.createdAt})`);
+            });
+
             // 新しい順（降順）にソート - 新しい記入が上に表示される
             bitens.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
+
             // 日付ごとにグループ化
             const bitensByDate = {};
             bitens.forEach(biten => {
@@ -484,17 +498,17 @@ const App = {
                                 <p class="empty-state-description">下の入力欄から最初の美点を追加しましょう</p>
                             </div>
                         ` : `
-                            ${Object.keys(bitensByDate).map(date => `
+                            ${Object.keys(bitensByDate).sort((a, b) => new Date(b) - new Date(a)).map(date => `
                                 <div class="chat-date-separator">
                                     <span class="chat-date-text">${Utils.formatDate(date)}</span>
                                 </div>
                                 ${bitensByDate[date].map((biten) => {
-                                    // 全体での番号を計算（日付順の累計）
-                                    const totalIndex = bitens.findIndex(b => b.id === biten.id) + 1;
+                                    // 記入順の番号を取得（最新が最大番号）
+                                    const bitenNumber = bitenNumberMap[biten.id];
                                     return `
-                                    <div class="chat-message">
+                                    <div class="chat-message" onclick="event.stopPropagation(); Biten.startEditBiten('${biten.id}', '${personId}').catch(err => console.error(err))" style="cursor: pointer;" title="クリックして編集">
                                         <div class="chat-bubble">
-                                            <div class="chat-bubble-number">${totalIndex}</div>
+                                            <div class="chat-bubble-number">${bitenNumber}</div>
                                             <div class="chat-bubble-content">${biten.content}</div>
                                         </div>
                                     </div>
@@ -527,6 +541,23 @@ const App = {
             `;
             
             document.getElementById('app').innerHTML = html;
+
+            // 100個達成済みの場合、入力欄を無効化
+            if (bitens.length >= CONFIG.LIMITS.MAX_BITENS_PER_PERSON) {
+                const input = document.getElementById('bitenInput');
+                const sendBtn = document.querySelector('.chat-send-btn');
+
+                if (input) {
+                    input.disabled = true;
+                    input.placeholder = '100個達成しました！';
+                }
+
+                if (sendBtn) {
+                    sendBtn.disabled = true;
+                    sendBtn.style.opacity = '0.5';
+                    sendBtn.style.cursor = 'not-allowed';
+                }
+            }
 
             // チャット最上部へスクロール（新しいメッセージが上にあるため）
             setTimeout(() => {

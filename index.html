@@ -138,6 +138,63 @@
         </div>
     </div>
 
+    <!-- 美点編集モーダル -->
+    <div id="bitenEditModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ 美点を編集</h2>
+                <button class="modal-close" onclick="Biten.closeBitenEditor()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">美点</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        id="bitenEditInput"
+                        maxlength="15"
+                        placeholder="美点を入力（最大15文字）"
+                    >
+                    <span class="form-hint">最大15文字</span>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between; padding: 12px 16px;">
+                <button class="btn btn-outline" onclick="Biten.deleteBitenFromModal()" style="padding: 8px 12px; font-size: 14px; min-width: auto;">🗑 削除</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="Biten.closeBitenEditor()" style="padding: 8px 12px; font-size: 14px;">キャンセル</button>
+                    <button class="btn btn-primary" onclick="Biten.saveBitenEdit()" style="padding: 8px 12px; font-size: 14px;">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 100個達成モーダル -->
+    <div id="achievementModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎉 おめでとうございます！</h2>
+                <button class="modal-close" onclick="closeAchievementModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 18px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">
+                    100項目達成しました！
+                </p>
+                <p style="line-height: 1.8; margin-bottom: 16px;">
+                    素晴らしいです！この人の美点を100個も発見されました。
+                </p>
+                <p style="line-height: 1.8; margin-bottom: 16px;">
+                    これ以上の美点は記録できませんが、追加の美点発見をする際は、<strong>名前に「No.2」などとつけて新しい人物として登録</strong>することで、引き続き記録することができます。
+                </p>
+                <p style="line-height: 1.8; color: var(--gray-600);">
+                    例: 「山田太郎」→「山田太郎 No.2」
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-block" onclick="closeAchievementModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Pro版モーダル -->
     <div id="proModal" class="modal hidden">
         <div class="modal-content">
@@ -193,6 +250,11 @@
         // Pro版モーダルを閉じる
         function closeProModal() {
             document.getElementById('proModal').classList.add('hidden');
+        }
+
+        // 100個達成モーダルを閉じる
+        function closeAchievementModal() {
+            document.getElementById('achievementModal').classList.add('hidden');
         }
 
         // トースト通知を表示

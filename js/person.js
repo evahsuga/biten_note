@@ -176,14 +176,14 @@ const Person = {
 
             await DB.updatePerson(this.editingPersonId, updateData);
 
-            hideLoading();
-            showToast('写真を更新しました', 'success');
-
             // モーダルを閉じる
             this.closePhotoEditor();
 
             // ページを強制的に再レンダリング
             await App.renderPersonDetail(this.editingPersonId);
+
+            hideLoading();
+            showToast('写真を更新しました', 'success');
 
         } catch (error) {
             Utils.error('写真更新エラー', error);
@@ -247,14 +247,14 @@ const Person = {
 
             await DB.updatePerson(this.editingPersonId, updateData);
 
-            hideLoading();
-            showToast('名前を更新しました', 'success');
-
             // モーダルを閉じる
             this.closeNameEditor();
 
             // ページを強制的に再レンダリング
             await App.renderPersonDetail(this.editingPersonId);
+
+            hideLoading();
+            showToast('名前を更新しました', 'success');
 
         } catch (error) {
             Utils.error('名前更新エラー', error);
@@ -321,14 +321,14 @@ const Person = {
 
             await DB.updatePerson(this.editingPersonId, updateData);
 
-            hideLoading();
-            showToast('関係性を更新しました', 'success');
-
             // モーダルを閉じる
             this.closeRelationshipEditor();
 
             // ページを強制的に再レンダリング
             await App.renderPersonDetail(this.editingPersonId);
+
+            hideLoading();
+            showToast('関係性を更新しました', 'success');
 
         } catch (error) {
             Utils.error('関係性更新エラー', error);

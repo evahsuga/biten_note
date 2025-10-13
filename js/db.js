@@ -276,6 +276,56 @@ const DB = {
         }
     },
     
+    // 美点更新
+    async updateBiten(bitenId, updateData) {
+        try {
+            Utils.log('美点更新開始', { bitenId, updateData });
+
+            const transaction = this.db.transaction([CONFIG.STORE.BITENS], 'readwrite');
+            const store = transaction.objectStore(CONFIG.STORE.BITENS);
+            const request = store.put(updateData);
+
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => {
+                    Utils.log('美点更新成功', updateData);
+                    resolve(updateData);
+                };
+                request.onerror = (event) => {
+                    Utils.error('美点更新エラー', event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        } catch (error) {
+            Utils.error('updateBiten例外', error);
+            throw error;
+        }
+    },
+
+    // 美点削除（個別）
+    async deleteBiten(bitenId) {
+        try {
+            Utils.log('美点削除開始', bitenId);
+
+            const transaction = this.db.transaction([CONFIG.STORE.BITENS], 'readwrite');
+            const store = transaction.objectStore(CONFIG.STORE.BITENS);
+            const request = store.delete(bitenId);
+
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => {
+                    Utils.log('美点削除成功', bitenId);
+                    resolve();
+                };
+                request.onerror = (event) => {
+                    Utils.error('美点削除エラー', event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        } catch (error) {
+            Utils.error('deleteBiten例外', error);
+            throw error;
+        }
+    },
+
     // 美点削除（人物ID指定・全削除）
     async deleteBitensByPersonId(personId) {
         try {

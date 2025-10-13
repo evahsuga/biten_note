@@ -28,6 +28,7 @@ const CONFIG = {
         MIN_NAME_LENGTH: 1,         // 名前の最小文字数
         MAX_RELATIONSHIP_LENGTH: 20, // 関係性の最大文字数
         TARGET_BITEN_COUNT: 100,    // 目標美点数
+        MAX_BITENS_PER_PERSON: 100, // 1人あたりの美点上限（PDF印刷の関係）
         MAX_PHOTO_SIZE_KB: 150,     // 写真の最大サイズ (KB)
         PHOTO_SIZE_PX: 400          // 写真のリサイズサイズ (px)
     },

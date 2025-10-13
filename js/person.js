@@ -182,8 +182,8 @@ const Person = {
             // モーダルを閉じる
             this.closePhotoEditor();
 
-            // ページをリロード
-            App.navigate(`#/person/${this.editingPersonId}`);
+            // ページを強制的に再レンダリング
+            await App.renderPersonDetail(this.editingPersonId);
 
         } catch (error) {
             Utils.error('写真更新エラー', error);
@@ -253,8 +253,8 @@ const Person = {
             // モーダルを閉じる
             this.closeNameEditor();
 
-            // ページをリロード
-            App.navigate(`#/person/${this.editingPersonId}`);
+            // ページを強制的に再レンダリング
+            await App.renderPersonDetail(this.editingPersonId);
 
         } catch (error) {
             Utils.error('名前更新エラー', error);
@@ -327,8 +327,8 @@ const Person = {
             // モーダルを閉じる
             this.closeRelationshipEditor();
 
-            // ページをリロード
-            App.navigate(`#/person/${this.editingPersonId}`);
+            // ページを強制的に再レンダリング
+            await App.renderPersonDetail(this.editingPersonId);
 
         } catch (error) {
             Utils.error('関係性更新エラー', error);

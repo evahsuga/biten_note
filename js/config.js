@@ -21,7 +21,6 @@ const CONFIG = {
     
     // 制限値
     LIMITS: {
-        MAX_PERSONS_FREE: 3,        // 無料版の人物登録上限
         MAX_BITEN_LENGTH: 15,       // 美点の最大文字数
         MIN_BITEN_LENGTH: 1,        // 美点の最小文字数
         MAX_NAME_LENGTH: 50,        // 名前の最大文字数
@@ -99,7 +98,6 @@ const CONFIG = {
         ERROR: {
             DB_ERROR: 'データベースエラーが発生しました',
             PERSON_NOT_FOUND: '人物が見つかりません',
-            MAX_PERSONS_REACHED: '無料版では3人までしか登録できません',
             INVALID_NAME: '名前を正しく入力してください',
             INVALID_BITEN: '美点は1〜15文字で入力してください',
             PHOTO_TOO_LARGE: '写真のサイズが大きすぎます（150KB以下）',

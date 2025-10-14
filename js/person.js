@@ -36,14 +36,6 @@ const Person = {
                 }
             }
             
-            // 人数制限チェック
-            const persons = await DB.getAllPersons();
-            if (persons.length >= CONFIG.LIMITS.MAX_PERSONS_FREE) {
-                hideLoading();
-                this.showProModal();
-                return;
-            }
-            
             // 人物データ作成
             const personData = {
                 name: name,
@@ -97,13 +89,7 @@ const Person = {
         }
     },
     
-    // Pro版モーダル表示
-    showProModal() {
-        const modal = document.getElementById('proModal');
-        modal.classList.remove('hidden');
-    },
-    
-    // 人物更新（Phase 2以降で実装予定）
+    // 人物更新
     async updatePerson(personId, updateData) {
         try {
             showLoading();

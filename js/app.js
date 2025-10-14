@@ -1,32 +1,42 @@
 // ================================
-// 美点ノート Phase 1 - アプリケーション起動・ルーティング
+// 美点ノート Phase 1.5 - アプリケーション起動・ルーティング
 // ================================
 
 const App = {
     currentRoute: null,
-    
+    authUnsubscribe: null,
+
     // アプリケーション初期化
     async init() {
         try {
             Utils.log('アプリケーション初期化開始');
             showLoading();
-            
-            // IndexedDB初期化
+
+            // Firestore初期化
             await DB.init();
             Utils.log('データベース初期化完了');
-            
-            // ルーティング設定
-            this.setupRouting();
-            
-            // 初期ルート表示
-            this.handleRoute();
-            
-            hideLoading();
+
+            // 認証状態の監視開始
+            this.authUnsubscribe = Auth.onAuthStateChanged((user) => {
+                Utils.log('認証状態変化検出', user ? user.email : 'ログアウト');
+
+                if (user) {
+                    // ログイン済み: メイン画面へ
+                    this.setupRouting();
+                    this.handleRoute();
+                } else {
+                    // 未ログイン: ログイン画面表示
+                    this.renderLogin();
+                }
+
+                hideLoading();
+            });
+
             Utils.log('アプリケーション初期化完了');
         } catch (error) {
             Utils.error('アプリケーション初期化エラー', error);
             hideLoading();
-            showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+            showToast('エラーが発生しました', 'error');
         }
     },
     
@@ -141,7 +151,16 @@ const App = {
                             </a>
                         </div>
                     </div>
-                    
+
+                    <!-- ログアウトボタン -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-body">
+                            <button class="btn btn-outline btn-block" onclick="App.handleLogout()" style="color: var(--error);">
+                                🚪 ログアウト
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- 最近の活動 -->
                     ${stats.personStats.length > 0 ? `
                         <div class="card">
@@ -653,6 +672,252 @@ const App = {
         `;
         
         document.getElementById('app').innerHTML = html;
+    },
+
+    // ===========================
+    // ログイン・認証画面
+    // ===========================
+
+    // ログイン画面
+    renderLogin() {
+        const html = `
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h1 class="auth-title">美点ノート</h1>
+                        <p class="auth-subtitle">大切な人の美点を記録しよう</p>
+                    </div>
+
+                    <!-- タブ切り替え -->
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" id="loginTab" onclick="App.switchAuthTab('login')">
+                            ログイン
+                        </button>
+                        <button class="auth-tab" id="signupTab" onclick="App.switchAuthTab('signup')">
+                            新規登録
+                        </button>
+                    </div>
+
+                    <!-- ログインフォーム -->
+                    <form id="loginForm" class="auth-form" onsubmit="App.handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label">メールアドレス</label>
+                            <input
+                                type="email"
+                                class="form-input"
+                                id="loginEmail"
+                                required
+                                placeholder="example@email.com"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">パスワード</label>
+                            <input
+                                type="password"
+                                class="form-input"
+                                id="loginPassword"
+                                required
+                                placeholder="6文字以上"
+                                minlength="6"
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            ログイン
+                        </button>
+                        <button type="button" class="btn btn-link btn-block" onclick="App.showPasswordReset()">
+                            パスワードをお忘れですか？
+                        </button>
+                    </form>
+
+                    <!-- サインアップフォーム -->
+                    <form id="signupForm" class="auth-form hidden" onsubmit="App.handleSignup(event)">
+                        <div class="form-group">
+                            <label class="form-label">メールアドレス</label>
+                            <input
+                                type="email"
+                                class="form-input"
+                                id="signupEmail"
+                                required
+                                placeholder="example@email.com"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">パスワード</label>
+                            <input
+                                type="password"
+                                class="form-input"
+                                id="signupPassword"
+                                required
+                                placeholder="6文字以上"
+                                minlength="6"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">パスワード（確認）</label>
+                            <input
+                                type="password"
+                                class="form-input"
+                                id="signupPasswordConfirm"
+                                required
+                                placeholder="もう一度入力してください"
+                                minlength="6"
+                            >
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            新規登録
+                        </button>
+                    </form>
+
+                    <!-- または区切り線 -->
+                    <div class="auth-divider">
+                        <span>または</span>
+                    </div>
+
+                    <!-- Googleログインボタン -->
+                    <button class="btn btn-google btn-block" onclick="App.handleGoogleLogin()">
+                        <svg width="18" height="18" viewBox="0 0 18 18" style="margin-right: 8px;">
+                            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+                            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                            <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.707V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.335z"/>
+                            <path fill="#EA4335" d="M9 3.582c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.582 9 3.582z"/>
+                        </svg>
+                        Googleでログイン
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('app').innerHTML = html;
+    },
+
+    // タブ切り替え
+    switchAuthTab(tab) {
+        const loginTab = document.getElementById('loginTab');
+        const signupTab = document.getElementById('signupTab');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+
+        if (tab === 'login') {
+            loginTab.classList.add('active');
+            signupTab.classList.remove('active');
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+        } else {
+            loginTab.classList.remove('active');
+            signupTab.classList.add('active');
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+        }
+    },
+
+    // ログイン処理
+    async handleLogin(event) {
+        event.preventDefault();
+
+        try {
+            showLoading();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            await Auth.signInWithEmail(email, password);
+
+            // 認証状態変化で自動的にメイン画面へ遷移
+        } catch (error) {
+            hideLoading();
+            showToast(error.message, 'error');
+        }
+    },
+
+    // サインアップ処理
+    async handleSignup(event) {
+        event.preventDefault();
+
+        try {
+            showLoading();
+
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+
+            // パスワード一致チェック
+            if (password !== passwordConfirm) {
+                hideLoading();
+                showToast('パスワードが一致しません', 'error');
+                return;
+            }
+
+            await Auth.signUpWithEmail(email, password);
+
+            showToast('アカウントを作成しました', 'success');
+
+            // 認証状態変化で自動的にメイン画面へ遷移
+        } catch (error) {
+            hideLoading();
+            showToast(error.message, 'error');
+        }
+    },
+
+    // Googleログイン処理
+    async handleGoogleLogin() {
+        try {
+            showLoading();
+
+            await Auth.signInWithGoogle();
+
+            // 認証状態変化で自動的にメイン画面へ遷移
+        } catch (error) {
+            hideLoading();
+            if (error) {
+                showToast(error.message, 'error');
+            }
+        }
+    },
+
+    // パスワードリセット表示
+    showPasswordReset() {
+        const email = prompt('パスワードリセット用のメールアドレスを入力してください');
+
+        if (!email) {
+            return;
+        }
+
+        this.handlePasswordReset(email);
+    },
+
+    // パスワードリセット処理
+    async handlePasswordReset(email) {
+        try {
+            showLoading();
+
+            await Auth.sendPasswordResetEmail(email);
+
+            hideLoading();
+            showToast('パスワードリセットメールを送信しました', 'success');
+        } catch (error) {
+            hideLoading();
+            showToast(error.message, 'error');
+        }
+    },
+
+    // ログアウト処理
+    async handleLogout() {
+        if (!confirm('ログアウトしますか？')) {
+            return;
+        }
+
+        try {
+            showLoading();
+
+            await Auth.signOut();
+
+            showToast('ログアウトしました', 'success');
+
+            // 認証状態変化で自動的にログイン画面へ遷移
+        } catch (error) {
+            hideLoading();
+            showToast(error.message, 'error');
+        }
     }
 };
 

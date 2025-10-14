@@ -122,7 +122,7 @@ const PDF = {
         // 表紙ページ
         bodyHTML += `
             <div class="page cover-page">
-                <h1 class="title">美点ノート</h1>
+                <h1 class="title">美点発見note</h1>
                 <h2 class="subtitle">Biten Note</h2>
                 <p class="date">${today}</p>
                 <p class="description">大切な人の美点を記録した宝物</p>
@@ -165,7 +165,7 @@ const PDF = {
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>美点ノート - ${today}</title>
+    <title>美点発見note - ${today}</title>
     <style>
         @page {
             size: A4;
@@ -495,7 +495,7 @@ const PDF = {
                 </div>
 
                 <div class="page-footer">
-                    - ${pageNumber} - 美点ノート
+                    - ${pageNumber} - 美点発見note
                 </div>
             </div>
         `;

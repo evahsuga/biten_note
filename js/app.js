@@ -103,7 +103,7 @@ const App = {
             const html = `
                 <div class="page">
                     <div class="page-header">
-                        <h1 class="page-title">美点ノート</h1>
+                        <h1 class="page-title">美点発見note</h1>
                         <p class="page-subtitle">大切な人の美点を記録しよう</p>
                     </div>
                     
@@ -115,7 +115,7 @@ const App = {
                         </div>
                         <div class="stat-card">
                             <span class="stat-value">${stats.totalBitens}</span>
-                            <span class="stat-label">美点の数</span>
+                            <span class="stat-label">美点発見総数</span>
                         </div>
                     </div>
                     
@@ -279,16 +279,17 @@ const App = {
                         
                         <div class="form-group">
                             <label class="form-label">関係性</label>
-                            <input 
-                                type="text" 
-                                class="form-input" 
-                                id="personRelationship" 
+                            <input
+                                type="text"
+                                class="form-input"
+                                id="personRelationship"
                                 maxlength="${CONFIG.LIMITS.MAX_RELATIONSHIP_LENGTH}"
                                 placeholder="例: 同僚、友人、家族"
                             >
                         </div>
-                        
-                        <div class="form-group">
+
+                        <!-- 出会った日（非表示） -->
+                        <div class="form-group" style="display: none;">
                             <label class="form-label">出会った日</label>
                             <input
                                 type="date"
@@ -299,7 +300,7 @@ const App = {
                             >
                             <span class="form-hint">未来の日付は選択できません（年の部分をタップすると年選択ができます）</span>
                         </div>
-                        
+
                         <div class="form-group">
                             <label class="form-label">写真（任意）</label>
                             <input 
@@ -545,7 +546,7 @@ const App = {
                             type="text"
                             class="chat-input"
                             id="bitenInput"
-                            placeholder="美点を入力（最大15文字）"
+                            placeholder="例）笑顔がすてき（15文字以内）"
                             maxlength="${CONFIG.LIMITS.MAX_BITEN_LENGTH}"
                             onkeypress="if(event.key === 'Enter') Biten.handleSubmit('${personId}')"
                         >
@@ -684,7 +685,7 @@ const App = {
             <div class="auth-container">
                 <div class="auth-card">
                     <div class="auth-header">
-                        <h1 class="auth-title">美点ノート</h1>
+                        <h1 class="auth-title">美点発見note</h1>
                         <p class="auth-subtitle">大切な人の美点を記録しよう</p>
                     </div>
 

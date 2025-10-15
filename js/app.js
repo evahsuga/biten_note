@@ -366,7 +366,7 @@ const App = {
             }
             
             const bitens = await DB.getBitensByPersonId(personId);
-            bitens.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            bitens.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             
             const html = `
                 <div class="page">
@@ -489,8 +489,8 @@ const App = {
                 console.log(`${index + 1}番: ${biten.content} (作成日時: ${biten.createdAt})`);
             });
 
-            // 新しい順（降順）にソート - 新しい記入が上に表示される
-            bitens.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            // 古い順（昇順）にソート - 最初に書いたものが上に表示される
+            bitens.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
             // 日付ごとにグループ化
             const bitensByDate = {};
@@ -518,7 +518,7 @@ const App = {
                                 <p class="empty-state-description">下の入力欄から最初の美点を追加しましょう</p>
                             </div>
                         ` : `
-                            ${Object.keys(bitensByDate).sort((a, b) => new Date(b) - new Date(a)).map(date => `
+                            ${Object.keys(bitensByDate).sort((a, b) => new Date(a) - new Date(b)).map(date => `
                                 <div class="chat-date-separator">
                                     <span class="chat-date-text">${Utils.formatDate(date)}</span>
                                 </div>
@@ -579,11 +579,11 @@ const App = {
                 }
             }
 
-            // チャット最上部へスクロール（新しいメッセージが上にあるため）
+            // チャット最下部へスクロール（最新のメッセージが下にあるため）
             setTimeout(() => {
                 const chatContainer = document.getElementById('chatContainer');
                 if (chatContainer) {
-                    chatContainer.scrollTop = 0;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
             }, 100);
         } catch (error) {

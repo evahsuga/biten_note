@@ -592,86 +592,399 @@ const App = {
         }
     },
     
-    // 使い方画面
+    // 使い方画面 (Phase 1.5対応版)
     async renderGuide() {
         const html = `
             <div class="page">
                 <div class="page-header">
-                    <h1 class="page-title">📖 使い方</h1>
-                    <p class="page-subtitle">美点ノートの使い方</p>
+                    <h1 class="page-title">📖 美点ノートの使い方</h1>
+                    <p class="page-subtitle">大切な人の良いところを記録しよう</p>
                 </div>
-                
+
+                <!-- はじめに -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">美点発見とは？</h2>
+                        <h2 class="card-title">📱 はじめに</h2>
                     </div>
                     <div class="card-body">
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
-                            美点発見は、相手の良いところを見つけて記録する習慣です。
-                        </p>
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
-                            ANA全社員43,000人が実践し、松山空港の従業員満足度を日本一にした実証済みのメソッドです。
+                            美点ノートは、大切な人の良いところを記録するアプリです。
                         </p>
                         <p style="line-height: 1.8; color: var(--gray-700);">
-                            毎日少しずつ続けることで、人間関係が劇的に好転します。
+                            複数のデバイスで使え、データは安全にクラウドに保存されます。
                         </p>
                     </div>
                 </div>
-                
+
+                <!-- ステップ0: ログイン -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">基本的な使い方</h2>
+                        <h2 class="card-title">🔐 ステップ0: アカウント作成・ログイン</h2>
+                    </div>
+                    <div class="card-body">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">初めての方</h3>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">「新規登録」タブをクリック</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">メールアドレスとパスワードを入力</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">「新規登録」をクリック</li>
+                        </ol>
+
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px; text-align: center;">
+                            <strong>または</strong>
+                        </p>
+
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
+                            「Googleでログイン」でより簡単に始められます。
+                        </p>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">2回目以降</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            登録したメールアドレスとパスワードでログインしてください。
+                        </p>
+
+                        <div style="background-color: var(--primary-light); padding: 12px; border-radius: 8px; margin-top: 16px;">
+                            <p style="margin: 0; line-height: 1.8; color: var(--primary);">
+                                💡 <strong>パスワードを忘れた場合</strong><br>
+                                ログイン画面の「パスワードをお忘れですか？」からリセットできます。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ステップ1: 人物登録 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">👤 ステップ1: 人物を登録する</h2>
                     </div>
                     <div class="card-body">
                         <ol style="padding-left: 20px;">
-                            <li style="margin-bottom: 16px; line-height: 1.8;">
-                                <strong>人物を追加</strong><br>
-                                身近な人を3人まで登録できます
+                            <li style="margin-bottom: 12px; line-height: 1.8;">
+                                ホーム画面で「✨ 新しい人を追加」をタップ
                             </li>
-                            <li style="margin-bottom: 16px; line-height: 1.8;">
-                                <strong>美点を記録</strong><br>
-                                相手の良いところを20文字以内で記録します
+                            <li style="margin-bottom: 12px; line-height: 1.8;">
+                                名前を入力（例: たろうくん）
                             </li>
-                            <li style="margin-bottom: 16px; line-height: 1.8;">
-                                <strong>毎日続ける</strong><br>
-                                1人につき100個を目標に続けましょう
+                            <li style="margin-bottom: 12px; line-height: 1.8;">
+                                写真を選択（任意）
+                            </li>
+                            <li style="margin-bottom: 12px; line-height: 1.8;">
+                                関係性を入力（例: 友達）
                             </li>
                             <li style="line-height: 1.8;">
-                                <strong>振り返る</strong><br>
-                                記録した美点を定期的に見返しましょう
+                                「✨ 追加する」をタップ
                             </li>
                         </ol>
+
+                        <div style="background-color: var(--success-light); padding: 12px; border-radius: 8px; margin-top: 16px;">
+                            <p style="margin: 0; line-height: 1.8; color: var(--success);">
+                                ✨ <strong>Phase 1.5の新機能</strong><br>
+                                人数制限なし！何人でも登録できます。
+                            </p>
+                        </div>
                     </div>
                 </div>
-                
+
+                <!-- ステップ2: 美点記録 -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">美点の書き方のコツ</h2>
+                        <h2 class="card-title">✍️ ステップ2: 美点を記録する</h2>
+                    </div>
+                    <div class="card-body">
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 12px; line-height: 1.8;">
+                                人物一覧から記録したい人をタップ
+                            </li>
+                            <li style="margin-bottom: 12px; line-height: 1.8;">
+                                「✏️ 美点を追加」をタップ
+                            </li>
+                            <li style="margin-bottom: 12px; line-height: 1.8;">
+                                良いところを入力（15文字以内）
+                            </li>
+                            <li style="line-height: 1.8;">
+                                送信ボタン（✏️）をタップ
+                            </li>
+                        </ol>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">💭 記録のコツ</h3>
+                        <ul style="padding-left: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">小さなことでもOK</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">感じたままに</li>
+                            <li style="line-height: 1.8;">毎日1つずつ</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ステップ3: 振り返る -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📖 ステップ3: 振り返る</h2>
+                    </div>
+                    <div class="card-body">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">人物詳細画面で</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">これまでの美点が一覧で表示されます</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">チャット形式で見やすい</li>
+                            <li style="line-height: 1.8;">日付順に並んでいます</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">PDF出力</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700);">
+                            記録した美点をPDFとして保存できます。<br>
+                            プレゼントや記念にどうぞ！
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ステップ4: クラウド同期 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">☁️ ステップ4: 複数デバイスで使う（Phase 1.5の新機能！）</h2>
+                    </div>
+                    <div class="card-body">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">自動同期</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">スマホで記録 → PCで確認</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">PCで記録 → スマホで確認</li>
+                            <li style="line-height: 1.8;">自動で同期されます</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">オフラインでも使える</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">圏外でも記録可能</li>
+                            <li style="line-height: 1.8;">オンラインに戻ると自動同期</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">複数端末でログイン</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700);">
+                            同じアカウントでログインすれば、<br>
+                            どの端末でも同じデータにアクセスできます。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 美点発見とは -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🌟 美点発見®とは？</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            「美点発見®」とは、相手や自分の「素晴らしいところ」を発見し、それを伝え合うことで自尊心を引き出し、最高の人間関係を構築する方法です。
+                        </p>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            実際に一部の学校で実践したところ、不登校やいじめがなくなったという報告が続発しています。「美点発見®」は、学校だけでなく、ANA(全日空)で社員43,000人を対象とした公募型研修として採用されるなど、職場環境の改善にもつながっています。
+                        </p>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
+                            仕事や家庭の人間関係の悩みまで、「美点発見®」は、思い悩みでくもった心を晴らし、すべて解決することができる方法です。
+                        </p>
+
+                        <div style="background-color: var(--primary-light); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                            <p style="margin: 0 0 12px 0; line-height: 1.8; color: var(--gray-800); font-weight: bold;">
+                                💡 「美点発見」を続けていくと...
+                            </p>
+                            <p style="margin: 0; line-height: 1.8; color: var(--gray-700);">
+                                自分の心のメガネが『相手の美点が見えるメガネ』にかけ変わります。それと同時に、自分自身の美点もどんどん見えるようになり、自然と自己肯定感が上がっていきます。
+                            </p>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--gray-200); padding-top: 16px; margin-top: 20px;">
+                            <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 12px;">
+                                もっと本格的に学びたい方は、「究極の美点発見プログラム」をご検討ください。
+                            </p>
+                            <a href="https://bitenhakken.jp/"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline btn-block"
+                               style="text-decoration: none;">
+                                🌟 究極の美点発見プログラム
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 美点の書き方のコツ -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">💡 美点の書き方のコツ</h2>
                     </div>
                     <div class="card-body">
                         <ul style="padding-left: 20px;">
                             <li style="margin-bottom: 12px; line-height: 1.8;">
-                                具体的な行動を書く
+                                <strong>具体的な行動を書く</strong><br>
+                                <span style="color: var(--gray-600); font-size: 14px;">例: 「優しい」→「困っている人に声をかけていた」</span>
                             </li>
                             <li style="margin-bottom: 12px; line-height: 1.8;">
-                                小さなことでもOK
+                                <strong>小さなことでもOK</strong><br>
+                                <span style="color: var(--gray-600); font-size: 14px;">例: 「笑顔で挨拶してくれた」</span>
                             </li>
                             <li style="margin-bottom: 12px; line-height: 1.8;">
-                                その日に気づいたことを記録
+                                <strong>その日に気づいたことを記録</strong><br>
+                                <span style="color: var(--gray-600); font-size: 14px;">新鮮な気持ちで書くのがポイント</span>
                             </li>
                             <li style="line-height: 1.8;">
-                                ポジティブな表現を使う
+                                <strong>ポジティブな表現を使う</strong><br>
+                                <span style="color: var(--gray-600); font-size: 14px;">相手の良さが伝わる言葉で</span>
                             </li>
                         </ul>
                     </div>
                 </div>
-                
+
+                <!-- よくある質問 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">❓ よくある質問</h2>
+                    </div>
+                    <div class="card-body">
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: データは安全ですか？</h3>
+                            <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
+                                A: はい。データは暗号化されてGoogle Firebase（世界最大級のクラウド）に保存されます。本人以外はアクセスできません。
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: 何人まで登録できますか？</h3>
+                            <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
+                                A: Phase 1.5では無制限です！何人でも登録できます。
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: 料金はかかりますか？</h3>
+                            <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
+                                A: Phase 1.5は完全無料です。
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: パスワードを忘れました</h3>
+                            <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
+                                A: ログイン画面の「パスワードをお忘れですか？」から、メールでリセットできます。
+                            </p>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: スマホとPCで同じデータを見たい</h3>
+                            <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
+                                A: 同じメールアドレスとパスワードでログインすれば、自動で同期されます。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 美点ノートの活用例 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🎁 美点ノートの活用例</h2>
+                    </div>
+                    <div class="card-body">
+                        <ul style="padding-left: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">家族の良いところを記録</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">友達との思い出を残す</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">パートナーへのサプライズに</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">子どもの成長記録として</li>
+                            <li style="line-height: 1.8;">感謝の気持ちを形に</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 書籍紹介 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📚 美点発見をもっと深く学ぶ</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            美点発見メソッド開発者・佐藤康行氏の書籍で、より深く美点発見について学べます。
+                        </p>
+                        <div style="background-color: var(--gray-50); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                            <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">
+                                📖 しんどい月曜の朝がラクになる本
+                            </h3>
+                            <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px; margin-bottom: 12px;">
+                                著者: 佐藤康行
+                            </p>
+                            <a href="https://www.amazon.co.jp/dp/4763141090"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline btn-block"
+                               style="text-decoration: none;">
+                                📚 Amazonで見る
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- お問い合わせ -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📧 お問い合わせ</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            不具合やご要望は、Googleフォームからお送りください。
+                        </p>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform?pli=1"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="btn btn-outline btn-block"
+                           style="text-decoration: none;">
+                            💬 フィードバックを送る
+                        </a>
+                    </div>
+                </div>
+
+                <!-- アプリ情報 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📋 アプリについて</h2>
+                    </div>
+                    <div class="card-body">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">本アプリについて</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
+                            「美点発見note」は、佐藤康行氏が開発した美点発見メソッドをベースに開発された記録アプリです。
+                        </p>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">美点発見メソッドの実績</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ANA全社員43,000人が実践</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">松山空港：従業員満足度日本一を達成</li>
+                            <li style="line-height: 1.8;">多くの教育現場で導入実績あり</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">提供元</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
+                            美点発見プロジェクト普及実行委員会
+                        </p>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">開発協力</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
+                            えばぁプロデュース合同会社
+                        </p>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">現在のバージョン</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
+                            Phase 1.5（クラウド同期対応版）
+                        </p>
+
+                        <div style="border-top: 1px solid var(--gray-200); padding-top: 16px; margin-top: 20px;">
+                            <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px; margin-bottom: 8px;">
+                                ※本アプリは現在開発中です。今後、小中学校向けの機能拡張を予定しています。
+                            </p>
+                            <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px;">
+                                © 2025 美点発見プロジェクト普及実行委員会
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ホームに戻るボタン -->
                 <button class="btn btn-primary btn-block" onclick="App.navigate('#/')">
                     ホームに戻る
                 </button>
             </div>
         `;
-        
+
         document.getElementById('app').innerHTML = html;
     },
 

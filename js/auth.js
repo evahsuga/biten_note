@@ -246,6 +246,12 @@ const Auth = {
             case 'auth/wrong-password':
                 message = 'パスワードが間違っています';
                 break;
+            case 'auth/invalid-login-credentials':
+                message = 'メールアドレスまたはパスワードが間違っています';
+                break;
+            case 'auth/invalid-credential':
+                message = 'ログイン情報が正しくありません';
+                break;
 
             // Google認証エラー
             case 'auth/account-exists-with-different-credential':

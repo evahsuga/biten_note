@@ -1,5 +1,5 @@
 // ================================
-// 美点ノート Phase 1.5 - アプリケーション起動・ルーティング
+// 美点発見note Phase 1.5 - アプリケーション起動・ルーティング
 // ================================
 
 const App = {
@@ -597,7 +597,7 @@ const App = {
         const html = `
             <div class="page">
                 <div class="page-header">
-                    <h1 class="page-title">📖 美点ノートの使い方</h1>
+                    <h1 class="page-title">📖 美点発見noteの使い方</h1>
                     <p class="page-subtitle">大切な人の良いところを記録しよう</p>
                 </div>
 
@@ -608,7 +608,7 @@ const App = {
                     </div>
                     <div class="card-body">
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
-                            美点ノートは、大切な人の良いところを記録するアプリです。
+                            「美点発見note」は、大切な人の良いところを記録するアプリです。
                         </p>
                         <p style="line-height: 1.8; color: var(--gray-700);">
                             複数のデバイスで使え、データは安全にクラウドに保存されます。
@@ -872,10 +872,10 @@ const App = {
                     </div>
                 </div>
 
-                <!-- 美点ノートの活用例 -->
+                <!-- 美点発見noteの活用例 -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">🎁 美点ノートの活用例</h2>
+                        <h2 class="card-title">🎁 美点発見noteの活用例</h2>
                     </div>
                     <div class="card-body">
                         <ul style="padding-left: 20px;">

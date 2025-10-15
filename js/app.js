@@ -947,9 +947,9 @@ const App = {
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">美点発見メソッドの実績</h3>
                         <ul style="padding-left: 20px; margin-bottom: 20px;">
-                            <li style="margin-bottom: 8px; line-height: 1.8;">ANA全社員43,000人が実践</li>
-                            <li style="margin-bottom: 8px; line-height: 1.8;">松山空港：従業員満足度日本一を達成</li>
-                            <li style="line-height: 1.8;">多くの教育現場で導入実績あり</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ANA全社員43,000人へ公募型研修導入</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">多くの教育現場で導入実績あり</li>
+                            <li style="line-height: 1.8;">いじめ、不登校、引きこもりの問題が解決するだけでなく、子どもの才能が開花、子どもの教育、子育ての悩み、人間関係の改善、仕事のストレスの解消</li>
                         </ul>
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">提供元</h3>

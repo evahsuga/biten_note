@@ -366,8 +366,32 @@ const App = {
             }
             
             const bitens = await DB.getBitensByPersonId(personId);
-            bitens.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            
+
+            // Firestoreタイムスタンプを数値に変換する関数
+            const getTimestamp = (biten) => {
+                if (biten.createdAt && biten.createdAt.seconds) {
+                    return biten.createdAt.seconds; // Firestoreタイムスタンプ
+                } else if (biten.createdAt) {
+                    return new Date(biten.createdAt).getTime() / 1000; // 文字列の場合
+                }
+                return 0;
+            };
+
+            // 記入順の番号を計算（古い順にソートして番号付け）
+            const bitensOldest = [...bitens].sort((a, b) => getTimestamp(a) - getTimestamp(b));
+            const bitenNumberMap = {};
+            bitensOldest.forEach((biten, index) => {
+                bitenNumberMap[biten.id] = index + 1;
+            });
+
+            // 表示は新しい順（最後に書いたものが上）
+            bitens.sort((a, b) => getTimestamp(b) - getTimestamp(a));
+
+            console.log('=== 個人ページ 美点表示順序 ===');
+            bitens.forEach((biten, index) => {
+                console.log(`表示順${index + 1}: [${bitenNumberMap[biten.id]}] ${biten.content} (${biten.createdAt})`);
+            });
+
             const html = `
                 <div class="page">
                     <div class="page-header">
@@ -378,7 +402,7 @@ const App = {
                             ${person.relationship}
                         </p>
                     </div>
-                    
+
                     <!-- 写真表示 -->
                     <div class="card text-center">
                         ${person.photo ? `
@@ -396,7 +420,7 @@ const App = {
                             </button>
                         `}
                     </div>
-                    
+
                     <!-- 統計 -->
                     <div class="card">
                         <div class="progress-container">
@@ -409,7 +433,7 @@ const App = {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- アクション -->
                     <div class="card">
                         <button class="btn btn-primary btn-block mb-md" onclick="App.navigate('#/biten/new?personId=${personId}')">
@@ -422,7 +446,7 @@ const App = {
                             🗑 この人を削除
                         </button>
                     </div>
-                    
+
                     <!-- 美点一覧 -->
                     <div class="card">
                         <div class="card-header">
@@ -475,8 +499,19 @@ const App = {
             }
             
             const bitens = await DB.getBitensByPersonId(personId);
+
+            // Firestoreタイムスタンプを数値に変換する関数
+            const getTimestamp = (biten) => {
+                if (biten.createdAt && biten.createdAt.seconds) {
+                    return biten.createdAt.seconds; // Firestoreタイムスタンプ
+                } else if (biten.createdAt) {
+                    return new Date(biten.createdAt).getTime() / 1000; // 文字列の場合
+                }
+                return 0;
+            };
+
             // 古い順にソートして番号を割り当て（記入順の番号）
-            const bitensOldest = [...bitens].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const bitensOldest = [...bitens].sort((a, b) => getTimestamp(a) - getTimestamp(b));
             const bitenNumberMap = {};
             bitensOldest.forEach((biten, index) => {
                 bitenNumberMap[biten.id] = index + 1; // 記入順の番号（1から始まる）
@@ -489,8 +524,8 @@ const App = {
                 console.log(`${index + 1}番: ${biten.content} (作成日時: ${biten.createdAt})`);
             });
 
-            // 古い順（昇順）にソート - 最初に書いたものが上に表示される
-            bitens.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            // 新しい順（降順）にソート - 最後に書いたものが上に表示される
+            bitens.sort((a, b) => getTimestamp(b) - getTimestamp(a));
 
             // 日付ごとにグループ化
             const bitensByDate = {};
@@ -518,11 +553,13 @@ const App = {
                                 <p class="empty-state-description">下の入力欄から最初の美点を追加しましょう</p>
                             </div>
                         ` : `
-                            ${Object.keys(bitensByDate).sort((a, b) => new Date(a) - new Date(b)).map(date => `
+                            ${Object.keys(bitensByDate).sort((a, b) => new Date(b) - new Date(a)).map(date => `
                                 <div class="chat-date-separator">
                                     <span class="chat-date-text">${Utils.formatDate(date)}</span>
                                 </div>
-                                ${bitensByDate[date].map((biten) => {
+                                ${bitensByDate[date]
+                                    .sort((a, b) => getTimestamp(b) - getTimestamp(a))
+                                    .map((biten) => {
                                     // 記入順の番号を取得（最新が最大番号）
                                     const bitenNumber = bitenNumberMap[biten.id];
                                     return `

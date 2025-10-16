@@ -40,6 +40,9 @@ const Auth = {
     // サインアップ（新規登録）
     async signUpWithEmail(email, password) {
         try {
+            // メールアドレスを正規化（小文字化、前後の空白削除）
+            email = email.trim().toLowerCase();
+
             Utils.log('サインアップ開始', email);
 
             if (!email || !password) {
@@ -48,6 +51,12 @@ const Auth = {
 
             if (password.length < 6) {
                 throw new Error('パスワードは6文字以上で入力してください');
+            }
+
+            // 既存ユーザーチェック（Firebaseの重複チェックに加えて）
+            const signInMethods = await auth.fetchSignInMethodsForEmail(email);
+            if (signInMethods && signInMethods.length > 0) {
+                throw new Error('このメールアドレスは既に登録されています。ログインしてください。');
             }
 
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
@@ -72,6 +81,9 @@ const Auth = {
     // ログイン
     async signInWithEmail(email, password) {
         try {
+            // メールアドレスを正規化（小文字化、前後の空白削除）
+            email = email.trim().toLowerCase();
+
             Utils.log('ログイン開始', email);
 
             if (!email || !password) {
@@ -92,6 +104,9 @@ const Auth = {
     // パスワードリセット
     async sendPasswordResetEmail(email) {
         try {
+            // メールアドレスを正規化（小文字化、前後の空白削除）
+            email = email.trim().toLowerCase();
+
             Utils.log('パスワードリセットメール送信開始', email);
 
             if (!email) {
@@ -226,7 +241,7 @@ const Auth = {
         switch (error.code) {
             // Email/Password認証エラー
             case 'auth/email-already-in-use':
-                message = 'このメールアドレスは既に使用されています';
+                message = 'このメールアドレスは既に登録されています。ログイン画面からログインしてください。';
                 break;
             case 'auth/invalid-email':
                 message = 'メールアドレスの形式が正しくありません';

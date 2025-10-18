@@ -643,11 +643,11 @@ const App = {
                 }
             }
 
-            // チャット最下部へスクロール（最新のメッセージが下にあるため）
+            // チャット最上部へスクロール（最新のメッセージが上にあるため）
             setTimeout(() => {
                 const chatContainer = document.getElementById('chatContainer');
                 if (chatContainer) {
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    chatContainer.scrollTop = 0;
                 }
             }, 100);
         } catch (error) {

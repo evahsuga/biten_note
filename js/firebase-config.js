@@ -43,7 +43,7 @@ Utils.log('Firebase初期化完了', {
 // App Check を有効化
 const appCheck = firebase.appCheck();
 appCheck.activate(
-  '6LfCJaAqAAAAAIYzgPPU_n4-DRN2lT6R5mG7bnj0', // reCAPTCHA v3 サイトキー
+  '6LfTfu4rAAAAABwjORddcTN5EK8FBK1VEOIbiTev', // reCAPTCHA v3 サイトキー
   true // 自動更新を有効化
 );
 

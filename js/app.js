@@ -25,8 +25,16 @@ const App = {
                     this.setupRouting();
                     this.handleRoute();
                 } else {
-                    // 未ログイン: ログイン画面表示
-                    this.renderLogin();
+                    // 未ログイン: ログイン不要ページかチェック
+                    const hash = window.location.hash || '#/';
+                    if (hash === '#/privacy' || hash === '#/terms') {
+                        // プライバシーポリシー・利用規約はログイン不要
+                        this.setupRouting();
+                        this.handleRoute();
+                    } else {
+                        // その他はログイン画面表示
+                        this.renderLogin();
+                    }
                 }
 
                 hideLoading();
@@ -57,9 +65,25 @@ const App = {
     async handleRoute() {
         const hash = window.location.hash || '#/';
         this.currentRoute = hash;
-        
+
         Utils.log('ルート変更', hash);
-        
+
+        // ログイン不要ページのチェック
+        const publicPages = ['#/privacy', '#/terms'];
+        const isPublicPage = publicPages.includes(hash);
+
+        // ログイン不要ページの場合
+        if (isPublicPage) {
+            if (hash === '#/privacy') {
+                await this.renderPrivacy();
+            } else if (hash === '#/terms') {
+                await this.renderTerms();
+            }
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        // 以下は認証が必要なページ
         // ルートに応じた画面表示
         if (hash === '#/' || hash === '') {
             await this.renderHome();
@@ -76,10 +100,6 @@ const App = {
             await this.renderBitenNew(personId);
         } else if (hash === '#/guide') {
             await this.renderGuide();
-        } else if (hash === '#/privacy') {
-            await this.renderPrivacy();
-        } else if (hash === '#/terms') {
-            await this.renderTerms();
         } else {
             // 不明なルートはホームへ
             this.navigate('#/');

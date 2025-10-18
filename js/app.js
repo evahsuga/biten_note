@@ -1274,11 +1274,9 @@ const App = {
                         </ol>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第3条（アカウント登録）</h2>
-                        <ol style="padding-left: 20px; margin-bottom: 20px;">
-                            <li style="margin-bottom: 8px;">ユーザーは、本規約に同意の上、本サービスのアカウント登録を行うものとします。</li>
-                            <li style="margin-bottom: 8px;">ユーザーは、登録情報に虚偽の内容を含めてはなりません。</li>
-                            <li>ユーザーは、登録情報に変更があった場合、速やかに変更するものとします。</li>
-                        </ol>
+                        <p style="padding-left: 20px; margin-bottom: 20px;">
+                            ユーザーは、本規約に同意の上、本サービスのアカウント登録を行うものとします。
+                        </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第4条（パスワード及びユーザーIDの管理）</h2>
                         <ol style="padding-left: 20px; margin-bottom: 20px;">

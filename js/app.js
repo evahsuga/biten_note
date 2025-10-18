@@ -1236,7 +1236,7 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-secondary btn-block" onclick="App.renderLogin();">
+                <button class="btn btn-secondary btn-block" onclick="App.renderLogin(); setTimeout(() => App.switchAuthTab('signup'), 0);">
                     ← 戻る
                 </button>
             </div>
@@ -1334,7 +1334,7 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-secondary btn-block" onclick="App.renderLogin();">
+                <button class="btn btn-secondary btn-block" onclick="App.renderLogin(); setTimeout(() => App.switchAuthTab('signup'), 0);">
                     ← 戻る
                 </button>
             </div>

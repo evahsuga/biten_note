@@ -100,11 +100,14 @@ const App = {
             await this.renderBitenNew(personId);
         } else if (hash === '#/guide') {
             await this.renderGuide();
+            // 使い方ページは確実に最上部へスクロール
+            window.scrollTo(0, 0);
+            return;
         } else {
             // 不明なルートはホームへ
             this.navigate('#/');
         }
-        
+
         // 画面トップへスクロール
         window.scrollTo(0, 0);
     },
@@ -850,14 +853,15 @@ const App = {
 
                         <div style="border-top: 1px solid var(--gray-200); padding-top: 16px; margin-top: 20px;">
                             <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 12px;">
-                                もっと本格的に学びたい方は、「究極の美点発見プログラム」をご検討ください。
+                                もっと本格的に学びたい方は、「究極の美点発見®プログラム」をご検討ください。<br>
+                                <span style="font-size: 14px; color: var(--gray-600);">※ 美点発見®の開発者提供の教材となります。</span>
                             </p>
                             <a href="https://bitenhakken.jp/"
                                target="_blank"
                                rel="noopener noreferrer"
                                class="btn btn-outline btn-block"
                                style="text-decoration: none;">
-                                🌟 究極の美点発見プログラム
+                                🌟 究極の美点発見®プログラム
                             </a>
                         </div>
                     </div>
@@ -973,6 +977,22 @@ const App = {
                                 📚 Amazonで見る
                             </a>
                         </div>
+
+                        <div style="background-color: var(--gray-50); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                            <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">
+                                📖 一瞬で悩みが消えてなくなる満月の法則
+                            </h3>
+                            <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px; margin-bottom: 12px;">
+                                著者: 佐藤康行
+                            </p>
+                            <a href="https://www.amazon.co.jp/dp/4763161237"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline btn-block"
+                               style="text-decoration: none;">
+                                📚 Amazonで見る
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -1020,7 +1040,7 @@ const App = {
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">開発協力</h3>
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
-                            えばぁプロデュース合同会社
+                            Evahpro LLC
                         </p>
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">現在のバージョン</h3>

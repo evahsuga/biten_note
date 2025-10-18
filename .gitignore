@@ -1,0 +1,29 @@
+# Firebase設定ファイル（Phase 2で除外予定）
+# js/firebase-config.js
+
+# 環境変数ファイル
+.env
+.env.local
+.env.production
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Node modules（将来的に使用する可能性）
+node_modules/
+package-lock.json
+
+# ビルド出力
+dist/
+build/
+
+# IDE設定
+.vscode/settings.json
+.idea/
+
+# ログファイル
+*.log
+npm-debug.log*

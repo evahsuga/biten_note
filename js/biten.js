@@ -117,7 +117,7 @@ const Biten = {
 
         // 美点メッセージ追加（日付セパレーターの直後に）
         const messageHTML = `
-            <div class="chat-message" data-biten-id="${biten.id}">
+            <div class="chat-message" data-biten-id="${biten.id}" data-person-id="${biten.personId}">
                 <div class="chat-bubble">
                     <div class="chat-bubble-number">${bitenNumber}</div>
                     <div class="chat-bubble-content">${biten.content}</div>
@@ -136,6 +136,11 @@ const Biten = {
 
         // 最上部へスクロール（新しいメッセージが見えるように）
         chatContainer.scrollTop = 0;
+
+        // 新しく追加された美点に長押しイベントを設定
+        if (typeof App !== 'undefined' && App.setupLongPressEdit) {
+            App.setupLongPressEdit();
+        }
     },
     
     // 美点編集開始

@@ -977,3 +977,27 @@ body {
 .btn-link:hover {
     text-decoration: underline;
 }
+
+/* ===========================
+   長押し編集フィードバック
+   =========================== */
+
+/* 長押し中の視覚的フィードバック */
+.chat-message.long-press-active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+}
+
+.chat-message.long-press-active .chat-bubble {
+    background: rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 2px var(--primary);
+    transition: all 0.1s ease;
+}
+
+/* タッチ操作の最適化 */
+.chat-message {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}

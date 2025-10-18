@@ -590,7 +590,10 @@ const App = {
                                     // 記入順の番号を取得（最新が最大番号）
                                     const bitenNumber = bitenNumberMap[biten.id];
                                     return `
-                                    <div class="chat-message" onclick="event.stopPropagation(); Biten.startEditBiten('${biten.id}', '${personId}').catch(err => console.error(err))" style="cursor: pointer;" title="クリックして編集">
+                                    <div class="chat-message"
+                                         data-biten-id="${biten.id}"
+                                         data-person-id="${personId}"
+                                         style="cursor: default;">
                                         <div class="chat-bubble">
                                             <div class="chat-bubble-number">${bitenNumber}</div>
                                             <div class="chat-bubble-content">${biten.content}</div>
@@ -642,6 +645,9 @@ const App = {
                     sendBtn.style.cursor = 'not-allowed';
                 }
             }
+
+            // 長押しで編集機能を設定
+            this.setupLongPressEdit();
 
             // チャット最上部へスクロール（最新のメッセージが上にあるため）
             setTimeout(() => {
@@ -1491,6 +1497,83 @@ const App = {
             loginForm.classList.add('hidden');
             signupForm.classList.remove('hidden');
         }
+    },
+
+    // 長押しで編集機能を設定
+    setupLongPressEdit() {
+        const messages = document.querySelectorAll('.chat-message[data-biten-id]');
+
+        messages.forEach(message => {
+            let pressTimer = null;
+            let isLongPress = false;
+
+            // タッチスタート（スマホ）
+            message.addEventListener('touchstart', (e) => {
+                isLongPress = false;
+
+                // 長押しフィードバック用のクラスを追加
+                pressTimer = setTimeout(() => {
+                    isLongPress = true;
+                    message.classList.add('long-press-active');
+
+                    // バイブレーション（対応デバイスのみ）
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+
+                    // 編集モーダルを開く
+                    const bitenId = message.dataset.bitenId;
+                    const personId = message.dataset.personId;
+                    Biten.startEditBiten(bitenId, personId).catch(err => console.error(err));
+                }, 500); // 500ms長押し
+            });
+
+            // タッチエンド
+            message.addEventListener('touchend', (e) => {
+                clearTimeout(pressTimer);
+                message.classList.remove('long-press-active');
+
+                // 長押しの場合はデフォルト動作をキャンセル
+                if (isLongPress) {
+                    e.preventDefault();
+                }
+            });
+
+            // タッチキャンセル（スクロールなど）
+            message.addEventListener('touchmove', (e) => {
+                clearTimeout(pressTimer);
+                message.classList.remove('long-press-active');
+            });
+
+            message.addEventListener('touchcancel', (e) => {
+                clearTimeout(pressTimer);
+                message.classList.remove('long-press-active');
+            });
+
+            // マウスイベント（PC用）
+            message.addEventListener('mousedown', (e) => {
+                isLongPress = false;
+
+                pressTimer = setTimeout(() => {
+                    isLongPress = true;
+                    message.classList.add('long-press-active');
+
+                    const bitenId = message.dataset.bitenId;
+                    const personId = message.dataset.personId;
+                    Biten.startEditBiten(bitenId, personId).catch(err => console.error(err));
+                }, 500);
+            });
+
+            message.addEventListener('mouseup', (e) => {
+                clearTimeout(pressTimer);
+                message.classList.remove('long-press-active');
+            });
+
+            message.addEventListener('mouseleave', (e) => {
+                clearTimeout(pressTimer);
+                message.classList.remove('long-press-active');
+            });
+        });
     },
 
     // ログイン処理

@@ -723,6 +723,22 @@ const App = {
                                 ログイン画面の「パスワードをお忘れですか？」からリセットできます。
                             </p>
                         </div>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px; margin-top: 24px;">🗑️ アカウントの削除</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 12px;">
+                            アカウントを削除したい場合は、以下の手順で行えます：
+                        </p>
+                        <ol style="padding-left: 20px; margin-bottom: 16px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ホーム画面で「⚙️ 設定」をクリック</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">一番下の「危険な操作」セクションの「🗑️ アカウントを削除」をクリック</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">確認メッセージを読み、削除内容を確認</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">「削除する」と入力して実行</li>
+                        </ol>
+                        <div style="background-color: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: 8px;">
+                            <p style="margin: 0; line-height: 1.8; color: var(--error); font-weight: 500;">
+                                ⚠️ アカウントを削除すると、すべてのデータ（人物情報、美点、写真）が完全に削除され、復元できません。
+                            </p>
+                        </div>
                     </div>
                 </div>
 

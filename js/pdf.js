@@ -159,6 +159,16 @@ const PDF = {
             bodyHTML += this.generatePersonPage(item, index + 3);
         });
 
+        // 戻るボタン（印刷時は非表示）
+        bodyHTML += `
+            <div class="back-button-container no-print">
+                <button class="back-button" onclick="location.reload();">
+                    ← アプリに戻る
+                </button>
+                <p class="back-button-hint">または、ブラウザの「印刷」機能でPDFとして保存できます</p>
+            </div>
+        `;
+
         // 完全なHTMLドキュメントを返す
         const html = `
 <!DOCTYPE html>
@@ -417,7 +427,52 @@ const PDF = {
             color: #999;
         }
 
+        /* 戻るボタン（画面表示用） */
+        .back-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .back-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-button:active {
+            transform: translateY(0);
+        }
+
+        .back-button-hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
         @media print {
+            /* 印刷時は戻るボタンを非表示 */
+            .no-print {
+                display: none !important;
+            }
             body {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;

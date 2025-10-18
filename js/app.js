@@ -568,7 +568,7 @@ const App = {
                 <div class="page" style="padding-bottom: 100px;">
                     <div class="page-header">
                         <h1 class="page-title">${person.name}さんの美点</h1>
-                        <p class="page-subtitle">100個書き出してみよう！ (${bitens.length}/100)</p>
+                        <p class="page-subtitle">100個書き出してみよう！ (<span id="bitenCount">${bitens.length}</span>/100)</p>
                     </div>
                     
                     <!-- チャット表示エリア -->

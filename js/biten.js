@@ -99,6 +99,12 @@ const Biten = {
         const bitensOldest = [...allBitens].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         const bitenNumber = bitensOldest.findIndex(b => b.id === biten.id) + 1;
 
+        // カウンターを更新（リアルタイム反映）
+        const countElement = document.getElementById('bitenCount');
+        if (countElement) {
+            countElement.textContent = allBitens.length;
+        }
+
         if (!existingSeparator) {
             // 日付セパレーター追加（先頭に）
             const separatorHTML = `

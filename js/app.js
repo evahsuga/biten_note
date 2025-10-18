@@ -76,6 +76,10 @@ const App = {
             await this.renderBitenNew(personId);
         } else if (hash === '#/guide') {
             await this.renderGuide();
+        } else if (hash === '#/privacy') {
+            await this.renderPrivacy();
+        } else if (hash === '#/terms') {
+            await this.renderTerms();
         } else {
             // 不明なルートはホームへ
             this.navigate('#/');
@@ -1025,6 +1029,205 @@ const App = {
         document.getElementById('app').innerHTML = html;
     },
 
+    // プライバシーポリシー画面
+    async renderPrivacy() {
+        const html = `
+            <div class="page">
+                <div class="page-header">
+                    <h1 class="page-title">🔒 プライバシーポリシー</h1>
+                    <p class="page-subtitle">個人情報の取り扱いについて</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body" style="line-height: 1.8;">
+                        <p style="margin-bottom: 20px;">
+                            美点発見プロジェクト普及実行委員会（以下「当委員会」）は、本アプリケーション「美点発見note」（以下「本サービス」）におけるプライバシー情報の取り扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」）を定めます。
+                        </p>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">1. 取得する情報</h2>
+                        <p style="margin-bottom: 16px;">当委員会は、本サービスの提供にあたり、以下の情報を取得します。</p>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">メールアドレス（アカウント登録時）</li>
+                            <li style="margin-bottom: 8px;">パスワード（暗号化して保存）</li>
+                            <li style="margin-bottom: 8px;">登録した人物情報（名前、写真、関係性、出会った日）</li>
+                            <li style="margin-bottom: 8px;">記録した美点の内容</li>
+                            <li>利用状況に関する情報（アクセスログなど）</li>
+                        </ul>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">2. 利用目的</h2>
+                        <p style="margin-bottom: 16px;">取得した情報は、以下の目的で利用します。</p>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">本サービスの提供・運営</li>
+                            <li style="margin-bottom: 8px;">ユーザー認証</li>
+                            <li style="margin-bottom: 8px;">データのクラウド同期</li>
+                            <li style="margin-bottom: 8px;">サービスの改善・開発</li>
+                            <li style="margin-bottom: 8px;">お問い合わせ対応</li>
+                            <li>利用規約違反への対応</li>
+                        </ul>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">3. 第三者提供</h2>
+                        <p style="margin-bottom: 20px;">
+                            当委員会は、法令に基づく場合を除き、ユーザーの同意なく個人情報を第三者に提供することはありません。
+                        </p>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">4. 安全管理措置</h2>
+                        <p style="margin-bottom: 16px;">当委員会は、個人情報の漏えい、滅失、毀損の防止その他の安全管理のため、以下の措置を講じます。</p>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">Firebase Authentication による安全な認証</li>
+                            <li style="margin-bottom: 8px;">データの暗号化保存</li>
+                            <li style="margin-bottom: 8px;">Firebase App Check によるボット攻撃の防止</li>
+                            <li>アクセス制限による不正アクセスの防止</li>
+                        </ul>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">5. データの保存場所</h2>
+                        <p style="margin-bottom: 20px;">
+                            本サービスは、Google Firebase（Google Cloud Platform）を利用してデータを保存します。データは米国または日本のデータセンターに保存される場合があります。
+                        </p>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">6. ユーザーの権利</h2>
+                        <p style="margin-bottom: 16px;">ユーザーは、以下の権利を有します。</p>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">登録情報の閲覧・訂正・削除を求める権利</li>
+                            <li style="margin-bottom: 8px;">アカウントの削除を求める権利</li>
+                            <li>個人情報の利用停止を求める権利</li>
+                        </ul>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">7. Cookie等の利用</h2>
+                        <p style="margin-bottom: 20px;">
+                            本サービスは、ユーザー認証およびセッション管理のためにCookieおよびローカルストレージを使用します。
+                        </p>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">8. お問い合わせ</h2>
+                        <p style="margin-bottom: 8px;">
+                            本ポリシーに関するお問い合わせは、以下までご連絡ください。
+                        </p>
+                        <p style="padding-left: 20px; margin-bottom: 20px;">
+                            美点発見プロジェクト普及実行委員会<br>
+                            開発協力: Evahpro LLC<br>
+                            連絡先: 090-1104-0673
+                        </p>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">9. 改定</h2>
+                        <p style="margin-bottom: 20px;">
+                            当委員会は、本ポリシーを改定することがあります。改定後のプライバシーポリシーは、本サービス上に掲載した時点で効力を生じるものとします。
+                        </p>
+
+                        <p style="text-align: right; color: var(--gray-600); margin-top: 32px;">
+                            制定日: 2025年10月18日<br>
+                            最終更新日: 2025年10月18日
+                        </p>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary btn-block" onclick="history.back()">
+                    ← 戻る
+                </button>
+            </div>
+        `;
+
+        document.getElementById('app').innerHTML = html;
+    },
+
+    // 利用規約画面
+    async renderTerms() {
+        const html = `
+            <div class="page">
+                <div class="page-header">
+                    <h1 class="page-title">📋 利用規約</h1>
+                    <p class="page-subtitle">ご利用前に必ずお読みください</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body" style="line-height: 1.8;">
+                        <p style="margin-bottom: 20px;">
+                            この利用規約（以下「本規約」）は、美点発見プロジェクト普及実行委員会（以下「当委員会」）が提供する「美点発見note」（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆様には、本規約に従って本サービスをご利用いただきます。
+                        </p>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第1条（適用）</h2>
+                        <p style="margin-bottom: 20px;">
+                            本規約は、本サービスの提供条件及び本サービスの利用に関する当委員会とユーザーとの間の権利義務関係を定めることを目的とし、ユーザーと当委員会との間の本サービスの利用に関わる一切の関係に適用されます。
+                        </p>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第2条（定義）</h2>
+                        <p style="margin-bottom: 8px;">本規約において使用する用語の定義は、以下の通りとします。</p>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">「本サービス」とは、当委員会が提供する「美点発見note」という名称のサービスを意味します。</li>
+                            <li style="margin-bottom: 8px;">「ユーザー」とは、本サービスを利用する全ての個人を意味します。</li>
+                            <li>「登録情報」とは、ユーザーが本サービスに登録した情報を意味します。</li>
+                        </ol>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第3条（アカウント登録）</h2>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">ユーザーは、本規約に同意の上、本サービスのアカウント登録を行うものとします。</li>
+                            <li style="margin-bottom: 8px;">ユーザーは、登録情報に虚偽の内容を含めてはなりません。</li>
+                            <li>ユーザーは、登録情報に変更があった場合、速やかに変更するものとします。</li>
+                        </ol>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第4条（パスワード及びユーザーIDの管理）</h2>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">ユーザーは、自己の責任において、パスワード及びユーザーIDを適切に管理及び保管するものとします。</li>
+                            <li style="margin-bottom: 8px;">ユーザーは、パスワード又はユーザーIDを第三者に利用させてはなりません。</li>
+                            <li>パスワード又はユーザーIDの管理不十分による損害の責任はユーザーが負うものとします。</li>
+                        </ol>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第5条（禁止事項）</h2>
+                        <p style="margin-bottom: 8px;">ユーザーは、本サービスの利用にあたり、以下の行為をしてはなりません。</p>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">法令または公序良俗に違反する行為</li>
+                            <li style="margin-bottom: 8px;">犯罪行為に関連する行為</li>
+                            <li style="margin-bottom: 8px;">当委員会、本サービスの他のユーザー、または第三者の権利を侵害する行為</li>
+                            <li style="margin-bottom: 8px;">他のユーザーのアカウントを不正に使用する行為</li>
+                            <li style="margin-bottom: 8px;">本サービスのネットワークまたはシステムに過度な負荷をかける行為</li>
+                            <li style="margin-bottom: 8px;">本サービスの運営を妨害する行為</li>
+                            <li style="margin-bottom: 8px;">不正アクセス行為</li>
+                            <li style="margin-bottom: 8px;">虚偽の情報を登録する行為</li>
+                            <li>その他、当委員会が不適切と判断する行為</li>
+                        </ol>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第6条（本サービスの停止等）</h2>
+                        <p style="margin-bottom: 20px;">
+                            当委員会は、以下のいずれかに該当する場合には、ユーザーに事前に通知することなく、本サービスの全部または一部の提供を停止または中断することができるものとします。
+                        </p>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">本サービスに係るシステムの定期保守または緊急保守を行う場合</li>
+                            <li style="margin-bottom: 8px;">火災、停電、天災などの不可抗力により本サービスの運営ができなくなった場合</li>
+                            <li>その他、当委員会が停止または中断を必要と判断した場合</li>
+                        </ol>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第7条（免責事項）</h2>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">当委員会は、本サービスがユーザーの特定の目的に適合すること、期待する機能・正確性を有すること、ユーザーによる本サービスの利用がユーザーに適用のある法令に適合することを保証するものではありません。</li>
+                            <li style="margin-bottom: 8px;">当委員会は、本サービスに起因してユーザーに生じたあらゆる損害について一切の責任を負いません。</li>
+                            <li>本サービスは現状有姿で提供されるものであり、当委員会は本サービスについて何らの保証も行いません。</li>
+                        </ol>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第8条（利用規約の変更）</h2>
+                        <p style="margin-bottom: 20px;">
+                            当委員会は、必要と判断した場合には、ユーザーに通知することなくいつでも本規約を変更することができるものとします。変更後の本規約は、本サービス上に表示した時点より効力を生じるものとします。
+                        </p>
+
+                        <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第9条（準拠法・管轄裁判所）</h2>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px;">本規約の解釈にあたっては、日本法を準拠法とします。</li>
+                            <li>本サービスに関して紛争が生じた場合には、当委員会の所在地を管轄する裁判所を専属的合意管轄とします。</li>
+                        </ol>
+
+                        <p style="text-align: right; color: var(--gray-600); margin-top: 32px;">
+                            制定日: 2025年10月18日<br>
+                            最終更新日: 2025年10月18日
+                        </p>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary btn-block" onclick="history.back()">
+                    ← 戻る
+                </button>
+            </div>
+        `;
+
+        document.getElementById('app').innerHTML = html;
+    },
+
     // ===========================
     // ログイン・認証画面
     // ===========================
@@ -1114,6 +1317,20 @@ const App = {
                                 minlength="6"
                             >
                         </div>
+
+                        <!-- 同意チェックボックス -->
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.6;">
+                                <input type="checkbox" id="agreeTerms" required style="margin-right: 8px; margin-top: 4px; cursor: pointer;">
+                                <span style="font-size: 14px; color: var(--gray-700);">
+                                    <a href="#/privacy" target="_blank" style="color: var(--primary); text-decoration: underline;">プライバシーポリシー</a>
+                                    および
+                                    <a href="#/terms" target="_blank" style="color: var(--primary); text-decoration: underline;">利用規約</a>
+                                    に同意します
+                                </span>
+                            </label>
+                        </div>
+
                         <button type="submit" class="btn btn-primary btn-block">
                             新規登録
                         </button>
@@ -1190,6 +1407,14 @@ const App = {
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+
+            // 同意チェックの確認
+            if (!agreeTerms) {
+                hideLoading();
+                showToast('プライバシーポリシーと利用規約に同意してください', 'error');
+                return;
+            }
 
             // パスワード一致チェック
             if (password !== passwordConfirm) {

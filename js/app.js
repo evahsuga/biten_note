@@ -1049,9 +1049,9 @@ const App = {
                         <div style="display: flex; gap: 24px; margin-bottom: 32px; flex-wrap: wrap;">
                             <!-- 写真 -->
                             <div style="flex-shrink: 0; display: flex; justify-content: center; width: 100%;">
-                                <div style="width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: bold; border: 4px solid var(--primary);">
-                                    写真
-                                </div>
+                                <img src="images/sato-yasuyuki.png"
+                                     alt="佐藤康行"
+                                     style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
                             </div>
 
                             <!-- プロフィール情報 -->

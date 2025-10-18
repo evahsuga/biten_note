@@ -1069,7 +1069,7 @@ const App = {
                         <ul style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px;">メールアドレス（アカウント登録時）</li>
                             <li style="margin-bottom: 8px;">パスワード（暗号化して保存）</li>
-                            <li style="margin-bottom: 8px;">登録した人物情報（名前、写真、関係性、出会った日）</li>
+                            <li style="margin-bottom: 8px;">登録した人物情報（名前、写真、関係性）</li>
                             <li style="margin-bottom: 8px;">記録した美点の内容</li>
                             <li>利用状況に関する情報（アクセスログなど）</li>
                         </ul>
@@ -1118,13 +1118,13 @@ const App = {
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">8. お問い合わせ</h2>
-                        <p style="margin-bottom: 8px;">
-                            本ポリシーに関するお問い合わせは、以下までご連絡ください。
+                        <p style="margin-bottom: 16px;">
+                            本ポリシーに関するお問い合わせは、以下のフィードバックフォームよりご連絡ください。
                         </p>
                         <p style="padding-left: 20px; margin-bottom: 20px;">
                             美点発見プロジェクト普及実行委員会<br>
                             開発協力: Evahpro LLC<br>
-                            連絡先: 090-1104-0673
+                            <a href="https://forms.gle/QLhN3WBRWZxNfQfGA" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">📝 フィードバックフォーム</a>
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">9. 改定</h2>
@@ -1139,8 +1139,8 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-secondary btn-block" onclick="history.back()">
-                    ← 戻る
+                <button class="btn btn-secondary btn-block" onclick="window.location.href='/#/'; App.showSignupForm();">
+                    ← 新規登録画面へ戻る
                 </button>
             </div>
         `;
@@ -1239,8 +1239,8 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-secondary btn-block" onclick="history.back()">
-                    ← 戻る
+                <button class="btn btn-secondary btn-block" onclick="window.location.href='/#/'; App.showSignupForm();">
+                    ← 新規登録画面へ戻る
                 </button>
             </div>
         `;

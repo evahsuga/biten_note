@@ -996,6 +996,83 @@ const App = {
                     </div>
                 </div>
 
+                <!-- 美点発見メソッド開発者 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">👤 美点発見®メソッド開発者</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- プロフィール -->
+                        <div style="display: flex; gap: 24px; margin-bottom: 32px; flex-wrap: wrap;">
+                            <!-- 写真 -->
+                            <div style="flex-shrink: 0; display: flex; justify-content: center; width: 100%;">
+                                <div style="width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: bold; border: 4px solid var(--primary);">
+                                    写真
+                                </div>
+                            </div>
+
+                            <!-- プロフィール情報 -->
+                            <div style="flex: 1; min-width: 280px;">
+                                <h3 style="font-size: 24px; margin-bottom: 8px; color: var(--gray-900); text-align: center;">
+                                    佐藤康行（さとう・やすゆき）
+                                </h3>
+                                <p style="color: var(--gray-600); font-size: 14px; margin-bottom: 20px; text-align: center;">
+                                    1951年、北海道美唄市生まれ
+                                </p>
+
+                                <div style="line-height: 1.8; color: var(--gray-700); font-size: 15px;">
+                                    <p style="margin-bottom: 16px;">
+                                        心の学校グループ創始者。1980年、「ステーキのくいしんぼ」を創業。「世界初の立ち食いステーキ」を考案し、８年で年商50億円（70店舗）を達成した。その後、経営権を譲渡、1991年に「心の学校」を創立。
+                                    </p>
+                                    <p style="margin-bottom: 16px;">
+                                        約30年にわたり「本当の自分＝真我」に目覚めることを伝え続け、これまでグループ全体で<strong style="color: var(--primary); font-weight: bold;">52万人以上</strong>の人生を劇的に好転させてきた。2014年、JR東京駅前に「YSこころのクリニック」を開院、うつ病治療では<strong style="color: var(--primary); font-weight: bold;">90日以内の寛解率が90％以上</strong>という成果を上げている（現在は門前仲町に移転）。
+                                    </p>
+                                    <p style="margin-bottom: 16px;">
+                                        研修指導はノーベル賞候補となった科学者や有名な医師、大企業の経営者、社員教育など幅広く、ANA（全日空）ではグループ全社員43,000人を対象に研修が行われている。国会議員など政治家からの信頼も厚く、文部科学大臣を輩出。政府からの依頼を受け、ひきこもり問題解消で大きな成果を上げた。また公立小学校のいじめ・不登校児問題も、多くの事例を解決に導いた。
+                                    </p>
+                                    <p style="margin-bottom: 0;">
+                                        著書は『満月の法則』（サンマーク出版）、『仕事で心が折れそうになったら読む本』（PHP研究所）、『太陽の法則』（KADOKAWA）など多数あり、<strong style="color: var(--primary); font-weight: bold;">累計発行部数は250万部</strong>に及ぶ。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- YouTube動画 -->
+                        <div style="background-color: var(--gray-50); padding: 20px; border-radius: 12px; margin-bottom: 24px;">
+                            <h3 style="font-size: 20px; margin-bottom: 16px; text-align: center; color: var(--gray-900);">
+                                📺 美点発見®メソッドの解説動画
+                            </h3>
+                            <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
+                                <iframe
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; border-radius: 8px;"
+                                    src="https://www.youtube.com/embed/p1XPVivwtDI"
+                                    title="美点発見メソッド解説"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    referrerpolicy="strict-origin-when-cross-origin"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+
+                        <!-- 心の学校へのリンク -->
+                        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); padding: 20px; border-radius: 12px; text-align: center;">
+                            <h3 style="font-size: 18px; margin-bottom: 12px; color: var(--gray-900);">
+                                もっと詳しく学びたい方へ
+                            </h3>
+                            <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                                美点発見®メソッドをより深く学びたい方は
+                            </p>
+                            <a href="https://kokoronogakkou.com/?page_id=33"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-primary btn-block"
+                               style="text-decoration: none;">
+                                🏫 心の学校 公式サイトへ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- お問い合わせ -->
                 <div class="card">
                     <div class="card-header">

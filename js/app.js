@@ -103,6 +103,8 @@ const App = {
             // 使い方ページは確実に最上部へスクロール
             window.scrollTo(0, 0);
             return;
+        } else if (hash === '#/settings') {
+            await this.renderSettings();
         } else {
             // 不明なルートはホームへ
             this.navigate('#/');
@@ -179,9 +181,12 @@ const App = {
                         </div>
                     </div>
 
-                    <!-- ログアウトボタン -->
+                    <!-- 設定・ログアウトボタン -->
                     <div class="card" style="margin-top: 16px;">
                         <div class="card-body">
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/settings')">
+                                ⚙️ 設定
+                            </button>
                             <button class="btn btn-outline btn-block" onclick="App.handleLogout()" style="color: var(--error);">
                                 🚪 ログアウト
                             </button>
@@ -1168,6 +1173,132 @@ const App = {
         document.getElementById('app').innerHTML = html;
     },
 
+    // 設定画面
+    async renderSettings() {
+        try {
+            const user = Auth.getCurrentUser();
+
+            if (!user) {
+                this.navigate('#/');
+                return;
+            }
+
+            // ログイン方法の判定
+            const providerData = user.providerData[0];
+            const loginMethod = providerData.providerId === 'google.com'
+                ? 'Google ログイン'
+                : 'メールアドレス';
+
+            const html = `
+                <div class="page">
+                    <div class="page-header">
+                        <h1 class="page-title">⚙️ 設定</h1>
+                        <p class="page-subtitle">アカウント情報と設定</p>
+                    </div>
+
+                    <!-- アカウント情報 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">アカウント情報</h2>
+                        </div>
+                        <div class="card-body">
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">メールアドレス</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${user.email}</div>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">ログイン方法</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${loginMethod}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">アカウント作成日</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${new Date(user.metadata.creationTime).toLocaleDateString('ja-JP')}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- バージョン情報 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">アプリ情報</h2>
+                        </div>
+                        <div class="card-body">
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">バージョン</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">Phase 1.5（クラウド同期対応版）</div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">美点発見プロジェクト普及実行委員会</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">開発協力</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">Evahpro LLC</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- リンク -->
+                    <div class="card">
+                        <div class="card-body">
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/privacy')">
+                                📄 プライバシーポリシー
+                            </button>
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/terms')">
+                                📄 利用規約
+                            </button>
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform?pli=1"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline btn-block"
+                               style="text-decoration: none;">
+                                💬 フィードバックを送る
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 危険な操作 -->
+                    <div class="card" style="border: 2px solid var(--error);">
+                        <div class="card-header" style="background-color: rgba(239, 68, 68, 0.1);">
+                            <h2 class="card-title" style="color: var(--error);">⚠️ 危険な操作</h2>
+                        </div>
+                        <div class="card-body">
+                            <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                                アカウントを削除すると、以下のデータがすべて<strong>完全に削除</strong>されます：
+                            </p>
+                            <ul style="padding-left: 20px; margin-bottom: 20px; color: var(--gray-700);">
+                                <li style="margin-bottom: 8px;">登録したすべての人物情報</li>
+                                <li style="margin-bottom: 8px;">記録したすべての美点</li>
+                                <li style="margin-bottom: 8px;">アップロードした写真</li>
+                                <li style="margin-bottom: 8px;">アカウント情報</li>
+                            </ul>
+                            <div style="background-color: rgba(239, 68, 68, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+                                <p style="margin: 0; color: var(--error); font-weight: bold; line-height: 1.6;">
+                                    ⚠️ この操作は取り消すことができません
+                                </p>
+                            </div>
+                            <button class="btn btn-block"
+                                    onclick="App.confirmDeleteAccount()"
+                                    style="background-color: var(--error); color: white; border: none;">
+                                🗑️ アカウントを削除
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 戻るボタン -->
+                    <button class="btn btn-outline btn-block" onclick="App.navigate('#/')">
+                        ← ホームに戻る
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('app').innerHTML = html;
+        } catch (error) {
+            Utils.error('設定画面レンダリングエラー', error);
+            showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
+    },
+
     // プライバシーポリシー画面
     async renderPrivacy() {
         const html = `
@@ -1707,6 +1838,113 @@ const App = {
         } catch (error) {
             hideLoading();
             showToast(error.message, 'error');
+        }
+    },
+
+    // アカウント削除の確認
+    confirmDeleteAccount() {
+        const confirmMessage =
+            'アカウントを削除しますか？\n\n' +
+            '【削除されるデータ】\n' +
+            '・登録したすべての人物情報\n' +
+            '・記録したすべての美点\n' +
+            '・アップロードした写真\n' +
+            '・アカウント情報\n\n' +
+            '⚠️ この操作は取り消すことができません。\n\n' +
+            '削除する場合は「OK」をクリックしてください。';
+
+        if (confirm(confirmMessage)) {
+            // 二重確認
+            const doubleConfirm = prompt(
+                '本当に削除してもよろしいですか？\n\n' +
+                '確認のため「削除する」と入力してください。'
+            );
+
+            if (doubleConfirm === '削除する') {
+                this.handleDeleteAccount();
+            } else if (doubleConfirm !== null) {
+                showToast('入力が正しくありません', 'error');
+            }
+        }
+    },
+
+    // アカウント削除処理
+    async handleDeleteAccount() {
+        try {
+            showLoading();
+
+            const user = Auth.getCurrentUser();
+            if (!user) {
+                hideLoading();
+                showToast('ログインしていません', 'error');
+                return;
+            }
+
+            Utils.log('アカウント削除開始', user.uid);
+
+            // 1. Firestoreのユーザーデータを削除
+            Utils.log('Firestoreデータ削除開始');
+
+            // 1-1. persons コレクションのデータを削除
+            const personsSnapshot = await firebase.firestore()
+                .collection('users')
+                .doc(user.uid)
+                .collection('persons')
+                .get();
+
+            const deletePersonsPromises = personsSnapshot.docs.map(doc => doc.ref.delete());
+            await Promise.all(deletePersonsPromises);
+            Utils.log(`${personsSnapshot.docs.length}件の人物データを削除`);
+
+            // 1-2. bitens コレクションのデータを削除
+            const bitensSnapshot = await firebase.firestore()
+                .collection('users')
+                .doc(user.uid)
+                .collection('bitens')
+                .get();
+
+            const deleteBitensPromises = bitensSnapshot.docs.map(doc => doc.ref.delete());
+            await Promise.all(deleteBitensPromises);
+            Utils.log(`${bitensSnapshot.docs.length}件の美点データを削除`);
+
+            // 1-3. users ドキュメントを削除
+            await firebase.firestore()
+                .collection('users')
+                .doc(user.uid)
+                .delete();
+            Utils.log('ユーザードキュメントを削除');
+
+            // 2. Firebase Authentication のアカウントを削除
+            Utils.log('Firebase Authentication アカウント削除開始');
+            await user.delete();
+            Utils.log('Firebase Authentication アカウント削除完了');
+
+            hideLoading();
+
+            // 3. 完了メッセージを表示してログイン画面へ
+            alert('アカウントを削除しました。\n\nご利用ありがとうございました。');
+
+            // ログイン画面へ遷移（認証状態変化で自動的に遷移）
+            this.navigate('#/');
+
+        } catch (error) {
+            hideLoading();
+            Utils.error('アカウント削除エラー', error);
+
+            // エラーの種類に応じたメッセージ
+            if (error.code === 'auth/requires-recent-login') {
+                showToast(
+                    'セキュリティのため、再度ログインしてから削除してください',
+                    'error'
+                );
+                // ログアウトして再ログインを促す
+                await Auth.signOut();
+            } else {
+                showToast(
+                    'アカウント削除に失敗しました。時間をおいて再度お試しください。',
+                    'error'
+                );
+            }
         }
     }
 };

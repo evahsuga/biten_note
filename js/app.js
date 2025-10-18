@@ -1216,12 +1216,12 @@ const App = {
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">8. お問い合わせ</h2>
                         <p style="margin-bottom: 16px;">
-                            本ポリシーに関するお問い合わせは、以下のフィードバックフォームよりご連絡ください。
+                            本ポリシーに関するお問い合わせは、こちらからご連絡ください。
                         </p>
                         <p style="padding-left: 20px; margin-bottom: 20px;">
                             美点発見プロジェクト普及実行委員会<br>
                             開発協力: Evahpro LLC<br>
-                            <a href="https://forms.gle/QLhN3WBRWZxNfQfGA" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">📝 フィードバックフォーム</a>
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">📝 お問い合わせはこちらから</a>
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">9. 改定</h2>

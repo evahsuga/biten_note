@@ -1236,8 +1236,8 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-secondary btn-block" onclick="window.location.href='/#/'; App.showSignupForm();">
-                    ← 新規登録画面へ戻る
+                <button class="btn btn-secondary btn-block" onclick="App.renderLogin();">
+                    ← 戻る
                 </button>
             </div>
         `;
@@ -1334,8 +1334,8 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-secondary btn-block" onclick="window.location.href='/#/'; App.showSignupForm();">
-                    ← 新規登録画面へ戻る
+                <button class="btn btn-secondary btn-block" onclick="App.renderLogin();">
+                    ← 戻る
                 </button>
             </div>
         `;

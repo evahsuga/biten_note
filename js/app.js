@@ -776,11 +776,27 @@ const App = {
                         </ol>
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">💭 記録のコツ</h3>
-                        <ul style="padding-left: 20px;">
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">小さなことでもOK</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">感じたままに</li>
                             <li style="line-height: 1.8;">毎日1つずつ</li>
                         </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">✏️ 美点の編集・削除</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 12px;">
+                            記録した美点を修正したい時は、<strong>美点の吹き出しを長押し</strong>してください。
+                        </p>
+                        <ul style="padding-left: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">美点の文字を約0.5秒長押し</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">編集画面が表示されます</li>
+                            <li style="line-height: 1.8;">編集または削除ができます</li>
+                        </ul>
+
+                        <div style="background-color: rgba(33, 150, 243, 0.1); padding: 12px; border-radius: 8px; margin-top: 16px;">
+                            <p style="margin: 0; line-height: 1.8; color: #2196f3; font-size: 14px;">
+                                💡 <strong>ヒント:</strong> 長押し中は吹き出しが青く光ります。スクロール中の誤タップを防ぐため、通常のタップでは何も起こりません。
+                            </p>
+                        </div>
                     </div>
                 </div>
 

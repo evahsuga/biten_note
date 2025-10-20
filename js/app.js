@@ -16,6 +16,14 @@ const App = {
             await DB.init();
             Utils.log('データベース初期化完了');
 
+            // リダイレクト結果の処理（モバイルGoogle認証用）
+            try {
+                await Auth.handleRedirectResult();
+            } catch (error) {
+                Utils.error('リダイレクト結果処理エラー', error);
+                // エラーが発生しても続行
+            }
+
             // 認証状態の監視開始
             this.authUnsubscribe = Auth.onAuthStateChanged((user) => {
                 Utils.log('認証状態変化検出', user ? user.email : 'ログアウト');

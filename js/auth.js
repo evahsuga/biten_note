@@ -34,6 +34,40 @@ const Auth = {
     },
 
     // ===========================
+    // リダイレクト結果の処理（モバイル用）
+    // ===========================
+
+    // リダイレクト後の認証結果を取得
+    async handleRedirectResult() {
+        try {
+            Utils.log('リダイレクト結果を確認中...');
+            const result = await auth.getRedirectResult();
+
+            if (result && result.user) {
+                const user = result.user;
+                Utils.log('リダイレクトログイン成功', user.email);
+
+                // Firestoreにユーザードキュメントを作成（存在しない場合）
+                await this.createUserDocument(user.uid, {
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                return user;
+            } else {
+                Utils.log('リダイレクト結果なし（通常のページ読み込み）');
+                return null;
+            }
+        } catch (error) {
+            Utils.error('リダイレクト結果取得エラー', error);
+            throw this.handleAuthError(error);
+        }
+    },
+
+    // ===========================
     // Email/Password認証
     // ===========================
 
@@ -127,26 +161,39 @@ const Auth = {
     // Google認証
     // ===========================
 
-    // Googleログイン
+    // Googleログイン（モバイル対応：リダイレクト方式）
     async signInWithGoogle() {
         try {
             Utils.log('Googleログイン開始');
 
-            const result = await auth.signInWithPopup(googleProvider);
-            const user = result.user;
+            // モバイル環境ではリダイレクト方式を使用
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-            Utils.log('Googleログイン成功', user.email);
+            if (isMobile) {
+                // リダイレクト方式（モバイル推奨）
+                Utils.log('モバイル環境検出 - リダイレクト方式を使用');
+                await auth.signInWithRedirect(googleProvider);
+                // リダイレクト後は自動的に戻ってくるので、ここでは何もしない
+                return null;
+            } else {
+                // ポップアップ方式（デスクトップ）
+                Utils.log('デスクトップ環境検出 - ポップアップ方式を使用');
+                const result = await auth.signInWithPopup(googleProvider);
+                const user = result.user;
 
-            // Firestoreにユーザードキュメントを作成（存在しない場合）
-            await this.createUserDocument(user.uid, {
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+                Utils.log('Googleログイン成功', user.email);
 
-            return user;
+                // Firestoreにユーザードキュメントを作成（存在しない場合）
+                await this.createUserDocument(user.uid, {
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                return user;
+            }
         } catch (error) {
             Utils.error('Googleログインエラー', error);
 

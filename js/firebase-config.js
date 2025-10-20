@@ -40,14 +40,16 @@ Utils.log('Firebase初期化完了', {
   authDomain: firebaseConfig.authDomain
 });
 
-// App Check を有効化
-const appCheck = firebase.appCheck();
-appCheck.activate(
-  '6LfTfu4rAAAAABwjORddcTN5EK8FBK1VEOIbiTev', // reCAPTCHA v3 サイトキー
-  true // 自動更新を有効化
-);
+// App Check を無効化（パフォーマンス改善のため一時的に無効化）
+// ⚠️ セキュリティレベル: 低
+// const appCheck = firebase.appCheck();
+// appCheck.activate(
+//   '6LfTfu4rAAAAABwjORddcTN5EK8FBK1VEOIbiTev', // reCAPTCHA v3 サイトキー
+//   true // 自動更新を有効化
+// );
+// console.log('✅ App Check 有効化完了');
 
-console.log('✅ App Check 有効化完了');
+console.log('⚠️ App Check は無効化されています（パフォーマンス優先）');
 
 // グローバルに公開
 window.auth = auth;

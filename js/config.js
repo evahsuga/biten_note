@@ -7,7 +7,10 @@ const CONFIG = {
     APP_NAME: '美点ノート',
     VERSION: '1.0.0',
     PHASE: 'Phase 1',
-    
+
+    // デバッグモード（本番環境では false に設定）
+    DEBUG: false,  // true: デバッグパネル表示、false: 非表示
+
     // データベース設定
     DB_NAME: 'BitenNoteDB',
     DB_VERSION: 1,

@@ -4,6 +4,11 @@
 
 // モバイルデバッグ用関数（画面に表示）
 function mobileDebug(message, data = null) {
+    // DEBUGモードが無効の場合は何もしない（本番環境）
+    if (!CONFIG.DEBUG) {
+        return;
+    }
+
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     // コンソールログ

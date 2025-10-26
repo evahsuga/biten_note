@@ -40,12 +40,21 @@ const Auth = {
     // リダイレクト後の認証結果を取得
     async handleRedirectResult() {
         try {
-            Utils.log('リダイレクト結果を確認中...');
+            Utils.log('リダイレクト結果を確認中...', {
+                currentURL: window.location.href,
+                hash: window.location.hash,
+                userAgent: navigator.userAgent.substring(0, 50)
+            });
+
             const result = await auth.getRedirectResult();
 
             if (result && result.user) {
                 const user = result.user;
-                Utils.log('リダイレクトログイン成功', user.email);
+                Utils.log('✅ リダイレクトログイン成功', {
+                    email: user.email,
+                    uid: user.uid,
+                    displayName: user.displayName
+                });
 
                 // Firestoreにユーザードキュメントを作成（存在しない場合）
                 await this.createUserDocument(user.uid, {
@@ -56,13 +65,18 @@ const Auth = {
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
+                // モバイル: リダイレクト後、ホーム画面に確実に遷移
+                Utils.log('モバイルログイン完了、ホーム画面へリダイレクト');
+                window.location.hash = '#/';
+
                 return user;
             } else {
                 Utils.log('リダイレクト結果なし（通常のページ読み込み）');
                 return null;
             }
         } catch (error) {
-            Utils.error('リダイレクト結果取得エラー', error);
+            Utils.error('❌ リダイレクト結果取得エラー', error);
+            console.error('詳細:', error.code, error.message);
             throw this.handleAuthError(error);
         }
     },

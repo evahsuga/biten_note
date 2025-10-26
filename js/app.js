@@ -19,11 +19,19 @@ const App = {
 
             // 認証状態の監視開始（リダイレクト結果処理の前に設定）
             this.authUnsubscribe = Auth.onAuthStateChanged((user) => {
-                Utils.log('認証状態変化検出', user ? user.email : 'ログアウト');
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                Utils.log('🔔 認証状態変化検出', {
+                    user: user ? user.email : 'ログアウト',
+                    isMobile: isMobile,
+                    currentHash: window.location.hash
+                });
 
                 if (user) {
                     // ログイン済み: メイン画面へ
-                    Utils.log('ログイン済みユーザー検出、メイン画面へ遷移');
+                    Utils.log('✅ ログイン済みユーザー検出、メイン画面へ遷移', {
+                        uid: user.uid,
+                        email: user.email
+                    });
                     this.setupRouting();
                     this.handleRoute();
                 } else {
@@ -35,7 +43,7 @@ const App = {
                         this.handleRoute();
                     } else {
                         // その他はログイン画面表示
-                        Utils.log('未ログインユーザー、ログイン画面表示');
+                        Utils.log('❌ 未ログインユーザー、ログイン画面表示');
                         this.renderLogin();
                     }
                 }
@@ -48,11 +56,21 @@ const App = {
             try {
                 const redirectUser = await Auth.handleRedirectResult();
                 if (redirectUser) {
-                    Utils.log('リダイレクトログイン成功（app.js）', redirectUser.email);
+                    Utils.log('✅ リダイレクトログイン成功（app.js）', {
+                        email: redirectUser.email,
+                        uid: redirectUser.uid
+                    });
                 }
             } catch (error) {
-                Utils.error('リダイレクト結果処理エラー', error);
-                showToast('ログイン処理でエラーが発生しました: ' + error.message, 'error');
+                Utils.error('❌ リダイレクト結果処理エラー', error);
+                const errorMsg = 'ログイン処理でエラーが発生しました: ' + error.message;
+                showToast(errorMsg, 'error');
+
+                // モバイルでコンソールが見れない場合のためにalertも表示
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                    alert('⚠️ ' + errorMsg);
+                }
                 // エラーが発生しても続行
             }
 

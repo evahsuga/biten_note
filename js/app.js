@@ -2,6 +2,30 @@
 // 美点発見note Phase 1.5 - アプリケーション起動・ルーティング
 // ================================
 
+// モバイルデバッグ用関数（画面に表示）
+function mobileDebug(message, data = null) {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // コンソールログ
+    console.log(`[MOBILE DEBUG] ${message}`, data || '');
+
+    // モバイル環境では画面にも表示
+    if (isMobile) {
+        const panel = document.getElementById('debugPanel');
+        const log = document.getElementById('debugLog');
+        if (panel && log) {
+            panel.style.display = 'block';
+            const time = new Date().toLocaleTimeString('ja-JP');
+            const dataStr = data ? JSON.stringify(data, null, 2) : '';
+            log.innerHTML += `<div style="margin-bottom: 4px; border-bottom: 1px solid #333; padding-bottom: 4px;">
+                <span style="color: #888;">${time}</span> ${message}<br>
+                ${dataStr ? `<pre style="margin: 2px 0; font-size: 9px; color: #ff0;">${dataStr}</pre>` : ''}
+            </div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+    }
+}
+
 const App = {
     currentRoute: null,
     authUnsubscribe: null,
@@ -11,6 +35,7 @@ const App = {
     async init() {
         try {
             Utils.log('アプリケーション初期化開始');
+            mobileDebug('🚀 App.init() 開始');
             showLoading();
 
             // Firestore初期化
@@ -26,12 +51,18 @@ const App = {
                     currentHash: window.location.hash
                 });
 
+                mobileDebug('🔔 認証状態変化', {
+                    user: user ? user.email : 'null',
+                    hash: window.location.hash
+                });
+
                 if (user) {
                     // ログイン済み: メイン画面へ
                     Utils.log('✅ ログイン済みユーザー検出、メイン画面へ遷移', {
                         uid: user.uid,
                         email: user.email
                     });
+                    mobileDebug('✅ ログイン済み → メイン画面へ', { email: user.email });
                     this.setupRouting();
                     this.handleRoute();
                 } else {
@@ -44,6 +75,7 @@ const App = {
                     } else {
                         // その他はログイン画面表示
                         Utils.log('❌ 未ログインユーザー、ログイン画面表示');
+                        mobileDebug('❌ 未ログイン → ログイン画面表示');
                         this.renderLogin();
                     }
                 }
@@ -53,6 +85,7 @@ const App = {
 
             // リダイレクト結果の処理（モバイルGoogle認証用）
             // 認証状態監視の後に実行することで、認証成功時にonAuthStateChangedが発火する
+            mobileDebug('📱 リダイレクト結果を確認開始...');
             try {
                 const redirectUser = await Auth.handleRedirectResult();
                 if (redirectUser) {
@@ -60,11 +93,22 @@ const App = {
                         email: redirectUser.email,
                         uid: redirectUser.uid
                     });
+                    mobileDebug('✅ リダイレクトログイン成功', {
+                        email: redirectUser.email,
+                        uid: redirectUser.uid
+                    });
+                } else {
+                    mobileDebug('ℹ️ リダイレクト結果なし（通常の読み込み）');
                 }
             } catch (error) {
                 Utils.error('❌ リダイレクト結果処理エラー', error);
                 const errorMsg = 'ログイン処理でエラーが発生しました: ' + error.message;
                 showToast(errorMsg, 'error');
+
+                mobileDebug('❌ エラー', {
+                    message: error.message,
+                    code: error.code
+                });
 
                 // モバイルでコンソールが見れない場合のためにalertも表示
                 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);

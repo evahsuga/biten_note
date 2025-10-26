@@ -892,6 +892,7 @@ body {
 .auth-subtitle {
     font-size: var(--font-size-base);
     color: var(--gray-600);
+    white-space: nowrap; /* 改行を防ぐ */
 }
 
 .auth-tabs {

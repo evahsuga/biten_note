@@ -32,21 +32,26 @@
     .page-title {
         font-size: 28px;
     }
-    
+
+    /* ログイン画面のサブタイトルを小さくして1行表示 */
+    .auth-subtitle {
+        font-size: 14px;
+    }
+
     .card {
         padding: var(--spacing-md);
         border-radius: var(--border-radius-lg);
     }
-    
+
     .btn {
         font-size: var(--font-size-sm);
         padding: var(--spacing-sm) var(--spacing-lg);
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .modal-content {
         margin: var(--spacing-sm);
     }

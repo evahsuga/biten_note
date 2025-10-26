@@ -469,7 +469,7 @@ const App = {
                                 id="personName" 
                                 maxlength="${CONFIG.LIMITS.MAX_NAME_LENGTH}" 
                                 required
-                                placeholder="例: 山田太郎"
+                                placeholder="例: 美点花子"
                             >
                             <span class="form-hint">1〜${CONFIG.LIMITS.MAX_NAME_LENGTH}文字</span>
                         </div>

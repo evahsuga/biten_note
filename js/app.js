@@ -1961,13 +1961,19 @@ const App = {
     // Googleログイン処理
     async handleGoogleLogin() {
         try {
+            mobileDebug('📱 Googleログインボタンクリック');
             showLoading();
 
-            await Auth.signInWithGoogle();
+            const user = await Auth.signInWithGoogle();
+            mobileDebug('📱 Auth.signInWithGoogle() 完了', { user: user ? user.email : 'null' });
 
             // 認証状態変化で自動的にメイン画面へ遷移
         } catch (error) {
             hideLoading();
+            mobileDebug('❌ Googleログインエラー', {
+                message: error.message,
+                code: error.code
+            });
             if (error) {
                 showToast(error.message, 'error');
             }

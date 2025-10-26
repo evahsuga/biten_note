@@ -175,39 +175,29 @@ const Auth = {
     // Google認証
     // ===========================
 
-    // Googleログイン（モバイル対応：リダイレクト方式）
+    // Googleログイン（ポップアップ方式に統一 - App Check無効化により安定）
     async signInWithGoogle() {
         try {
             Utils.log('Googleログイン開始');
 
-            // モバイル環境ではリダイレクト方式を使用
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            // App Check無効化後は、モバイルでもポップアップ方式を使用
+            // リダイレクト方式はセッション問題で失敗していたため
+            Utils.log('ポップアップ方式でGoogleログインを実行');
+            const result = await auth.signInWithPopup(googleProvider);
+            const user = result.user;
 
-            if (isMobile) {
-                // リダイレクト方式（モバイル推奨）
-                Utils.log('モバイル環境検出 - リダイレクト方式を使用');
-                await auth.signInWithRedirect(googleProvider);
-                // リダイレクト後は自動的に戻ってくるので、ここでは何もしない
-                return null;
-            } else {
-                // ポップアップ方式（デスクトップ）
-                Utils.log('デスクトップ環境検出 - ポップアップ方式を使用');
-                const result = await auth.signInWithPopup(googleProvider);
-                const user = result.user;
+            Utils.log('Googleログイン成功', user.email);
 
-                Utils.log('Googleログイン成功', user.email);
+            // Firestoreにユーザードキュメントを作成（存在しない場合）
+            await this.createUserDocument(user.uid, {
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-                // Firestoreにユーザードキュメントを作成（存在しない場合）
-                await this.createUserDocument(user.uid, {
-                    email: user.email,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                return user;
-            }
+            return user;
         } catch (error) {
             Utils.error('Googleログインエラー', error);
 

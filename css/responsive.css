@@ -401,6 +401,12 @@
     .list-item {
         padding: var(--spacing-lg) var(--spacing-md);
     }
+
+    /* 美点一覧の文字サイズ調整: 15文字が1行に収まるように */
+    .list-item-title {
+        font-size: 15px;
+        line-height: 1.4;
+    }
 }
 
 /* ===========================

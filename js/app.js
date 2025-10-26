@@ -514,8 +514,11 @@ const App = {
                     </div>
                 </div>
             `;
-            
+
             document.getElementById('app').innerHTML = html;
+
+            // ページ最上部（名前の位置）へスクロール
+            window.scrollTo(0, 0);
         } catch (error) {
             Utils.error('人物詳細レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
@@ -1163,7 +1166,7 @@ const App = {
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">提供元</h3>
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
-                            美点発見プロジェクト普及実行委員会
+                            「美点発見」を体験してもらい隊
                         </p>
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">開発協力</h3>
@@ -1181,7 +1184,7 @@ const App = {
                                 ※本アプリは現在開発中です。今後、小中学校向けの機能拡張を予定しています。
                             </p>
                             <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px;">
-                                © 2025 美点発見プロジェクト普及実行委員会
+                                © 2025 「美点発見」を体験してもらい隊
                             </p>
                         </div>
                     </div>
@@ -1253,7 +1256,7 @@ const App = {
                             </div>
                             <div style="margin-bottom: 12px;">
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">美点発見プロジェクト普及実行委員会</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">「美点発見」を体験してもらい隊</div>
                             </div>
                             <div>
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">開発協力</div>
@@ -1335,7 +1338,7 @@ const App = {
                 <div class="card">
                     <div class="card-body" style="line-height: 1.8;">
                         <p style="margin-bottom: 20px;">
-                            美点発見プロジェクト普及実行委員会（以下「当委員会」）は、本アプリケーション「美点発見note」（以下「本サービス」）におけるプライバシー情報の取り扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」）を定めます。
+                            「美点発見」を体験してもらい隊（以下「当委員会」）は、本アプリケーション「美点発見note」（以下「本サービス」）におけるプライバシー情報の取り扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」）を定めます。
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">1. 取得する情報</h2>
@@ -1396,7 +1399,7 @@ const App = {
                             本ポリシーに関するお問い合わせは、こちらからご連絡ください。
                         </p>
                         <p style="padding-left: 20px; margin-bottom: 20px;">
-                            美点発見プロジェクト普及実行委員会<br>
+                            「美点発見」を体験してもらい隊<br>
                             開発協力: Evahpro LLC<br>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">📝 お問い合わせはこちらから</a>
                         </p>
@@ -1434,7 +1437,7 @@ const App = {
                 <div class="card">
                     <div class="card-body" style="line-height: 1.8;">
                         <p style="margin-bottom: 20px;">
-                            この利用規約（以下「本規約」）は、美点発見プロジェクト普及実行委員会（以下「当委員会」）が提供する「美点発見note」（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆様には、本規約に従って本サービスをご利用いただきます。
+                            この利用規約（以下「本規約」）は、「美点発見」を体験してもらい隊（以下「当委員会」）が提供する「美点発見note」（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆様には、本規約に従って本サービスをご利用いただきます。
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第1条（適用）</h2>

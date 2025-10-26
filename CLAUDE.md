@@ -28,7 +28,7 @@ python3 -m http.server 8000
   - Firestore offline persistence (local cache)
   - IndexedDB fallback for anonymous users (Phase 1 legacy)
 - **Authentication**: Firebase Auth (Email/Password + Google OAuth)
-- **Security**: Firebase App Check with reCAPTCHA v3
+- **Security**: Firebase App Check (currently disabled for performance testing)
 - **External Libraries** (CDN):
   - Cropper.js v1.6.1 (photo cropping)
   - jsPDF v2.5.1 (PDF generation)
@@ -51,11 +51,13 @@ js/
 └── pdf.js              # PDF generation (PDF object)
 ```
 
-**Load order matters**: Scripts must be loaded in index.html in this order:
-1. External libraries (Cropper.js, jsPDF, Firebase)
-2. firebase-config.js
-3. auth.js, db.js, config.js
-4. app.js, person.js, biten.js, photo.js, pdf.js
+**CRITICAL - Script Load Order**: Scripts in `index.html` must load in this exact order to avoid undefined errors:
+1. External libraries (Cropper.js, jsPDF, Firebase SDK v8)
+2. `firebase-config.js` - Initializes Firebase, auth, db globals
+3. `auth.js`, `db.js`, `config.js` - Core services (depend on firebase globals)
+4. `app.js`, `person.js`, `biten.js`, `photo.js`, `pdf.js` - UI modules (depend on Auth/DB/CONFIG)
+
+**Never reorder scripts** - the app uses global objects (Auth, DB, CONFIG, etc.) that must be defined before use.
 
 ### Key Design Patterns
 
@@ -109,14 +111,21 @@ users/{userId}/settings/appSettings
 ### Testing Authentication Flow
 ```javascript
 // Check current auth state (in browser console)
-Auth.getCurrentUser()
+Auth.getCurrentUser()  // Returns user object or null
+Auth.getCurrentUserId()  // Returns uid string or null
+Auth.isLoggedIn()  // Returns boolean
 
-// Check if using Firestore or IndexedDB
-DB.useFirestore  // true = Firestore, false = IndexedDB
-
-// View Firestore data
+// View Firestore data for current user
 firebase.firestore().collection('users').doc(Auth.getCurrentUserId())
   .collection('persons').get().then(snap => console.table(snap.docs.map(d => d.data())))
+
+// View all bitens (virtues) for current user
+firebase.firestore().collection('users').doc(Auth.getCurrentUserId())
+  .collection('bitens').get().then(snap => console.table(snap.docs.map(d => d.data())))
+
+// Check Firestore connection status
+firebase.firestore().enableNetwork().then(() => console.log('Online'))
+firebase.firestore().disableNetwork().then(() => console.log('Offline mode'))
 ```
 
 ### Debugging IndexedDB
@@ -175,24 +184,28 @@ indexedDB.deleteDatabase('BitenNoteDB');
 
 **Deployment Method**:
 ```bash
-# Automatic deployment via GitHub Actions
+# Manual push to GitHub Pages
 git add .
 git commit -m "Your message"
-git push origin main  # or master, check with: git branch
+git push origin main
+
+# GitHub Pages serves directly from the main branch
+# No build process required (static HTML/CSS/JS)
 ```
 
 **Firebase Configuration**:
 - Project ID: `biten-note-app`
 - Auth Domain: `biten-note-app.firebaseapp.com`
-- App Check: reCAPTCHA v3 enabled
+- App Check: Temporarily disabled (see `firebase-config.js` comments)
 - Firestore Rules: User-scoped security (users can only access their own data)
 
 ## Known Issues & Limitations
 
-- **Firebase API Key Exposed**: Public API key in `firebase-config.js` is intentional (protected by App Check and Firestore rules)
-- **Photo Storage**: Base64 in Firestore (not Cloud Storage) - simple but not scalable
-- **Offline Limitations**: Firestore persistence works in one tab only
-- **IndexedDB Migration**: One-way migration from IndexedDB to Firestore on first login
+- **Firebase API Key Exposed**: Public API key in `firebase-config.js` is intentional (protected by Firestore rules)
+- **App Check Disabled**: Currently disabled for performance testing (see `firebase-config.js` line 43-50)
+- **Photo Storage**: Base64 in Firestore (not Cloud Storage) - simple but not scalable for large photos
+- **Offline Limitations**: Firestore persistence works in one tab only (multi-tab causes `failed-precondition` error)
+- **IndexedDB Migration**: One-way migration from IndexedDB to Firestore on first login (legacy Phase 1 data)
 
 ## Development History
 
@@ -249,10 +262,11 @@ git push origin main  # or master, check with: git branch
 
 ## Security Notes
 
-- **App Check**: reCAPTCHA v3 protects Firestore from abuse
+- **App Check**: Currently disabled (line 43-50 in `firebase-config.js`), to be re-enabled after performance testing
 - **Firestore Rules**: Users can only read/write their own data (`users/{userId}/**`)
-- **No Server**: Pure client-side app, no backend API
-- **GDPR Compliance**: Account deletion permanently removes all user data
+- **No Server**: Pure client-side app, no backend API or secrets to protect
+- **GDPR Compliance**: Account deletion permanently removes all user data from Firestore
+- **Google OAuth**: Uses redirect method on mobile for better compatibility (not popup)
 
 ## Support & Documentation
 

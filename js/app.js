@@ -241,26 +241,45 @@ const App = {
     },
     
     // 人物一覧画面
-    async renderPersons() {
+    async renderPersons(filterRelationship = null) {
         try {
-            const persons = await DB.getAllPersons();
-            
+            const allPersons = await DB.getAllPersons();
+
             // あいうえお順にソート
-            persons.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
-            
+            allPersons.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+
+            // 関係性の一覧を取得（重複を除く）
+            const relationships = [...new Set(allPersons.map(p => p.relationship))].sort((a, b) => a.localeCompare(b, 'ja'));
+
+            // フィルタリング
+            const persons = filterRelationship
+                ? allPersons.filter(p => p.relationship === filterRelationship)
+                : allPersons;
+
             const html = `
                 <div class="page">
                     <div class="page-header">
                         <h1 class="page-title">人物一覧</h1>
-                        <p class="page-subtitle">${persons.length}人が登録されています</p>
+                        <p class="page-subtitle">${allPersons.length}人が登録されています</p>
                     </div>
-                    
+
                     <div class="card">
                         <button class="btn btn-primary btn-block mb-lg" onclick="App.navigate('#/person/new')">
                             ✨ 新しい人を追加
                         </button>
-                        
-                        ${persons.length > 0 ? `
+
+                        ${allPersons.length > 0 ? `
+                            <button class="btn btn-outline btn-block mb-lg" onclick="App.showRelationshipFilter()">
+                                🏷️ 関係性で絞り込む
+                            </button>
+
+                            ${filterRelationship ? `
+                                <div style="background: var(--primary-light); padding: var(--spacing-md); border-radius: var(--border-radius-md); margin-bottom: var(--spacing-lg); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 600; color: var(--primary);">絞り込み: ${filterRelationship} (${persons.length}人)</span>
+                                    <button class="btn btn-sm btn-ghost" onclick="App.renderPersons(null)" style="padding: var(--spacing-xs) var(--spacing-md);">✕ 解除</button>
+                                </div>
+                            ` : ''}
+
                             <ul class="list">
                                 ${persons.map(person => `
                                     <li class="list-item" onclick="App.navigate('#/person/${person.id}')">
@@ -280,18 +299,73 @@ const App = {
                             </div>
                         `}
                     </div>
-                    
+
                     <button class="btn btn-ghost btn-block" onclick="App.navigate('#/')">
                         ← ホームに戻る
                     </button>
                 </div>
             `;
-            
+
             document.getElementById('app').innerHTML = html;
+
+            // 関係性一覧を保存（フィルタ表示用）
+            this.cachedRelationships = relationships;
+            this.cachedAllPersons = allPersons;
         } catch (error) {
             Utils.error('人物一覧レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
         }
+    },
+
+    // 関係性フィルタ表示
+    showRelationshipFilter() {
+        const relationships = this.cachedRelationships || [];
+        const allPersons = this.cachedAllPersons || [];
+
+        if (relationships.length === 0) {
+            showToast('関係性が登録されていません', 'info');
+            return;
+        }
+
+        // 関係性ごとの人数を計算
+        const relationshipCounts = {};
+        allPersons.forEach(person => {
+            relationshipCounts[person.relationship] = (relationshipCounts[person.relationship] || 0) + 1;
+        });
+
+        const html = `
+            <div class="page">
+                <div class="page-header">
+                    <h1 class="page-title">関係性で絞り込む</h1>
+                    <p class="page-subtitle">関係性を選択してください</p>
+                </div>
+
+                <div class="card">
+                    <button class="btn btn-outline btn-block mb-lg" onclick="App.renderPersons(null)">
+                        すべて表示 (${allPersons.length}人)
+                    </button>
+
+                    <ul class="list">
+                        ${relationships.map(rel => `
+                            <li class="list-item" onclick="App.renderPersons('${rel.replace(/'/g, "\\'")}')">
+                                <div class="list-item-content">
+                                    <div class="list-item-title">${rel}</div>
+                                    <div class="list-item-subtitle">${relationshipCounts[rel]}人</div>
+                                </div>
+                                <span class="list-item-badge">→</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+
+                <button class="btn btn-ghost btn-block" onclick="App.renderPersons(null)">
+                    ← 人物一覧に戻る
+                </button>
+            </div>
+        `;
+
+        document.getElementById('app').innerHTML = html;
+        window.scrollTo(0, 0);
     },
     
     // 人物追加画面

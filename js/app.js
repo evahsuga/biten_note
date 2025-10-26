@@ -5,6 +5,7 @@
 const App = {
     currentRoute: null,
     authUnsubscribe: null,
+    routingSetup: false,  // ルーティング設定済みフラグ
 
     // アプリケーション初期化
     async init() {
@@ -16,20 +17,13 @@ const App = {
             await DB.init();
             Utils.log('データベース初期化完了');
 
-            // リダイレクト結果の処理（モバイルGoogle認証用）
-            try {
-                await Auth.handleRedirectResult();
-            } catch (error) {
-                Utils.error('リダイレクト結果処理エラー', error);
-                // エラーが発生しても続行
-            }
-
-            // 認証状態の監視開始
+            // 認証状態の監視開始（リダイレクト結果処理の前に設定）
             this.authUnsubscribe = Auth.onAuthStateChanged((user) => {
                 Utils.log('認証状態変化検出', user ? user.email : 'ログアウト');
 
                 if (user) {
                     // ログイン済み: メイン画面へ
+                    Utils.log('ログイン済みユーザー検出、メイン画面へ遷移');
                     this.setupRouting();
                     this.handleRoute();
                 } else {
@@ -41,12 +35,26 @@ const App = {
                         this.handleRoute();
                     } else {
                         // その他はログイン画面表示
+                        Utils.log('未ログインユーザー、ログイン画面表示');
                         this.renderLogin();
                     }
                 }
 
                 hideLoading();
             });
+
+            // リダイレクト結果の処理（モバイルGoogle認証用）
+            // 認証状態監視の後に実行することで、認証成功時にonAuthStateChangedが発火する
+            try {
+                const redirectUser = await Auth.handleRedirectResult();
+                if (redirectUser) {
+                    Utils.log('リダイレクトログイン成功（app.js）', redirectUser.email);
+                }
+            } catch (error) {
+                Utils.error('リダイレクト結果処理エラー', error);
+                showToast('ログイン処理でエラーが発生しました: ' + error.message, 'error');
+                // エラーが発生しても続行
+            }
 
             Utils.log('アプリケーション初期化完了');
         } catch (error) {
@@ -58,15 +66,23 @@ const App = {
     
     // ルーティング設定
     setupRouting() {
+        // 既に設定済みの場合はスキップ（重複登録防止）
+        if (this.routingSetup) {
+            return;
+        }
+
         // ハッシュ変更イベント
         window.addEventListener('hashchange', () => {
             this.handleRoute();
         });
-        
+
         // 戻るボタン対応
         window.addEventListener('popstate', () => {
             this.handleRoute();
         });
+
+        this.routingSetup = true;
+        Utils.log('ルーティング設定完了');
     },
     
     // ルート処理

@@ -42,9 +42,12 @@ const Biten = {
             // チャットに追加表示
             await this.appendBitenToChat(newBiten);
 
-            // 100個達成したかチェック
+            // 達成チェック
             const updatedBitens = await DB.getBitensByPersonId(personId);
-            if (updatedBitens.length >= CONFIG.LIMITS.MAX_BITENS_PER_PERSON) {
+            const count = updatedBitens.length;
+
+            // 100個達成したかチェック
+            if (count >= CONFIG.LIMITS.MAX_BITENS_PER_PERSON) {
                 // 入力欄を無効化
                 input.disabled = true;
                 input.placeholder = '100個達成しました！';
@@ -61,6 +64,13 @@ const Biten = {
                 setTimeout(() => {
                     this.showAchievementModal();
                 }, 500);
+            } else if (count === 50) {
+                // 50個達成時の応援メッセージ
+                setTimeout(() => {
+                    this.showHalfwayModal();
+                }, 500);
+                // 入力欄にフォーカス
+                input.focus();
             } else {
                 // 入力欄にフォーカス
                 input.focus();
@@ -77,6 +87,22 @@ const Biten = {
         const modal = document.getElementById('achievementModal');
         if (modal) {
             modal.classList.remove('hidden');
+        }
+    },
+
+    // 50個達成時の応援モーダルを表示
+    showHalfwayModal() {
+        const modal = document.getElementById('halfwayModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    },
+
+    // 50個達成モーダルを閉じる
+    closeHalfwayModal() {
+        const modal = document.getElementById('halfwayModal');
+        if (modal) {
+            modal.classList.add('hidden');
         }
     },
     

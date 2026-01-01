@@ -198,6 +198,8 @@ const App = {
             await this.renderSettings();
         } else if (hash === '#/pdf-select') {
             await this.renderPdfSelect();
+        } else if (hash === '#/release-notes') {
+            await this.renderReleaseNotes();
         } else {
             // 不明なルートはホームへ
             this.navigate('#/');
@@ -267,10 +269,13 @@ const App = {
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform"
                                target="_blank"
                                rel="noopener noreferrer"
-                               class="btn btn-outline btn-block"
+                               class="btn btn-outline btn-block mb-md"
                                style="text-decoration: none;">
                                 💬 ご意見・ご感想をお聞かせください
                             </a>
+                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')">
+                                📋 リリース情報
+                            </button>
                         </div>
                     </div>
 
@@ -1845,6 +1850,35 @@ const App = {
 
                 <button class="btn btn-secondary btn-block" onclick="App.renderLogin(); setTimeout(() => App.switchAuthTab('signup'), 0);">
                     ← 戻る
+                </button>
+            </div>
+        `;
+
+        document.getElementById('app').innerHTML = html;
+    },
+
+    // リリース情報画面
+    async renderReleaseNotes() {
+        const html = `
+            <div class="page">
+                <div class="page-header">
+                    <h1 class="page-title">📋 リリース情報</h1>
+                    <p class="page-subtitle">バージョン履歴と更新内容</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">バージョン 1.6</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="line-height: 1.8; color: var(--gray-600); text-align: center; padding: 32px 0;">
+                            リリース情報はありません。
+                        </p>
+                    </div>
+                </div>
+
+                <button class="btn btn-outline btn-block" onclick="App.navigate('#/')">
+                    ← ホームに戻る
                 </button>
             </div>
         `;

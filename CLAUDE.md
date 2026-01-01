@@ -273,3 +273,76 @@ git push origin main
 - **Phase 1 Specification**: See `phase1-specification.md` for original design
 - **README**: Japanese user guide in `README.md`
 - **Troubleshooting**: Check browser console for Firebase auth/sync errors
+
+## Important Lessons Learned
+
+### Database Schema Changes & Data Migration (2026-01-02)
+
+**Incident**: Added drag-and-drop sorting feature with new `sortOrder` field, causing existing production data (21 persons) to become invisible. Only newly created test data (2 persons with `sortOrder`) was displayed.
+
+**Root Cause**:
+- Used Firestore query `.orderBy('sortOrder', 'asc')` in `getAllPersons()`
+- Firestore excludes documents that don't have the field specified in `orderBy()`
+- 19 existing persons had no `sortOrder` field → not returned by query
+- Only 2 test persons created after the feature had `sortOrder` → appeared in results
+
+**Impact**: Production users could not see their existing data after deployment
+
+**Solution Implemented**:
+1. Removed `.orderBy('sortOrder')` from Firestore query
+2. Retrieved all documents without filtering
+3. Sorted data client-side with fallback logic:
+   ```javascript
+   persons.sort((a, b) => {
+       if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+           return a.sortOrder - b.sortOrder;
+       } else if (a.sortOrder !== undefined) {
+           return -1;
+       } else if (b.sortOrder !== undefined) {
+           return 1;
+       } else {
+           // Both missing sortOrder: fallback to createdAt
+           return new Date(a.createdAt) - new Date(b.createdAt);
+       }
+   });
+   ```
+4. Added automatic migration on login (`DB.migrateSortOrder()`):
+   - Detects documents without `sortOrder`
+   - Assigns sequential numbers based on `createdAt` order
+   - Uses batch update for performance
+
+**Key Takeaways**:
+
+1. **Always consider existing data compatibility**
+   - Before adding new fields, check if existing data will still be accessible
+   - Test new features with both old and new data schemas
+
+2. **Firestore query behavior**
+   - `orderBy(field)` excludes documents where `field` is undefined/missing
+   - Use client-side sorting when field might not exist
+   - Or use compound queries with existence checks
+
+3. **Migration strategy**
+   - Deploy schema changes WITH migration code, not separately
+   - Run migrations automatically on user login
+   - Make migrations idempotent (safe to run multiple times)
+   - Log migration results for monitoring
+
+4. **Testing checklist for schema changes**
+   - [ ] Test with existing production-like data
+   - [ ] Verify backward compatibility
+   - [ ] Implement migration before rollout
+   - [ ] Test migration with edge cases (no data, partial data, full data)
+   - [ ] Add logging for migration monitoring
+
+5. **Environment separation**
+   - Local and production should use different Firebase projects for testing
+   - Prevent accidental production data corruption during development
+   - Current setup: Both environments use same Firebase project (risk identified)
+
+**Prevention for Future**:
+- Create data migration checklist for all schema changes
+- Add field existence checks before using in queries
+- Consider using default values or nullable patterns
+- Test locally with copy of production data structure
+- Document all database schema changes in this file

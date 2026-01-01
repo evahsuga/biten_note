@@ -66,11 +66,11 @@ const Biten = {
                 }, 500);
             } else if (count === 50) {
                 // 50個達成時の応援メッセージ
+                // フォーカスを外してモーダルに集中
+                input.blur();
                 setTimeout(() => {
                     this.showHalfwayModal();
                 }, 500);
-                // 入力欄にフォーカス
-                input.focus();
             } else {
                 // 入力欄にフォーカス
                 input.focus();
@@ -103,6 +103,11 @@ const Biten = {
         const modal = document.getElementById('halfwayModal');
         if (modal) {
             modal.classList.add('hidden');
+        }
+        // モーダルを閉じた後、入力欄にフォーカスを戻す
+        const input = document.getElementById('bitenInput');
+        if (input && !input.disabled) {
+            setTimeout(() => input.focus(), 100);
         }
     },
     

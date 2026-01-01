@@ -289,16 +289,37 @@ const App = {
                         <div class="card">
                             <div class="card-header">
                                 <h2 class="card-title">進捗状況</h2>
+                                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ</p>
                             </div>
-                            <div class="card-body">
-                                ${stats.personStats.map(person => `
-                                    <div class="progress-container">
-                                        <div class="progress-header">
-                                            <span class="progress-label">${person.name}</span>
-                                            <span class="progress-value">${person.bitenCount}/100</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: ${Math.min(person.progress, 100)}%"></div>
+                            <div class="card-body" id="progressList">
+                                ${stats.personStats.map((person, index) => `
+                                    <div
+                                        class="progress-container draggable-progress"
+                                        draggable="false"
+                                        data-person-id="${person.personId}"
+                                        data-sort-order="${persons.find(p => p.id === person.personId)?.sortOrder || index}"
+                                        ondragover="Person.handleProgressDragOver(event)"
+                                        ondrop="Person.handleProgressDrop(event)"
+                                    >
+                                        <span
+                                            class="drag-handle-progress"
+                                            draggable="true"
+                                            onmousedown="Person.startProgressDrag(event)"
+                                            ondragstart="Person.handleProgressDragStart(event)"
+                                            ondragend="Person.handleProgressDragEnd(event)"
+                                        >⋮⋮</span>
+                                        <div
+                                            class="progress-content"
+                                            onclick="App.navigate('#/person/${person.personId}')"
+                                            style="cursor: pointer;"
+                                        >
+                                            <div class="progress-header">
+                                                <span class="progress-label">${person.name}</span>
+                                                <span class="progress-value">${person.bitenCount}/100</span>
+                                            </div>
+                                            <div class="progress-bar">
+                                                <div class="progress-fill" style="width: ${Math.min(person.progress, 100)}%"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -328,8 +349,24 @@ const App = {
         try {
             const allPersons = await DB.getAllPersons();
 
-            // あいうえお順にソート
-            allPersons.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+            // sortOrderがない人物に自動割り当て（既存データのマイグレーション）
+            const needsMigration = allPersons.some(p => !p.sortOrder);
+            if (needsMigration) {
+                Utils.log('sortOrderマイグレーション開始');
+                const updates = allPersons.map((person, index) => ({
+                    id: person.id,
+                    sortOrder: person.sortOrder || (index + 1)
+                }));
+                await DB.updatePersonsSortOrder(updates);
+                // 再取得
+                const updatedPersons = await DB.getAllPersons();
+                allPersons.length = 0;
+                allPersons.push(...updatedPersons);
+                Utils.log('sortOrderマイグレーション完了');
+            }
+
+            // sortOrderでソート（既にDB側でソート済みだが念のため）
+            allPersons.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
             // 関係性の一覧を取得（重複を除く）
             const relationships = [...new Set(allPersons.map(p => p.relationship))].sort((a, b) => a.localeCompare(b, 'ja'));
@@ -361,16 +398,40 @@ const App = {
                                     <span style="font-weight: 600; color: var(--primary);">絞り込み: ${filterRelationship} (${persons.length}人)</span>
                                     <button class="btn btn-sm btn-ghost" onclick="App.renderPersons(null)" style="padding: var(--spacing-xs) var(--spacing-md);">✕ 解除</button>
                                 </div>
-                            ` : ''}
+                            ` : `
+                                <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--border-radius-md); text-align: center; font-size: 14px; color: var(--text-secondary);">
+                                    ↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ
+                                </div>
+                            `}
 
-                            <ul class="list">
-                                ${persons.map(person => `
-                                    <li class="list-item" onclick="App.navigate('#/person/${person.id}')">
-                                        <div class="list-item-content">
-                                            <div class="list-item-title">${person.name}</div>
-                                            <div class="list-item-subtitle">${person.relationship}</div>
+                            <ul class="list" id="personList">
+                                ${persons.map((person, index) => `
+                                    <li
+                                        class="list-item draggable-item"
+                                        draggable="false"
+                                        data-person-id="${person.id}"
+                                        data-sort-order="${person.sortOrder || index}"
+                                        ondragover="Person.handleDragOver(event)"
+                                        ondrop="Person.handleDrop(event)"
+                                    >
+                                        <span
+                                            class="drag-handle"
+                                            draggable="true"
+                                            onmousedown="Person.startDrag(event)"
+                                            ondragstart="Person.handleDragStart(event)"
+                                            ondragend="Person.handleDragEnd(event)"
+                                        >⋮⋮</span>
+                                        <div
+                                            class="list-item-content-clickable"
+                                            onclick="App.navigate('#/person/${person.id}')"
+                                            style="cursor: pointer; flex: 1; display: flex; justify-content: space-between; align-items: center;"
+                                        >
+                                            <div class="list-item-content">
+                                                <div class="list-item-title">${person.name}</div>
+                                                <div class="list-item-subtitle">${person.relationship}</div>
+                                            </div>
+                                            <span class="list-item-badge">→</span>
                                         </div>
-                                        <span class="list-item-badge">→</span>
                                     </li>
                                 `).join('')}
                             </ul>

@@ -321,6 +321,336 @@ const Person = {
             hideLoading();
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
         }
+    },
+
+    // ===========================
+    // ドラッグ&ドロップ機能（人物一覧用）
+    // ===========================
+
+    draggedElement: null,
+
+    // ドラッグ準備（ハンドルがマウスダウンされた時）
+    startDrag(event) {
+        // ハンドルの親要素（.list-item）を取得
+        const listItem = event.currentTarget.closest('.list-item');
+        if (listItem) {
+            this.draggedElement = listItem;
+        }
+    },
+
+    // ドラッグ開始
+    handleDragStart(event) {
+        // ハンドルの親要素を取得
+        const listItem = event.currentTarget.closest('.list-item');
+        if (!listItem) return;
+
+        this.draggedElement = listItem;
+
+        // ドラッグ開始時の順序を保存
+        const listItems = document.querySelectorAll('#personList .list-item');
+        this.originalOrder = Array.from(listItems).map(item => item.getAttribute('data-person-id'));
+
+        listItem.classList.add('dragging');
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/html', listItem.innerHTML);
+    },
+
+    // ドラッグオーバー
+    handleDragOver(event) {
+        if (!this.draggedElement) return;
+
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+
+        // personListを取得
+        const personList = document.getElementById('personList');
+        if (!personList) return;
+
+        // 挿入位置を計算
+        const afterElement = this.getDragAfterElement(personList, event.clientY);
+        const draggable = this.draggedElement;
+
+        // DOM操作を最小限に - 位置が変わる場合のみ挿入
+        const currentNext = draggable.nextElementSibling;
+
+        if (afterElement === null) {
+            // 最後に挿入
+            if (currentNext !== null) {
+                personList.appendChild(draggable);
+            }
+        } else {
+            // afterElementの前に挿入
+            if (afterElement !== currentNext) {
+                personList.insertBefore(draggable, afterElement);
+            }
+        }
+
+        // ホバー中の要素をハイライト（軽量化）
+        const currentTarget = event.currentTarget;
+        if (currentTarget !== this.draggedElement && !currentTarget.classList.contains('drag-over')) {
+            // 他の要素からdrag-overクラスを削除
+            const prevHighlighted = personList.querySelector('.list-item.drag-over');
+            if (prevHighlighted && prevHighlighted !== currentTarget) {
+                prevHighlighted.classList.remove('drag-over');
+            }
+            currentTarget.classList.add('drag-over');
+        }
+    },
+
+    // ドロップ
+    async handleDrop(event) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        // ドロップが一度だけ実行されるようにする
+        if (this.isDropping) return;
+        this.isDropping = true;
+
+        try {
+            // ドロップ先の要素を確認
+            const dropTarget = event.currentTarget;
+            const personList = document.getElementById('personList');
+
+            if (this.draggedElement && dropTarget && personList && this.draggedElement !== dropTarget) {
+                // ドロップ位置を計算して、最終的な位置を確定
+                const afterElement = this.getDragAfterElement(personList, event.clientY);
+
+                if (afterElement == null) {
+                    personList.appendChild(this.draggedElement);
+                } else {
+                    personList.insertBefore(this.draggedElement, afterElement);
+                }
+            }
+
+            // 新しい順序を取得
+            const listItems = document.querySelectorAll('#personList .list-item');
+            const currentOrder = Array.from(listItems).map(item => item.getAttribute('data-person-id'));
+
+            // 順序が変わったかチェック
+            const hasChanged = !this.originalOrder ||
+                this.originalOrder.length !== currentOrder.length ||
+                this.originalOrder.some((id, index) => id !== currentOrder[index]);
+
+            if (hasChanged) {
+                // 順序が変わった場合のみ保存
+                const newOrder = [];
+                listItems.forEach((item, index) => {
+                    const personId = item.getAttribute('data-person-id');
+                    newOrder.push({
+                        id: personId,
+                        sortOrder: index + 1
+                    });
+                });
+
+                // データベースに保存（バックグラウンドで実行）
+                await DB.updatePersonsSortOrder(newOrder);
+
+                Utils.log('並び順を更新しました', newOrder);
+                showToast('並び順を更新しました', 'success');
+            }
+
+        } catch (error) {
+            Utils.error('並び順更新エラー', error);
+            showToast('並び順の更新に失敗しました', 'error');
+        } finally {
+            this.isDropping = false;
+            this.originalOrder = null;
+        }
+    },
+
+    // ドラッグ終了
+    handleDragEnd(event) {
+        if (this.draggedElement) {
+            this.draggedElement.classList.remove('dragging');
+        }
+        this.draggedElement = null;
+        this.isDropping = false;
+
+        // すべてのリストアイテムからdrag-overクラスを削除
+        document.querySelectorAll('.list-item').forEach(item => {
+            item.classList.remove('drag-over');
+        });
+    },
+
+    // ドラッグ中の要素の後ろにある要素を取得
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.list-item:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    },
+
+    // ===========================
+    // 進捗バーのドラッグ&ドロップ機能（ホーム画面用）
+    // ===========================
+
+    draggedProgressElement: null,
+
+    // 進捗バー: ドラッグ準備（ハンドルがマウスダウンされた時）
+    startProgressDrag(event) {
+        // ハンドルの親要素（.progress-container）を取得
+        const container = event.currentTarget.closest('.progress-container');
+        if (container) {
+            this.draggedProgressElement = container;
+        }
+    },
+
+    // 進捗バー: ドラッグ開始
+    handleProgressDragStart(event) {
+        // ハンドルの親要素を取得
+        const container = event.currentTarget.closest('.progress-container');
+        if (!container) return;
+
+        this.draggedProgressElement = container;
+
+        // ドラッグ開始時の順序を保存
+        const progressItems = document.querySelectorAll('#progressList .progress-container');
+        this.originalProgressOrder = Array.from(progressItems).map(item => item.getAttribute('data-person-id'));
+
+        container.classList.add('dragging');
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/html', container.innerHTML);
+    },
+
+    // 進捗バー: ドラッグオーバー
+    handleProgressDragOver(event) {
+        if (!this.draggedProgressElement) return;
+
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+
+        // progressListを取得
+        const progressList = document.getElementById('progressList');
+        if (!progressList) return;
+
+        // 挿入位置を計算
+        const afterElement = this.getProgressDragAfterElement(progressList, event.clientY);
+        const draggable = this.draggedProgressElement;
+
+        // DOM操作を最小限に - 位置が変わる場合のみ挿入
+        const currentNext = draggable.nextElementSibling;
+
+        if (afterElement === null) {
+            // 最後に挿入
+            if (currentNext !== null) {
+                progressList.appendChild(draggable);
+            }
+        } else {
+            // afterElementの前に挿入
+            if (afterElement !== currentNext) {
+                progressList.insertBefore(draggable, afterElement);
+            }
+        }
+
+        // ホバー中の要素をハイライト（軽量化）
+        const currentTarget = event.currentTarget;
+        if (currentTarget !== this.draggedProgressElement && !currentTarget.classList.contains('drag-over')) {
+            // 他の要素からdrag-overクラスを削除
+            const prevHighlighted = progressList.querySelector('.progress-container.drag-over');
+            if (prevHighlighted && prevHighlighted !== currentTarget) {
+                prevHighlighted.classList.remove('drag-over');
+            }
+            currentTarget.classList.add('drag-over');
+        }
+    },
+
+    // 進捗バー: ドロップ
+    async handleProgressDrop(event) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        // ドロップが一度だけ実行されるようにする
+        if (this.isProgressDropping) return;
+        this.isProgressDropping = true;
+
+        try {
+            // ドロップ先の要素を確認
+            const dropTarget = event.currentTarget;
+            const progressList = document.getElementById('progressList');
+
+            if (this.draggedProgressElement && dropTarget && progressList && this.draggedProgressElement !== dropTarget) {
+                // ドロップ位置を計算して、最終的な位置を確定
+                const afterElement = this.getProgressDragAfterElement(progressList, event.clientY);
+
+                if (afterElement == null) {
+                    progressList.appendChild(this.draggedProgressElement);
+                } else {
+                    progressList.insertBefore(this.draggedProgressElement, afterElement);
+                }
+            }
+
+            // 新しい順序を取得
+            const progressItems = document.querySelectorAll('#progressList .progress-container');
+            const currentOrder = Array.from(progressItems).map(item => item.getAttribute('data-person-id'));
+
+            // 順序が変わったかチェック
+            const hasChanged = !this.originalProgressOrder ||
+                this.originalProgressOrder.length !== currentOrder.length ||
+                this.originalProgressOrder.some((id, index) => id !== currentOrder[index]);
+
+            if (hasChanged) {
+                // 順序が変わった場合のみ保存
+                const newOrder = [];
+                progressItems.forEach((item, index) => {
+                    const personId = item.getAttribute('data-person-id');
+                    newOrder.push({
+                        id: personId,
+                        sortOrder: index + 1
+                    });
+                });
+
+                // データベースに保存（バックグラウンドで実行）
+                await DB.updatePersonsSortOrder(newOrder);
+
+                Utils.log('進捗状況の並び順を更新しました', newOrder);
+                showToast('並び順を更新しました', 'success');
+            }
+
+        } catch (error) {
+            Utils.error('進捗状況の並び順更新エラー', error);
+            showToast('並び順の更新に失敗しました', 'error');
+        } finally {
+            this.isProgressDropping = false;
+            this.originalProgressOrder = null;
+        }
+    },
+
+    // 進捗バー: ドラッグ終了
+    handleProgressDragEnd(event) {
+        if (this.draggedProgressElement) {
+            this.draggedProgressElement.classList.remove('dragging');
+        }
+        this.draggedProgressElement = null;
+        this.isProgressDropping = false;
+
+        // すべての進捗コンテナからdrag-overクラスを削除
+        document.querySelectorAll('.progress-container').forEach(item => {
+            item.classList.remove('drag-over');
+        });
+    },
+
+    // 進捗バー: ドラッグ中の要素の後ろにある要素を取得
+    getProgressDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.progress-container:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 };
 

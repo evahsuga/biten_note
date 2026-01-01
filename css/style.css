@@ -431,6 +431,52 @@ body {
 }
 
 /* ===========================
+   ドラッグ&ドロップ
+   =========================== */
+
+.draggable-item {
+    position: relative;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    user-select: none;
+}
+
+.drag-handle {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    font-size: 16px;
+    line-height: 1;
+    cursor: grab;
+    user-select: none;
+    padding: var(--spacing-xs);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.draggable-item .list-item-content {
+    margin-left: 32px;
+}
+
+.draggable-item.dragging {
+    opacity: 0.6;
+    transform: scale(0.98);
+    cursor: grabbing;
+}
+
+.draggable-item.dragging .drag-handle {
+    cursor: grabbing;
+}
+
+.draggable-item.drag-over {
+    background: var(--primary-light);
+    border: 2px dashed var(--primary);
+}
+
+/* ===========================
    チャット（LINE風）
    =========================== */
 
@@ -595,6 +641,59 @@ body {
 
 .progress-container {
     margin: var(--spacing-md) 0;
+    position: relative;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.draggable-progress {
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm) 0;
+    background: var(--white);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    user-select: none;
+}
+
+.draggable-progress:hover {
+    background: var(--gray-50);
+    box-shadow: var(--shadow-sm);
+}
+
+.draggable-progress.dragging {
+    opacity: 0.6;
+    transform: scale(0.98);
+    cursor: grabbing;
+}
+
+.draggable-progress.drag-over {
+    background: var(--primary-light);
+    border: 2px dashed var(--primary);
+}
+
+.drag-handle-progress {
+    color: var(--gray-400);
+    font-size: 14px;
+    line-height: 1;
+    cursor: grab;
+    user-select: none;
+    flex-shrink: 0;
+    padding: var(--spacing-xs);
+}
+
+.drag-handle-progress:active {
+    cursor: grabbing;
+}
+
+.draggable-progress.dragging .drag-handle-progress {
+    cursor: grabbing;
+}
+
+.progress-content {
+    flex: 1;
+    min-width: 0;
 }
 
 .progress-header {

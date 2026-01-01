@@ -33,12 +33,27 @@ const DB = {
 
             const personRef = db.collection('users').doc(userId).collection('persons').doc();
 
+            // 現在の最大sortOrderを取得
+            const snapshot = await db.collection('users')
+                .doc(userId)
+                .collection('persons')
+                .orderBy('sortOrder', 'desc')
+                .limit(1)
+                .get();
+
+            let maxSortOrder = 0;
+            if (!snapshot.empty) {
+                const firstDoc = snapshot.docs[0].data();
+                maxSortOrder = firstDoc.sortOrder || 0;
+            }
+
             const person = {
                 id: personRef.id,
                 name: personData.name.trim(),
                 photo: personData.photo || null,
                 relationship: personData.relationship || CONFIG.DEFAULTS.RELATIONSHIP,
                 metDate: personData.metDate || Utils.getCurrentDate(),
+                sortOrder: maxSortOrder + 1,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -62,7 +77,7 @@ const DB = {
             const snapshot = await db.collection('users')
                 .doc(userId)
                 .collection('persons')
-                .orderBy('createdAt', 'asc')
+                .orderBy('sortOrder', 'asc')
                 .get();
 
             const persons = [];
@@ -308,7 +323,7 @@ const DB = {
             return db.collection('users')
                 .doc(userId)
                 .collection('persons')
-                .orderBy('createdAt', 'asc')
+                .orderBy('sortOrder', 'asc')
                 .onSnapshot(snapshot => {
                     const persons = [];
                     snapshot.forEach(doc => {
@@ -390,6 +405,33 @@ const DB = {
             return stats;
         } catch (error) {
             Utils.error('getStats例外', error);
+            throw error;
+        }
+    },
+
+    // 人物の並び順を一括更新
+    async updatePersonsSortOrder(personsWithOrder) {
+        try {
+            const userId = this.getCurrentUserId();
+            Utils.log('人物並び順一括更新開始', personsWithOrder);
+
+            const batch = db.batch();
+            personsWithOrder.forEach(({ id, sortOrder }) => {
+                const personRef = db.collection('users')
+                    .doc(userId)
+                    .collection('persons')
+                    .doc(id);
+                batch.update(personRef, {
+                    sortOrder: sortOrder,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+
+            await batch.commit();
+
+            Utils.log('人物並び順一括更新成功', personsWithOrder.length);
+        } catch (error) {
+            Utils.error('updatePersonsSortOrder例外', error);
             throw error;
         }
     }

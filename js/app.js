@@ -68,6 +68,12 @@ const App = {
                         email: user.email
                     });
                     mobileDebug('✅ ログイン済み → メイン画面へ', { email: user.email });
+
+                    // sortOrderマイグレーション実行（既存データ対応）
+                    DB.migrateSortOrder().catch(err => {
+                        Utils.error('マイグレーションエラー（継続）', err);
+                    });
+
                     this.setupRouting();
                     this.handleRoute();
                 } else {

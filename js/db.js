@@ -12,6 +12,63 @@ const DB = {
         return true;
     },
 
+    // sortOrderマイグレーション処理（既存データにsortOrderを追加）
+    async migrateSortOrder() {
+        try {
+            const userId = this.getCurrentUserId();
+            if (!userId) return;
+
+            Utils.log('sortOrderマイグレーション開始');
+
+            const snapshot = await db.collection('users')
+                .doc(userId)
+                .collection('persons')
+                .get();
+
+            const batch = db.batch();
+            let needsMigration = false;
+            const personsToMigrate = [];
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.sortOrder === undefined) {
+                    needsMigration = true;
+                    personsToMigrate.push({
+                        id: doc.id,
+                        createdAt: data.createdAt,
+                        ref: doc.ref
+                    });
+                }
+            });
+
+            if (needsMigration) {
+                Utils.log('sortOrder未設定のデータを検出', personsToMigrate.length);
+
+                // createdAt順にソートして、順番に採番
+                personsToMigrate.sort((a, b) => {
+                    const aTime = a.createdAt?.toDate?.() || new Date(a.createdAt);
+                    const bTime = b.createdAt?.toDate?.() || new Date(b.createdAt);
+                    return aTime - bTime;
+                });
+
+                personsToMigrate.forEach((person, index) => {
+                    batch.update(person.ref, {
+                        sortOrder: index + 1,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+
+                await batch.commit();
+                Utils.log('sortOrderマイグレーション完了', personsToMigrate.length);
+            } else {
+                Utils.log('sortOrderマイグレーション不要（全データに設定済み）');
+            }
+        } catch (error) {
+            Utils.error('sortOrderマイグレーションエラー', error);
+            // エラーが発生してもアプリは継続
+        }
+    },
+
     // 現在のユーザーIDを取得
     getCurrentUserId() {
         const userId = Auth.getCurrentUserId();
@@ -77,7 +134,6 @@ const DB = {
             const snapshot = await db.collection('users')
                 .doc(userId)
                 .collection('persons')
-                .orderBy('sortOrder', 'asc')
                 .get();
 
             const persons = [];
@@ -86,6 +142,20 @@ const DB = {
                     id: doc.id,
                     ...doc.data()
                 });
+            });
+
+            // sortOrderがない場合はcreatedAtでソート、ある場合はsortOrderでソート
+            persons.sort((a, b) => {
+                if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+                    return a.sortOrder - b.sortOrder;
+                } else if (a.sortOrder !== undefined) {
+                    return -1;
+                } else if (b.sortOrder !== undefined) {
+                    return 1;
+                } else {
+                    // 両方sortOrderがない場合はcreatedAtでソート
+                    return new Date(a.createdAt) - new Date(b.createdAt);
+                }
             });
 
             Utils.log('全人物取得成功', persons);

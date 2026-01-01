@@ -1,0 +1,12 @@
+{
+  "name": "biten-note",
+  "version": "1.6.0",
+  "description": "美点発見note - Virtue Discovery Note",
+  "private": true,
+  "scripts": {
+    "migrate": "node migrate-sortorder.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

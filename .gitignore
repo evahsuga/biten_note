@@ -6,6 +6,9 @@
 .env.local
 .env.production
 
+# Firebase Admin SDK サービスアカウントキー（機密情報）
+*-firebase-adminsdk-*.json
+
 # Mac
 .DS_Store
 

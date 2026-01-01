@@ -4,18 +4,31 @@
 
 const PDF = {
     // PDF生成・ダウンロード（ブラウザ印刷機能を使用）
-    async generatePDF() {
+    async generatePDF(selectedPersonIds = null) {
         try {
             showLoading();
-            Utils.log('PDF生成開始（ブラウザ印刷方式）');
+            Utils.log('PDF生成開始（ブラウザ印刷方式）', { selectedPersonIds });
 
             // 全人物と美点を取得
-            const persons = await DB.getAllPersons();
-            Utils.log('取得した人物数:', persons.length);
+            const allPersons = await DB.getAllPersons();
+            Utils.log('取得した人物数:', allPersons.length);
+
+            if (allPersons.length === 0) {
+                hideLoading();
+                showToast('登録された人物がいません', 'info');
+                return;
+            }
+
+            // 選択された人物のみをフィルタリング（指定がない場合は全員）
+            const persons = selectedPersonIds && selectedPersonIds.length > 0
+                ? allPersons.filter(p => selectedPersonIds.includes(p.id))
+                : allPersons;
+
+            Utils.log('PDF出力対象人物数:', persons.length);
 
             if (persons.length === 0) {
                 hideLoading();
-                showToast('登録された人物がいません', 'info');
+                showToast('出力する人物が選択されていません', 'info');
                 return;
             }
 

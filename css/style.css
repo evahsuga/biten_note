@@ -1102,3 +1102,54 @@ body {
     -webkit-user-select: none;
     -webkit-touch-callout: none;
 }
+
+/* ===========================
+   PDF出力人物選択画面
+   =========================== */
+
+.pdf-person-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--white);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    user-select: none;
+}
+
+.pdf-person-item:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.pdf-person-item:active {
+    transform: scale(0.98);
+}
+
+.pdf-person-checkbox {
+    width: 24px;
+    height: 24px;
+    margin-right: var(--spacing-md);
+    cursor: pointer;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+}
+
+.pdf-person-info {
+    flex: 1;
+}
+
+.pdf-person-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 4px;
+}
+
+.pdf-person-count {
+    font-size: 14px;
+    color: var(--gray-600);
+}

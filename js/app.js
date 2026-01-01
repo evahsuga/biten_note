@@ -196,6 +196,8 @@ const App = {
             return;
         } else if (hash === '#/settings') {
             await this.renderSettings();
+        } else if (hash === '#/pdf-select') {
+            await this.renderPdfSelect();
         } else {
             // 不明なルートはホームへ
             this.navigate('#/');
@@ -249,7 +251,7 @@ const App = {
                                 👥 人物一覧を見る
                             </button>
                             ${persons.length > 0 ? `
-                                <button class="btn btn-outline btn-block mb-md" onclick="PDF.generatePDF()">
+                                <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/pdf-select')">
                                     📄 PDFで出力
                                 </button>
                             ` : ''}
@@ -1542,6 +1544,115 @@ const App = {
             Utils.error('設定画面レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
         }
+    },
+
+    // PDF出力人物選択画面
+    async renderPdfSelect() {
+        try {
+            const persons = await DB.getAllPersons();
+
+            if (persons.length === 0) {
+                showToast('登録された人物がいません', 'info');
+                this.navigate('#/');
+                return;
+            }
+
+            // あいうえお順にソート
+            persons.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+
+            // 各人物の美点数を取得
+            const personsWithCount = [];
+            for (const person of persons) {
+                const bitens = await DB.getBitensByPersonId(person.id);
+                personsWithCount.push({
+                    ...person,
+                    bitenCount: bitens.length
+                });
+            }
+
+            const html = `
+                <div class="page">
+                    <div class="page-header">
+                        <h1 class="page-title">📄 PDF出力</h1>
+                        <p class="page-subtitle">出力する人物を選択してください</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+                                <button class="btn btn-outline" onclick="App.selectAllPersonsForPdf()" style="flex: 1;">
+                                    ✓ 全選択
+                                </button>
+                                <button class="btn btn-outline" onclick="App.deselectAllPersonsForPdf()" style="flex: 1;">
+                                    ✗ 全解除
+                                </button>
+                            </div>
+
+                            <div id="pdfPersonList">
+                                ${personsWithCount.map(person => `
+                                    <label class="pdf-person-item">
+                                        <input
+                                            type="checkbox"
+                                            class="pdf-person-checkbox"
+                                            value="${person.id}"
+                                            checked
+                                        >
+                                        <div class="pdf-person-info">
+                                            <div class="pdf-person-name">${Utils.escapeHtml(person.name)}</div>
+                                            <div class="pdf-person-count">${person.bitenCount}個の美点</div>
+                                        </div>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="position: sticky; bottom: 0; background: var(--bg-primary); padding: 16px 0; margin-top: 16px;">
+                        <button class="btn btn-primary btn-block mb-md" onclick="App.generateSelectedPdf()">
+                            📄 選択した人物でPDF作成
+                        </button>
+                        <button class="btn btn-outline btn-block" onclick="App.navigate('#/')">
+                            ← ホームに戻る
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('app').innerHTML = html;
+        } catch (error) {
+            Utils.error('PDF選択画面レンダリングエラー', error);
+            showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
+    },
+
+    // 全選択
+    selectAllPersonsForPdf() {
+        const checkboxes = document.querySelectorAll('.pdf-person-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    },
+
+    // 全解除
+    deselectAllPersonsForPdf() {
+        const checkboxes = document.querySelectorAll('.pdf-person-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    },
+
+    // 選択された人物でPDF生成
+    async generateSelectedPdf() {
+        const checkboxes = document.querySelectorAll('.pdf-person-checkbox:checked');
+        const selectedPersonIds = Array.from(checkboxes).map(cb => cb.value);
+
+        if (selectedPersonIds.length === 0) {
+            showToast('出力する人物を選択してください', 'error');
+            return;
+        }
+
+        // PDF生成関数を呼び出し
+        await PDF.generatePDF(selectedPersonIds);
     },
 
     // プライバシーポリシー画面

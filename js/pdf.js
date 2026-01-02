@@ -32,8 +32,9 @@ const PDF = {
                 return;
             }
 
-            // あいうえお順にソート
-            persons.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+            // getAllPersons()が既にsortOrder順でソート済みなので、
+            // ユーザーが設定した並び順を尊重（あいうえお順ではなくsortOrder順）
+            // フィルタリングした場合でも元の順序を維持
 
             // 各人物の美点を取得
             const personsWithBitens = [];
@@ -224,34 +225,34 @@ const PDF = {
         }
 
         .page {
-            page-break-inside: avoid;
             width: 100%;
-            min-height: 277mm; /* A4高さ - マージン */
-            max-height: 277mm;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
-        /* 表紙と目次のみ改ページ */
-        .cover-page, .toc-page {
+        /* 表紙のみ1ページに収める */
+        .cover-page {
+            page-break-inside: avoid;
+            page-break-after: always;
+            min-height: 277mm;
+            max-height: 277mm;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* 目次は自然に複数ページに分割される */
+        .toc-page {
             page-break-after: always;
         }
 
-        /* 人物ページは最後以外改ページ */
+        /* 人物ページも複数ページに分割可能 */
         .person-page {
             page-break-after: always;
         }
 
         .person-page:last-of-type {
             page-break-after: avoid;
-        }
-
-        /* 表紙 */
-        .cover-page {
-            justify-content: center;
-            align-items: center;
-            text-align: center;
         }
 
         .title {
@@ -466,7 +467,7 @@ const PDF = {
         .back-button {
             padding: 12px 24px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            color: white !important;
             border: none;
             border-radius: 25px;
             font-size: 16px;
@@ -474,6 +475,7 @@ const PDF = {
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
         }
 
         .back-button:hover {

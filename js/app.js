@@ -1568,8 +1568,8 @@ const App = {
                 return;
             }
 
-            // あいうえお順にソート
-            persons.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+            // getAllPersons()が既にsortOrder順でソート済みなので、
+            // ここでは追加のソートは不要（ユーザーが設定した並び順を尊重）
 
             // 各人物の美点数を取得
             const personsWithCount = [];

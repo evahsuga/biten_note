@@ -47,16 +47,25 @@ const PDF = {
                 });
             }
 
-            // 印刷用HTMLを新しいウィンドウで開く
+            // ローディングを非表示にしてからページ遷移
+            hideLoading();
+            showToast('PDF印刷画面を開きます', 'success');
+            Utils.log('PDF生成準備完了');
+
+            // 印刷用HTMLを新しいウィンドウで開く（ページが書き換わる）
             this.openPrintWindow(personsWithBitens);
 
-            hideLoading();
-            showToast('PDF印刷画面を開きました', 'success');
             Utils.log('PDF印刷画面表示完了');
 
         } catch (error) {
             Utils.error('PDF生成エラー', error);
-            hideLoading();
+
+            // hideLoading()をtry-catchで囲む（DOM要素が存在しない場合のエラーを防ぐ）
+            try {
+                hideLoading();
+            } catch (e) {
+                // ローディング画面が既に存在しない場合は無視
+            }
 
             // 詳細なエラーメッセージを表示
             let errorMessage = 'PDF生成に失敗しました';
@@ -64,7 +73,12 @@ const PDF = {
                 errorMessage += ': ' + error.message;
             }
 
-            showToast(errorMessage, 'error');
+            try {
+                showToast(errorMessage, 'error');
+            } catch (e) {
+                // トースト表示も失敗する可能性があるため
+                console.error(errorMessage);
+            }
 
             // コンソールにスタックトレースも出力
             if (error.stack) {

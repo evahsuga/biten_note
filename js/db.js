@@ -91,18 +91,19 @@ const DB = {
             const personRef = db.collection('users').doc(userId).collection('persons').doc();
 
             // 現在の最大sortOrderを取得
+            // sortOrderが存在しないデータがある場合に備えて、全データを取得してから最大値を計算
             const snapshot = await db.collection('users')
                 .doc(userId)
                 .collection('persons')
-                .orderBy('sortOrder', 'desc')
-                .limit(1)
                 .get();
 
             let maxSortOrder = 0;
-            if (!snapshot.empty) {
-                const firstDoc = snapshot.docs[0].data();
-                maxSortOrder = firstDoc.sortOrder || 0;
-            }
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.sortOrder !== undefined && data.sortOrder > maxSortOrder) {
+                    maxSortOrder = data.sortOrder;
+                }
+            });
 
             const person = {
                 id: personRef.id,
@@ -154,7 +155,15 @@ const DB = {
                     return 1;
                 } else {
                     // 両方sortOrderがない場合はcreatedAtでソート
-                    return new Date(a.createdAt) - new Date(b.createdAt);
+                    try {
+                        // FirestoreのTimestamp型を安全に処理
+                        const aTime = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
+                        const bTime = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
+                        return aTime - bTime;
+                    } catch (e) {
+                        // エラー時は元の順序を保持
+                        return 0;
+                    }
                 }
             });
 

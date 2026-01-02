@@ -1609,7 +1609,7 @@ const App = {
                                             checked
                                         >
                                         <div class="pdf-person-info">
-                                            <div class="pdf-person-name">${Utils.escapeHtml(person.name)}</div>
+                                            <div class="pdf-person-name">${person.name}</div>
                                             <div class="pdf-person-count">${person.bitenCount}個の美点</div>
                                         </div>
                                     </label>

@@ -1144,8 +1144,7 @@ const App = {
 
                         <div style="background-color: var(--success-light); padding: 12px; border-radius: 8px; margin-top: 16px;">
                             <p style="margin: 0; line-height: 1.8; color: var(--success);">
-                                ✨ <strong>Phase 1.5の新機能</strong><br>
-                                人数制限なし！何人でも登録できます。
+                                ✨ 人数制限なし！何人でも登録できます。
                             </p>
                         </div>
                     </div>
@@ -1221,7 +1220,7 @@ const App = {
                 <!-- ステップ4: クラウド同期 -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">☁️ ステップ4: 複数デバイスで使う（Phase 1.5の新機能！）</h2>
+                        <h2 class="card-title">☁️ ステップ4: 複数デバイスで使う</h2>
                     </div>
                     <div class="card-body">
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">自動同期</h3>
@@ -1329,14 +1328,14 @@ const App = {
                         <div style="margin-bottom: 20px;">
                             <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: 何人まで登録できますか？</h3>
                             <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
-                                A: Phase 1.5では無制限です！何人でも登録できます。
+                                A: 無制限です！何人でも登録できます。
                             </p>
                         </div>
 
                         <div style="margin-bottom: 20px;">
                             <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: 料金はかかりますか？</h3>
                             <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
-                                A: Phase 1.5は完全無料です。
+                                A: 完全無料です。
                             </p>
                         </div>
 
@@ -1541,7 +1540,7 @@ const App = {
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">現在のバージョン</h3>
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
-                            Phase 1.5（クラウド同期対応版）
+                            1.7
                         </p>
 
                         <div style="border-top: 1px solid var(--gray-200); padding-top: 16px; margin-top: 20px;">
@@ -1617,7 +1616,7 @@ const App = {
                         <div class="card-body">
                             <div style="margin-bottom: 12px;">
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">バージョン</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">Phase 1.5（クラウド同期対応版）</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">1.7</div>
                             </div>
                             <div style="margin-bottom: 12px;">
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
@@ -2016,12 +2015,44 @@ const App = {
 
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">バージョン 1.6</h2>
+                        <h2 class="card-title">バージョン 1.7</h2>
                     </div>
                     <div class="card-body">
-                        <p style="line-height: 1.8; color: var(--gray-600); text-align: center; padding: 32px 0;">
-                            リリース情報はありません。
-                        </p>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎉 バージョン 1.7（2025年1月）</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 24px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">人物一覧に写真表示機能を追加</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">チェックボックスによる表示オプション選択を実装</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">プライバシー保護のため写真表示はデフォルトOFF</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ホーム画面の進捗セクションをスクロール対応に改善</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">写真登録時のデータリセット不具合を修正</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">パスワードリセットメールの日本語化対応</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">各種ページにトップへ戻るボタンを追加</li>
+                            <li style="line-height: 1.8;">モバイルUIの最適化とレスポンシブ対応強化</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">☁️ バージョン 1.5（2024年12月）</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 24px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">Firebase認証導入（Email/Password、Google OAuth）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">Firestoreによるクラウド同期機能</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">複数デバイスでのデータ共有に対応</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">オフライン時も動作する永続化機能</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">人数制限を撤廃（無制限登録可能に）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">アカウント削除機能（GDPR対応）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">美点の編集・削除機能（長押しUI）</li>
+                            <li style="line-height: 1.8;">プロフィール写真アップロード機能</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">📱 バージョン 1.0（2024年11月）</h3>
+                        <ul style="padding-left: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">初回リリース</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">IndexedDBによるローカルデータ保存</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">人物管理機能（3人まで）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">美点記録機能（15文字制限）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">写真アップロードと編集（Cropper.js）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">PDF出力機能（jsPDF）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">LINEスタイルのチャットUI</li>
+                            <li style="line-height: 1.8;">進捗トラッキング（100美点目標）</li>
+                        </ul>
                     </div>
                 </div>
 

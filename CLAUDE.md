@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **美点発見note** (Biten Note) - A web application for recording virtues/good qualities about people in your life, based on the 美点発見® (Virtue Discovery) methodology used by 43,000 ANA employees.
 
-**Current Phase**: Phase 1.5 - Cloud sync with Firebase (testing in production)
+**Current Version**: 1.7 - Cloud sync with Firebase (production)
 **Repository**: https://github.com/evahsuga/biten_note.git
 
 ## Development Commands
@@ -47,7 +47,7 @@ rm *-firebase-adminsdk-*.json
 - **Storage**:
   - Firestore (cloud sync for authenticated users)
   - Firestore offline persistence (local cache)
-  - IndexedDB fallback for anonymous users (Phase 1 legacy)
+  - IndexedDB fallback for anonymous users (v1.0 legacy)
 - **Authentication**: Firebase Auth (Email/Password + Google OAuth)
 - **Security**: Firebase App Check (currently disabled for performance testing)
 - **External Libraries** (CDN):
@@ -227,18 +227,29 @@ git push origin main
 - **App Check Disabled**: Currently disabled for performance testing (see `firebase-config.js` line 43-50)
 - **Photo Storage**: Base64 in Firestore (not Cloud Storage) - simple but not scalable for large photos
 - **Offline Limitations**: Firestore persistence works in one tab only (multi-tab causes `failed-precondition` error)
-- **IndexedDB Migration**: One-way migration from IndexedDB to Firestore on first login (legacy Phase 1 data)
+- **IndexedDB Migration**: One-way migration from IndexedDB to Firestore on first login (legacy v1.0 data)
 
 ## Development History
 
-**Phase 1.5 (Current)**: Firebase integration
+**Version 1.7 (2025-01)**: UI/UX improvements
+- Photo display toggle in person list
+- Checkbox-based view options
+- Privacy protection (photos hidden by default)
+- Scrollable progress section on home
+- Photo data reset fix
+- Password reset email Japanese localization
+- Page top buttons on long pages
+- Mobile UI optimization
+
+**Version 1.5 (2024-12)**: Firebase integration
 - Email/Password + Google OAuth
 - Firestore cloud sync with offline persistence
+- Unlimited person registration
 - Account deletion for GDPR compliance
 - Long-press edit/delete for virtues
 - Profile photo upload for developer info
 
-**Phase 1 (Complete)**: IndexedDB-only prototype
+**Version 1.0 (2024-11)**: IndexedDB-only prototype
 - 3-person limit, 15-char virtues, 100-virtue goal
 - LINE-style chat UI with Apple-inspired design
 - PDF export with custom layout

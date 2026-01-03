@@ -93,15 +93,15 @@ const PDF = {
                 format: 'a4'
             });
 
-            // 日本語フォント設定（NotoSansJP-Regular）
-            // CDNから読み込まれたフォントを使用
+            // 日本語フォント設定（IPAexGothic）
+            // CDNから読み込まれたIPAexGothicフォントを使用
             try {
-                doc.setFont('NotoSansJP-Regular', 'normal');
-                Utils.log('日本語フォント設定成功: NotoSansJP-Regular');
+                doc.setFont('IPAexGothic', 'normal');
+                Utils.log('日本語フォント設定成功: IPAexGothic');
             } catch (error) {
-                Utils.error('NotoSansJPフォント読み込み失敗、代替フォント使用', error);
-                // 代替フォント（helvetica - ただし日本語は表示されない）
-                doc.setFont('helvetica');
+                Utils.error('IPAexGothicフォント設定エラー', error);
+                // フォールバック: courier（日本語は表示されないが処理は継続）
+                doc.setFont('courier');
             }
 
             const today = new Date().toLocaleDateString('ja-JP', {

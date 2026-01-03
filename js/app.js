@@ -2314,9 +2314,16 @@ const App = {
 
     // パスワードリセット表示
     showPasswordReset() {
-        const email = prompt('パスワードリセット用のメールアドレスを入力してください');
+        const email = prompt('パスワードリセット用のメールアドレスを入力してください\n\n※ 登録済みのメールアドレスを入力してください');
 
         if (!email) {
+            return;
+        }
+
+        // メールアドレスの基本的なバリデーション
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            showToast('正しいメールアドレス形式で入力してください', 'error');
             return;
         }
 
@@ -2328,13 +2335,43 @@ const App = {
         try {
             showLoading();
 
+            Utils.log('パスワードリセット開始', { email: email.trim().toLowerCase() });
+
             await Auth.sendPasswordResetEmail(email);
 
             hideLoading();
+
+            // 成功時の詳細なメッセージ
+            const successMessage =
+                `パスワードリセットメールを送信しました。\n\n` +
+                `送信先: ${email.trim().toLowerCase()}\n\n` +
+                `メールが届かない場合：\n` +
+                `1. 迷惑メールフォルダを確認してください\n` +
+                `2. メールアドレスが正しいか確認してください\n` +
+                `3. 登録済みのメールアドレスか確認してください`;
+
+            alert(successMessage);
             showToast('パスワードリセットメールを送信しました', 'success');
+
+            Utils.log('パスワードリセットメール送信成功');
         } catch (error) {
             hideLoading();
-            showToast(error.message, 'error');
+
+            Utils.error('パスワードリセットエラー', error);
+
+            // より詳細なエラーメッセージ
+            let errorMessage = error.message;
+
+            if (error.code === 'auth/user-not-found') {
+                errorMessage = 'このメールアドレスは登録されていません。\n\n新規登録を行うか、正しいメールアドレスを入力してください。';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = 'メールアドレスの形式が正しくありません。';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = 'リクエストが多すぎます。しばらく時間をおいてから再度お試しください。';
+            }
+
+            alert(`エラー: ${errorMessage}`);
+            showToast(errorMessage, 'error');
         }
     },
 

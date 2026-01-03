@@ -155,18 +155,30 @@ const Auth = {
             // メールアドレスを正規化（小文字化、前後の空白削除）
             email = email.trim().toLowerCase();
 
-            Utils.log('パスワードリセットメール送信開始', email);
+            Utils.log('パスワードリセットメール送信開始', {
+                email: email,
+                languageCode: auth.languageCode
+            });
 
             if (!email) {
                 throw new Error('メールアドレスを入力してください');
             }
 
+            // Firebase Auth のパスワードリセットメール送信
             await auth.sendPasswordResetEmail(email);
 
-            Utils.log('パスワードリセットメール送信成功', email);
+            Utils.log('✅ パスワードリセットメール送信成功', {
+                email: email,
+                message: 'Firebase から送信されました。迷惑メールフォルダも確認してください。'
+            });
+
             return true;
         } catch (error) {
-            Utils.error('パスワードリセットメール送信エラー', error);
+            Utils.error('❌ パスワードリセットメール送信エラー', {
+                email: email,
+                errorCode: error.code,
+                errorMessage: error.message
+            });
             throw this.handleAuthError(error);
         }
     },

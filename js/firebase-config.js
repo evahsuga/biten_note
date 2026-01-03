@@ -19,6 +19,9 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Firebase Auth の言語設定を日本語に変更
+auth.languageCode = 'ja';
+
 // Firestore オフライン永続化を有効化
 db.enablePersistence()
   .catch((err) => {

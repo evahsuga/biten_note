@@ -1839,6 +1839,10 @@ const App = {
                     </div>
                 </div>
 
+                <button class="btn btn-outline btn-block mb-sm" onclick="window.scrollTo({top: 0, behavior: 'smooth'});" style="margin-bottom: 12px;">
+                    ↑ ページトップに戻る
+                </button>
+
                 <button class="btn btn-secondary btn-block" onclick="App.renderLogin(); setTimeout(() => App.switchAuthTab('signup'), 0);">
                     ← 戻る
                 </button>
@@ -1936,6 +1940,10 @@ const App = {
                         </p>
                     </div>
                 </div>
+
+                <button class="btn btn-outline btn-block mb-sm" onclick="window.scrollTo({top: 0, behavior: 'smooth'});" style="margin-bottom: 12px;">
+                    ↑ ページトップに戻る
+                </button>
 
                 <button class="btn btn-secondary btn-block" onclick="App.renderLogin(); setTimeout(() => App.switchAuthTab('signup'), 0);">
                     ← 戻る

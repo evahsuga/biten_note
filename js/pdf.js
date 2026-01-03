@@ -3,11 +3,11 @@
 // ================================
 
 const PDF = {
-    // PDF生成・ダウンロード（ブラウザ印刷機能を使用）
+    // PDF生成・ダウンロード（jsPDF直接ダウンロード方式）
     async generatePDF(selectedPersonIds = null) {
         try {
             showLoading();
-            Utils.log('PDF生成開始（ブラウザ印刷方式）', { selectedPersonIds });
+            Utils.log('PDF生成開始（jsPDF直接ダウンロード方式）', { selectedPersonIds });
 
             // 全人物と美点を取得
             const allPersons = await DB.getAllPersons();
@@ -48,27 +48,24 @@ const PDF = {
                 });
             }
 
-            // ローディングを非表示にしてからページ遷移
+            Utils.log('PDF生成準備完了、jsPDF開始');
+
+            // jsPDFでPDF生成
+            await this.generatePDFWithJsPDF(personsWithBitens);
+
             hideLoading();
-            showToast('PDF印刷画面を開きます', 'success');
-            Utils.log('PDF生成準備完了');
-
-            // 印刷用HTMLを新しいウィンドウで開く（ページが書き換わる）
-            this.openPrintWindow(personsWithBitens);
-
-            Utils.log('PDF印刷画面表示完了');
+            showToast('PDFダウンロードを開始しました', 'success');
+            Utils.log('PDF生成完了');
 
         } catch (error) {
             Utils.error('PDF生成エラー', error);
 
-            // hideLoading()をtry-catchで囲む（DOM要素が存在しない場合のエラーを防ぐ）
             try {
                 hideLoading();
             } catch (e) {
                 // ローディング画面が既に存在しない場合は無視
             }
 
-            // 詳細なエラーメッセージを表示
             let errorMessage = 'PDF生成に失敗しました';
             if (error.message) {
                 errorMessage += ': ' + error.message;
@@ -77,14 +74,188 @@ const PDF = {
             try {
                 showToast(errorMessage, 'error');
             } catch (e) {
-                // トースト表示も失敗する可能性があるため
                 console.error(errorMessage);
             }
 
-            // コンソールにスタックトレースも出力
             if (error.stack) {
                 console.error('スタックトレース:', error.stack);
             }
+        }
+    },
+
+    // jsPDFでPDF生成（新方式）
+    async generatePDFWithJsPDF(personsWithBitens) {
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // 日本語フォント設定（システムフォントを使用）
+            doc.setFont('helvetica');
+
+            const today = new Date().toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            let currentPage = 1;
+
+            // ========== 表紙ページ ==========
+            doc.setFontSize(40);
+            doc.setTextColor(102, 126, 234); // #667eea
+            doc.text('美点発見note', 105, 100, { align: 'center' });
+
+            doc.setFontSize(20);
+            doc.text('Biten Note', 105, 120, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(today, 105, 150, { align: 'center' });
+
+            doc.setFontSize(10);
+            doc.setTextColor(102, 102, 102);
+            doc.text('大切な人の美点を記録した宝物', 105, 200, { align: 'center' });
+
+            // ========== 目次ページ ==========
+            doc.addPage();
+            currentPage++;
+
+            doc.setFontSize(20);
+            doc.setTextColor(102, 126, 234);
+            doc.text('目次', 105, 30, { align: 'center' });
+
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+
+            let yPos = 50;
+            personsWithBitens.forEach((item, index) => {
+                const pageNum = index + 3;
+                const line = `${index + 1}. ${item.person.name} (${item.bitens.length}個) ................ ${pageNum}`;
+                doc.text(line, 20, yPos);
+                yPos += 10;
+
+                // ページあふれ防止
+                if (yPos > 270) {
+                    doc.addPage();
+                    currentPage++;
+                    yPos = 30;
+                }
+            });
+
+            // ========== 各人物のページ ==========
+            for (const item of personsWithBitens) {
+                doc.addPage();
+                currentPage++;
+                await this.addPersonPageToJsPDF(doc, item, currentPage);
+            }
+
+            // PDFダウンロード
+            const filename = `美点発見note_${new Date().toISOString().slice(0, 10)}.pdf`;
+            doc.save(filename);
+
+            Utils.log('jsPDF生成・ダウンロード完了', { filename });
+
+        } catch (error) {
+            Utils.error('jsPDF生成エラー', error);
+            throw error;
+        }
+    },
+
+    // 人物ページをjsPDFに追加
+    async addPersonPageToJsPDF(doc, item, pageNumber) {
+        try {
+            const person = item.person;
+            const bitens = item.bitens;
+
+            let yPos = 20;
+
+            // 写真があれば追加
+            if (person.photo) {
+                try {
+                    doc.addImage(person.photo, 'JPEG', 20, yPos, 30, 30);
+                } catch (error) {
+                    Utils.error('写真埋め込みエラー', error);
+                    // 写真エラーは無視して続行
+                }
+            }
+
+            // 人物情報（写真の右側）
+            const textX = person.photo ? 55 : 20;
+            doc.setFontSize(14);
+            doc.setTextColor(102, 126, 234);
+            doc.text(person.name, textX, yPos + 5);
+
+            doc.setFontSize(8);
+            doc.setTextColor(102, 102, 102);
+            const metDateText = person.metDate
+                ? new Date(person.metDate).toLocaleDateString('ja-JP')
+                : '未設定';
+            doc.text(`関係性: ${person.relationship}`, textX, yPos + 12);
+            doc.text(`出会った日: ${metDateText}`, textX, yPos + 18);
+
+            yPos = person.photo ? yPos + 35 : yPos + 25;
+
+            // 区切り線
+            doc.setDrawColor(204, 204, 204);
+            doc.line(20, yPos, 190, yPos);
+            yPos += 5;
+
+            // 美点グリッド（4列×25行 = 100個）
+            doc.setFontSize(7);
+            doc.setTextColor(0, 0, 0);
+
+            const cellWidth = 42;
+            const cellHeight = 7;
+            const cols = 4;
+            const startX = 20;
+
+            for (let i = 0; i < 100; i++) {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const x = startX + col * cellWidth;
+                const y = yPos + row * cellHeight;
+
+                // セル枠
+                doc.setDrawColor(221, 221, 221);
+                if (bitens[i]) {
+                    doc.setFillColor(255, 255, 255);
+                } else {
+                    doc.setFillColor(249, 249, 249);
+                }
+                doc.rect(x, y, cellWidth, cellHeight, 'FD');
+
+                // 番号
+                doc.setTextColor(102, 126, 234);
+                doc.text(`${i + 1}.`, x + 1, y + 4.5);
+
+                // 美点内容
+                if (bitens[i]) {
+                    doc.setTextColor(51, 51, 51);
+                    const content = bitens[i].content.substring(0, 15); // 15文字制限
+                    doc.text(content, x + 6, y + 4.5);
+                }
+
+                // ページあふれ防止（25行ごとに新ページ）
+                if (i === 99 || (row >= 24 && col === 3)) {
+                    if (i < 99 && bitens.length > i + 1) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                }
+            }
+
+            // フッター
+            doc.setFontSize(8);
+            doc.setTextColor(153, 153, 153);
+            doc.text(`- ${pageNumber} - 美点発見note`, 105, 287, { align: 'center' });
+
+        } catch (error) {
+            Utils.error('人物ページ追加エラー', error);
+            throw error;
         }
     },
 

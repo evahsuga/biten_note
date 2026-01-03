@@ -471,13 +471,24 @@ const App = {
                         </button>
 
                         ${allPersons.length > 0 ? `
-                            <div style="display: flex; gap: 8px; margin-bottom: var(--spacing-lg);">
-                                <button class="btn btn-outline" onclick="App.showRelationshipFilter()" style="flex: 1;">
-                                    🏷️ 関係性で絞り込む
-                                </button>
-                                <button class="btn ${this.personListShowPhotos ? 'btn-primary' : 'btn-outline'}" onclick="App.togglePersonListPhotos()" style="flex: 1;">
-                                    ${this.personListShowPhotos ? '📷 写真を非表示' : '📷 写真を表示'}
-                                </button>
+                            <!-- 表示オプション -->
+                            <div class="view-options">
+                                <label class="checkbox-option">
+                                    <input
+                                        type="checkbox"
+                                        ${filterRelationship ? 'checked' : ''}
+                                        onchange="App.toggleRelationshipFilter(event)"
+                                    >
+                                    <span>🏷️ 関係性で絞り込む</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input
+                                        type="checkbox"
+                                        ${this.personListShowPhotos ? 'checked' : ''}
+                                        onchange="App.togglePersonListPhotos()"
+                                    >
+                                    <span>📷 写真を表示</span>
+                                </label>
                             </div>
 
                             ${filterRelationship ? `
@@ -562,6 +573,17 @@ const App = {
     togglePersonListPhotos() {
         const currentFilter = this.cachedFilterRelationship || null;
         this.renderPersons(currentFilter, !this.personListShowPhotos);
+    },
+
+    // 関係性フィルタトグル（チェックボックス用）
+    toggleRelationshipFilter(event) {
+        if (event.target.checked) {
+            // チェックON → フィルタモーダルを表示
+            this.showRelationshipFilter();
+        } else {
+            // チェックOFF → フィルタ解除
+            this.renderPersons(null);
+        }
     },
 
     // 関係性フィルタ表示

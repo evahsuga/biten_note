@@ -2066,6 +2066,30 @@ const App = {
                         <span>または</span>
                     </div>
 
+                    <!-- Googleログイン案内（折りたたみ式） -->
+                    <details class="google-login-guide" style="margin-bottom: 16px; padding: 12px; background-color: #FFF3CD; border: 1px solid #FFE69C; border-radius: 8px;">
+                        <summary style="cursor: pointer; font-weight: 600; color: #856404; list-style: none; display: flex; align-items: center; user-select: none;">
+                            <span style="margin-right: 8px;">⚠️</span>
+                            <span>初回ログインの方へ</span>
+                            <span style="margin-left: auto; font-size: 12px; color: #856404;">▼</span>
+                        </summary>
+                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #FFE69C; font-size: 14px; line-height: 1.6; color: #856404;">
+                            <p style="margin: 0 0 12px 0;">
+                                Googleログインを押すと<strong>英語の確認画面</strong>が表示されますが、これは正常な動作です。安全にご利用いただけます。
+                            </p>
+
+                            <p style="margin: 0 0 8px 0; font-weight: 600;">表示される情報：</p>
+                            <ul style="margin: 0 0 12px 0; padding-left: 20px;">
+                                <li style="margin-bottom: 4px;">✓ お名前とプロフィール写真</li>
+                                <li style="margin-bottom: 4px;">✓ メールアドレス</li>
+                            </ul>
+
+                            <p style="margin: 0; padding: 8px; background-color: rgba(255, 255, 255, 0.5); border-radius: 4px;">
+                                画面下の「<strong>Continue</strong>」ボタンを押して進んでください。
+                            </p>
+                        </div>
+                    </details>
+
                     <!-- Googleログインボタン -->
                     <button class="btn btn-google btn-block" onclick="App.handleGoogleLogin()">
                         <svg width="18" height="18" viewBox="0 0 18 18" style="margin-right: 8px;">

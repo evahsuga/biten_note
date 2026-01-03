@@ -48,14 +48,16 @@ const PDF = {
                 });
             }
 
-            Utils.log('PDF生成準備完了、html2pdf.js開始');
+            Utils.log('PDF生成準備完了、印刷プレビュー表示');
 
-            // html2pdf.jsでHTML→PDF変換
-            await this.generatePDFWithHtml2Pdf(personsWithBitens);
-
+            // ローディングを非表示にしてからページ遷移
             hideLoading();
-            showToast('PDFダウンロードを開始しました', 'success');
-            Utils.log('PDF生成完了');
+            showToast('PDF印刷画面を開きます', 'success');
+
+            // 印刷用HTMLを新しいウィンドウで開く（ページが書き換わる）
+            this.openPrintWindow(personsWithBitens);
+
+            Utils.log('PDF印刷画面表示完了');
 
         } catch (error) {
             Utils.error('PDF生成エラー', error);

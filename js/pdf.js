@@ -93,8 +93,16 @@ const PDF = {
                 format: 'a4'
             });
 
-            // 日本語フォント設定（システムフォントを使用）
-            doc.setFont('helvetica');
+            // 日本語フォント設定（NotoSansJP-Regular）
+            // CDNから読み込まれたフォントを使用
+            try {
+                doc.setFont('NotoSansJP-Regular', 'normal');
+                Utils.log('日本語フォント設定成功: NotoSansJP-Regular');
+            } catch (error) {
+                Utils.error('NotoSansJPフォント読み込み失敗、代替フォント使用', error);
+                // 代替フォント（helvetica - ただし日本語は表示されない）
+                doc.setFont('helvetica');
+            }
 
             const today = new Date().toLocaleDateString('ja-JP', {
                 year: 'numeric',

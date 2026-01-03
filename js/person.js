@@ -123,9 +123,32 @@ const Person = {
     // 写真編集モーダルを開く
     openPhotoEditor(personId) {
         this.editingPersonId = personId;
+
+        // 前回の写真データをクリア
+        this.currentPhoto = null;
+        Photo.destroy();
+
         const modal = document.getElementById('photoEditModal');
         if (modal) {
             modal.classList.remove('hidden');
+
+            // ファイル入力をリセット
+            setTimeout(() => {
+                const fileInput = document.getElementById('photoEditInput');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+
+                // プレビューエリアを非表示に
+                const photoPreviewArea = document.getElementById('photoPreviewArea');
+                const croppedPhotoPreview = document.getElementById('croppedPhotoPreview');
+                if (photoPreviewArea) {
+                    photoPreviewArea.classList.add('hidden');
+                }
+                if (croppedPhotoPreview) {
+                    croppedPhotoPreview.classList.add('hidden');
+                }
+            }, 0);
         }
     },
 
@@ -136,8 +159,14 @@ const Person = {
             modal.classList.add('hidden');
         }
         // クロッパーとプレビューをリセット
-        Photo.resetCropper();
+        Photo.destroy();
         this.currentPhoto = null;
+
+        // ファイル入力をリセット
+        const fileInput = document.getElementById('photoEditInput');
+        if (fileInput) {
+            fileInput.value = '';
+        }
     },
 
     // 写真を保存（更新）

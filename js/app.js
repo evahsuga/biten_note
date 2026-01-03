@@ -588,6 +588,10 @@ const App = {
     
     // 人物追加画面
     async renderPersonNew() {
+        // 前回の写真データをクリア（別の人を登録する際に前回の写真が残らないように）
+        Person.clearCroppedPhoto();
+        Photo.destroy();
+
         const html = `
             <div class="page">
                 <div class="page-header">
@@ -683,8 +687,26 @@ const App = {
                 </div>
             </div>
         `;
-        
+
         document.getElementById('app').innerHTML = html;
+
+        // ファイル入力とプレビューエリアをリセット（画面表示後に実行）
+        setTimeout(() => {
+            const fileInput = document.getElementById('personPhoto');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+
+            // プレビューエリアを非表示に
+            const photoPreviewArea = document.getElementById('photoPreviewArea');
+            const croppedPhotoPreview = document.getElementById('croppedPhotoPreview');
+            if (photoPreviewArea) {
+                photoPreviewArea.classList.add('hidden');
+            }
+            if (croppedPhotoPreview) {
+                croppedPhotoPreview.classList.add('hidden');
+            }
+        }, 0);
     },
     
     // 人物詳細画面

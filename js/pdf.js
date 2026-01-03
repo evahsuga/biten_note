@@ -48,10 +48,10 @@ const PDF = {
                 });
             }
 
-            Utils.log('PDF生成準備完了、jsPDF開始');
+            Utils.log('PDF生成準備完了、html2pdf.js開始');
 
-            // jsPDFでPDF生成
-            await this.generatePDFWithJsPDF(personsWithBitens);
+            // html2pdf.jsでHTML→PDF変換
+            await this.generatePDFWithHtml2Pdf(personsWithBitens);
 
             hideLoading();
             showToast('PDFダウンロードを開始しました', 'success');
@@ -83,7 +83,77 @@ const PDF = {
         }
     },
 
-    // jsPDFでPDF生成（新方式）
+    // html2pdf.jsでHTML→PDF変換（最新方式）
+    async generatePDFWithHtml2Pdf(personsWithBitens) {
+        try {
+            Utils.log('html2pdf.js変換開始');
+
+            // 既存のHTML生成ロジックを使用
+            const fullHtmlContent = this.generatePrintHTML(personsWithBitens);
+
+            // 完全なHTMLドキュメントから一時DOMを作成
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(fullHtmlContent, 'text/html');
+
+            // bodyの中身を取得
+            const bodyContent = doc.body.innerHTML;
+
+            // スタイルタグの内容を取得
+            const styleElement = doc.querySelector('style');
+            const styleContent = styleElement ? styleElement.innerHTML : '';
+
+            // 一時的なコンテナを作成
+            const tempContainer = document.createElement('div');
+
+            // スタイルを追加
+            const tempStyle = document.createElement('style');
+            tempStyle.innerHTML = styleContent;
+            document.head.appendChild(tempStyle);
+
+            // コンテンツを追加
+            tempContainer.innerHTML = bodyContent;
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.top = '0';
+            tempContainer.style.width = '210mm'; // A4幅
+            document.body.appendChild(tempContainer);
+
+            // html2pdf.jsでPDF生成
+            const filename = `美点発見note_${new Date().toISOString().slice(0, 10)}.pdf`;
+
+            const opt = {
+                margin: 10,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    logging: false
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            await html2pdf().set(opt).from(tempContainer).save();
+
+            // クリーンアップ
+            document.body.removeChild(tempContainer);
+            document.head.removeChild(tempStyle);
+
+            Utils.log('html2pdf.js変換完了');
+
+        } catch (error) {
+            Utils.error('html2pdf.js変換エラー', error);
+            throw error;
+        }
+    },
+
+    // jsPDFでPDF生成（旧方式・バックアップ用）
     async generatePDFWithJsPDF(personsWithBitens) {
         try {
             const { jsPDF } = window.jspdf;

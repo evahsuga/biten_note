@@ -19,6 +19,27 @@ python3 -m http.server 8000
 # Or use VS Code Live Server extension (recommended for hot reload)
 ```
 
+### Data Migration Commands
+
+```bash
+# Install dependencies (first time only)
+npm install
+
+# Run sortOrder migration for all users (requires service account key)
+npm run migrate
+# or
+node migrate-sortorder.js
+
+# IMPORTANT: Delete service account key after migration
+rm *-firebase-adminsdk-*.json
+```
+
+**Migration Usage Notes**:
+- Migration script requires Firebase Admin SDK service account key
+- Download key from [Firebase Console](https://console.firebase.google.com/project/biten-note-app/settings/serviceaccounts/adminsdk)
+- Service account keys are excluded from git via `.gitignore`
+- See `MIGRATION.md` for detailed migration documentation
+
 ## Architecture
 
 ### Technology Stack
@@ -82,10 +103,11 @@ js/
 - Photo size: 400×400px JPEG, max 150KB
 
 ### Storage Rules
-- ❌ **NEVER use localStorage/sessionStorage** (incompatible with Claude artifacts)
+- ❌ **NEVER use localStorage/sessionStorage for app data** (incompatible with Claude artifacts)
 - ✅ Use Firestore for authenticated users
 - ✅ Use IndexedDB for anonymous users
 - ✅ Use memory variables for temporary data
+- ✅ **Exception**: localStorage IS acceptable for performance flags (e.g., migration status)
 
 ### Database Schema
 
@@ -346,3 +368,50 @@ git push origin main
 - Consider using default values or nullable patterns
 - Test locally with copy of production data structure
 - Document all database schema changes in this file
+
+### Performance Optimization for Large Datasets (2026-01-03)
+
+**Issue**: User with 19 persons and 1500 bitens experienced 3+ minute login time on mobile device
+
+**Root Causes Identified**:
+1. **Migration runs on every login**: `DB.migrateSortOrder()` called in `app.js` initialization, checking all persons even if already migrated
+2. **Stats loading blocks UI**: `DB.getStats()` loads all bitens for all persons synchronously on home screen
+3. **No pagination**: Loading all persons and bitens at once for large datasets
+
+**Solutions Implemented**:
+
+**Priority A - Quick Wins (Implemented)**:
+1. **LocalStorage Migration Flag** (`db.js:16-28`):
+   ```javascript
+   const migrationKey = `sortOrder_migrated_${userId}`;
+   const isMigrated = localStorage.getItem(migrationKey);
+
+   if (isMigrated === 'true') {
+       Utils.log('sortOrderマイグレーション済み（スキップ）');
+       return; // Fast exit - saves ~30-60 seconds
+   }
+
+   // ... run migration ...
+
+   localStorage.setItem(migrationKey, 'true'); // Save flag after completion
+   ```
+   - Skips migration check after first successful run
+   - Per-user flag prevents false positives across accounts
+   - Estimated improvement: 30-60 seconds reduction on subsequent logins
+
+**Priority B - Planned Optimizations**:
+2. **Delayed Stats Loading**: Render home screen immediately, load stats asynchronously
+3. **Firestore Stats Caching**: Cache aggregated stats in Firestore (avoid calculating from 1500+ bitens)
+4. **Pagination**: Load persons in batches (e.g., 10 at a time)
+
+**Key Takeaways**:
+1. **Test with production-scale data**: Local tests with 2-3 persons don't reveal performance issues
+2. **Mobile performance != Desktop**: 3+ minutes on mobile, no issue on desktop for same dataset
+3. **Migration should be one-time**: Use flags to skip redundant operations
+4. **Separate read-time optimization from write-time**: Stats can be pre-calculated and cached
+5. **localStorage for performance flags is acceptable**: Despite general rule against localStorage for data
+
+**Monitoring**:
+- Migration flag per user: `sortOrder_migrated_{userId}` in localStorage
+- Check console logs: "sortOrderマイグレーション済み（スキップ）" indicates flag is working
+- User feedback: Monitor login time improvements after optimization deployment

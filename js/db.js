@@ -18,6 +18,15 @@ const DB = {
             const userId = this.getCurrentUserId();
             if (!userId) return;
 
+            // LocalStorageでマイグレーション済みかチェック（高速化）
+            const migrationKey = `sortOrder_migrated_${userId}`;
+            const isMigrated = localStorage.getItem(migrationKey);
+
+            if (isMigrated === 'true') {
+                Utils.log('sortOrderマイグレーション済み（スキップ）');
+                return;
+            }
+
             Utils.log('sortOrderマイグレーション開始');
 
             const snapshot = await db.collection('users')
@@ -63,6 +72,11 @@ const DB = {
             } else {
                 Utils.log('sortOrderマイグレーション不要（全データに設定済み）');
             }
+
+            // マイグレーション完了フラグを保存
+            localStorage.setItem(migrationKey, 'true');
+            Utils.log('マイグレーション完了フラグを保存');
+
         } catch (error) {
             Utils.error('sortOrderマイグレーションエラー', error);
             // エラーが発生してもアプリは継続
@@ -117,6 +131,11 @@ const DB = {
             };
 
             await personRef.set(person);
+
+            // 統計情報キャッシュを更新（非同期・ノンブロッキング）
+            this.updateStatsCache().catch(error => {
+                Utils.error('統計キャッシュ更新エラー（無視）', error);
+            });
 
             Utils.log('人物追加成功', person);
             return person;
@@ -248,6 +267,11 @@ const DB = {
                 .doc(personId)
                 .delete();
 
+            // 統計情報キャッシュを更新（非同期・ノンブロッキング）
+            this.updateStatsCache().catch(error => {
+                Utils.error('統計キャッシュ更新エラー（無視）', error);
+            });
+
             Utils.log('人物削除成功', personId);
         } catch (error) {
             Utils.error('deletePerson例外', error);
@@ -279,6 +303,11 @@ const DB = {
             };
 
             await bitenRef.set(biten);
+
+            // 統計情報キャッシュを更新（非同期・ノンブロッキング）
+            this.updateStatsCache().catch(error => {
+                Utils.error('統計キャッシュ更新エラー（無視）', error);
+            });
 
             Utils.log('美点追加成功', biten);
             return biten;
@@ -355,6 +384,11 @@ const DB = {
                 .collection('bitens')
                 .doc(bitenId)
                 .delete();
+
+            // 統計情報キャッシュを更新（非同期・ノンブロッキング）
+            this.updateStatsCache().catch(error => {
+                Utils.error('統計キャッシュ更新エラー（無視）', error);
+            });
 
             Utils.log('美点削除成功', bitenId);
         } catch (error) {
@@ -453,14 +487,14 @@ const DB = {
     },
 
     // ===========================
-    // 統計情報取得
+    // 統計情報取得（キャッシュ対応）
     // ===========================
 
-    // 統計情報取得
-    async getStats() {
+    // 統計情報キャッシュを更新
+    async updateStatsCache() {
         try {
             const userId = this.getCurrentUserId();
-            Utils.log('統計情報取得開始');
+            Utils.log('統計情報キャッシュ更新開始');
 
             const persons = await this.getAllPersons();
             const stats = {
@@ -469,6 +503,7 @@ const DB = {
                 personStats: []
             };
 
+            // 各人物の美点数を集計
             for (const person of persons) {
                 const bitens = await this.getBitensByPersonId(person.id);
                 stats.totalBitens += bitens.length;
@@ -480,8 +515,52 @@ const DB = {
                 });
             }
 
-            Utils.log('統計情報取得成功', stats);
+            // Firestoreにキャッシュを保存
+            await db.collection('users')
+                .doc(userId)
+                .collection('settings')
+                .doc('statsCache')
+                .set({
+                    ...stats,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+            Utils.log('統計情報キャッシュ更新成功', stats);
             return stats;
+        } catch (error) {
+            Utils.error('統計情報キャッシュ更新エラー', error);
+            throw error;
+        }
+    },
+
+    // 統計情報取得（キャッシュ優先）
+    async getStats() {
+        try {
+            const userId = this.getCurrentUserId();
+            Utils.log('統計情報取得開始');
+
+            // まずキャッシュを確認
+            const cacheDoc = await db.collection('users')
+                .doc(userId)
+                .collection('settings')
+                .doc('statsCache')
+                .get();
+
+            if (cacheDoc.exists) {
+                const cachedStats = cacheDoc.data();
+                // lastUpdatedを除外してstatsオブジェクトを構築
+                const stats = {
+                    totalPersons: cachedStats.totalPersons || 0,
+                    totalBitens: cachedStats.totalBitens || 0,
+                    personStats: cachedStats.personStats || []
+                };
+                Utils.log('統計情報取得成功（キャッシュ使用）', stats);
+                return stats;
+            }
+
+            // キャッシュがない場合は計算して保存
+            Utils.log('統計情報キャッシュなし、再計算します');
+            return await this.updateStatsCache();
         } catch (error) {
             Utils.error('getStats例外', error);
             throw error;

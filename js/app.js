@@ -227,24 +227,24 @@ const App = {
     // ホーム画面
     async renderHome() {
         try {
-            const stats = await DB.getStats();
+            // まず人物リストだけ取得（軽量）
             const persons = await DB.getAllPersons();
-            
+
             const html = `
                 <div class="page">
                     <div class="page-header">
                         <h1 class="page-title">美点発見note</h1>
                         <p class="page-subtitle">大切な人の美点を記録しよう</p>
                     </div>
-                    
-                    <!-- 統計情報 -->
+
+                    <!-- 統計情報（ローディング表示） -->
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <span class="stat-value">${stats.totalPersons}</span>
+                            <span class="stat-value">...</span>
                             <span class="stat-label">登録人数</span>
                         </div>
                         <div class="stat-card">
-                            <span class="stat-value">${stats.totalBitens}</span>
+                            <span class="stat-value">...</span>
                             <span class="stat-label">美点発見総数</span>
                         </div>
                     </div>
@@ -297,66 +297,123 @@ const App = {
                         </div>
                     </div>
 
-                    <!-- 最近の活動 -->
-                    ${stats.personStats.length > 0 ? `
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">進捗状況</h2>
-                                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ</p>
-                            </div>
-                            <div class="card-body" id="progressList">
-                                ${stats.personStats.map((person, index) => `
-                                    <div
-                                        class="progress-container draggable-progress"
-                                        draggable="false"
-                                        data-person-id="${person.personId}"
-                                        data-sort-order="${persons.find(p => p.id === person.personId)?.sortOrder || index}"
-                                        ondragover="Person.handleProgressDragOver(event)"
-                                        ondrop="Person.handleProgressDrop(event)"
-                                    >
-                                        <span
-                                            class="drag-handle-progress"
-                                            draggable="true"
-                                            onmousedown="Person.startProgressDrag(event)"
-                                            ondragstart="Person.handleProgressDragStart(event)"
-                                            ondragend="Person.handleProgressDragEnd(event)"
-                                        >⋮⋮</span>
-                                        <div
-                                            class="progress-content"
-                                            onclick="App.navigate('#/person/${person.personId}')"
-                                            style="cursor: pointer;"
-                                        >
-                                            <div class="progress-header">
-                                                <span class="progress-label">${person.name}</span>
-                                                <span class="progress-value">${person.bitenCount}/100</span>
-                                            </div>
-                                            <div class="progress-bar">
-                                                <div class="progress-fill" style="width: ${Math.min(person.progress, 100)}%"></div>
-                                            </div>
-                                        </div>
+                    <!-- 最近の活動（ローディング表示） -->
+                    <div id="progressSection">
+                        ${persons.length > 0 ? `
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2 class="card-title">進捗状況</h2>
+                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ</p>
+                                </div>
+                                <div class="card-body" id="progressList">
+                                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                                        読込中...
                                     </div>
-                                `).join('')}
+                                </div>
                             </div>
-                        </div>
-                    ` : `
-                        <div class="card">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">✨</div>
-                                <h3 class="empty-state-title">まだ誰も登録されていません</h3>
-                                <p class="empty-state-description">最初の一人を追加して、美点発見を始めましょう！</p>
+                        ` : `
+                            <div class="card">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">✨</div>
+                                    <h3 class="empty-state-title">まだ誰も登録されていません</h3>
+                                    <p class="empty-state-description">最初の一人を追加して、美点発見を始めましょう！</p>
+                                </div>
                             </div>
-                        </div>
-                    `}
+                        `}
+                    </div>
                 </div>
             `;
-            
+
+            // 画面を即座に表示
             document.getElementById('app').innerHTML = html;
+
+            // 統計情報を非同期で読み込み
+            this.loadStatsAsync(persons);
         } catch (error) {
             Utils.error('ホーム画面レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
         }
     },
-    
+
+    // 統計情報を非同期で読み込み（ホーム画面のパフォーマンス改善）
+    async loadStatsAsync(persons) {
+        try {
+            Utils.log('統計情報の非同期読み込み開始');
+
+            // 統計情報を取得（重い処理）
+            const stats = await DB.getStats();
+
+            Utils.log('統計情報の非同期読み込み完了', stats);
+
+            // 統計カードを更新
+            const statsGrid = document.querySelector('.stats-grid');
+            if (statsGrid) {
+                statsGrid.innerHTML = `
+                    <div class="stat-card">
+                        <span class="stat-value">${stats.totalPersons}</span>
+                        <span class="stat-label">登録人数</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">${stats.totalBitens}</span>
+                        <span class="stat-label">美点発見総数</span>
+                    </div>
+                `;
+            }
+
+            // 進捗セクションを更新
+            const progressList = document.getElementById('progressList');
+            if (progressList && stats.personStats.length > 0) {
+                progressList.innerHTML = stats.personStats.map((person, index) => `
+                    <div
+                        class="progress-container draggable-progress"
+                        draggable="false"
+                        data-person-id="${person.personId}"
+                        data-sort-order="${persons.find(p => p.id === person.personId)?.sortOrder || index}"
+                        ondragover="Person.handleProgressDragOver(event)"
+                        ondrop="Person.handleProgressDrop(event)"
+                    >
+                        <span
+                            class="drag-handle-progress"
+                            draggable="true"
+                            onmousedown="Person.startProgressDrag(event)"
+                            ondragstart="Person.handleProgressDragStart(event)"
+                            ondragend="Person.handleProgressDragEnd(event)"
+                        >⋮⋮</span>
+                        <div
+                            class="progress-content"
+                            onclick="App.navigate('#/person/${person.personId}')"
+                            style="cursor: pointer;"
+                        >
+                            <div class="progress-header">
+                                <span class="progress-label">${person.name}</span>
+                                <span class="progress-value">${person.bitenCount}/100</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${Math.min(person.progress, 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (error) {
+            Utils.error('統計情報の非同期読み込みエラー', error);
+            // エラー時も画面表示は維持（統計情報のみエラー表示）
+            const statsGrid = document.querySelector('.stats-grid');
+            if (statsGrid) {
+                statsGrid.innerHTML = `
+                    <div class="stat-card">
+                        <span class="stat-value">-</span>
+                        <span class="stat-label">登録人数</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">-</span>
+                        <span class="stat-label">美点発見総数</span>
+                    </div>
+                `;
+            }
+        }
+    },
+
     // 人物一覧画面
     async renderPersons(filterRelationship = null) {
         try {

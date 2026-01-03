@@ -273,6 +273,31 @@ const App = {
                         </div>
                     </div>
 
+                    <!-- 進捗状況（使い方の下に移動） -->
+                    <div id="progressSection">
+                        ${persons.length > 0 ? `
+                            <div class="card" style="margin-top: 16px;">
+                                <div class="card-header">
+                                    <h2 class="card-title">進捗状況</h2>
+                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ</p>
+                                </div>
+                                <div class="card-body" id="progressList">
+                                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                                        読込中...
+                                    </div>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="card" style="margin-top: 16px;">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">✨</div>
+                                    <h3 class="empty-state-title">まだ誰も登録されていません</h3>
+                                    <p class="empty-state-description">最初の一人を追加して、美点発見を始めましょう！</p>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+
                     <!-- フィードバックリンク -->
                     <div class="card" style="margin-top: 16px;">
                         <div class="card-body">
@@ -299,31 +324,6 @@ const App = {
                                 🚪 ログアウト
                             </button>
                         </div>
-                    </div>
-
-                    <!-- 最近の活動（ローディング表示） -->
-                    <div id="progressSection">
-                        ${persons.length > 0 ? `
-                            <div class="card">
-                                <div class="card-header">
-                                    <h2 class="card-title">進捗状況</h2>
-                                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ</p>
-                                </div>
-                                <div class="card-body" id="progressList">
-                                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
-                                        読込中...
-                                    </div>
-                                </div>
-                            </div>
-                        ` : `
-                            <div class="card">
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">✨</div>
-                                    <h3 class="empty-state-title">まだ誰も登録されていません</h3>
-                                    <p class="empty-state-description">最初の一人を追加して、美点発見を始めましょう！</p>
-                                </div>
-                            </div>
-                        `}
                     </div>
                 </div>
             `;

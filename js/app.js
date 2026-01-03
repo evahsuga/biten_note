@@ -108,6 +108,10 @@ const App = {
                         email: redirectUser.email,
                         uid: redirectUser.uid
                     });
+
+                    // 初回ログイン時は確実にホーム画面へ遷移
+                    Utils.log('初回ログイン完了、ホーム画面へ遷移');
+                    window.location.hash = '#/';
                 } else {
                     mobileDebug('ℹ️ リダイレクト結果なし（通常の読み込み）');
                 }

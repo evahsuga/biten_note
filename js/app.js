@@ -281,7 +281,7 @@ const App = {
                                     <h2 class="card-title">進捗状況</h2>
                                     <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ</p>
                                 </div>
-                                <div class="card-body" id="progressList">
+                                <div class="card-body" id="progressList" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;">
                                     <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
                                         読込中...
                                     </div>

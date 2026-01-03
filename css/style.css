@@ -1153,3 +1153,32 @@ body {
     font-size: 14px;
     color: var(--gray-600);
 }
+
+/* ===========================
+   進捗状況リストのスクロールバー
+   =========================== */
+
+/* スクロールバー全体のスタイル（Webkit系ブラウザ） */
+#progressList::-webkit-scrollbar {
+    width: 8px;
+}
+
+#progressList::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 4px;
+}
+
+#progressList::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 4px;
+}
+
+#progressList::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
+
+/* Firefox用のスクロールバースタイル */
+#progressList {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gray-300) var(--gray-100);
+}

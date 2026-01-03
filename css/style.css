@@ -389,6 +389,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--spacing-sm);
     transition: all var(--transition-base);
     cursor: pointer;
     box-shadow: var(--shadow-sm);

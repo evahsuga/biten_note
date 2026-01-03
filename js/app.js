@@ -419,7 +419,15 @@ const App = {
     },
 
     // 人物一覧画面
-    async renderPersons(filterRelationship = null) {
+    async renderPersons(filterRelationship = null, showPhotos = null) {
+        // 写真表示状態を保持（明示的に指定がない場合は現在の状態を維持）
+        if (showPhotos !== null) {
+            this.personListShowPhotos = showPhotos;
+        } else if (this.personListShowPhotos === undefined) {
+            // 初回はfalse（非表示）
+            this.personListShowPhotos = false;
+        }
+
         try {
             const allPersons = await DB.getAllPersons();
 
@@ -463,9 +471,14 @@ const App = {
                         </button>
 
                         ${allPersons.length > 0 ? `
-                            <button class="btn btn-outline btn-block mb-lg" onclick="App.showRelationshipFilter()">
-                                🏷️ 関係性で絞り込む
-                            </button>
+                            <div style="display: flex; gap: 8px; margin-bottom: var(--spacing-lg);">
+                                <button class="btn btn-outline" onclick="App.showRelationshipFilter()" style="flex: 1;">
+                                    🏷️ 関係性で絞り込む
+                                </button>
+                                <button class="btn ${this.personListShowPhotos ? 'btn-primary' : 'btn-outline'}" onclick="App.togglePersonListPhotos()" style="flex: 1;">
+                                    ${this.personListShowPhotos ? '📷 写真を非表示' : '📷 写真を表示'}
+                                </button>
+                            </div>
 
                             ${filterRelationship ? `
                                 <div style="background: var(--primary-light); padding: var(--spacing-md); border-radius: var(--border-radius-md); margin-bottom: var(--spacing-lg); display: flex; justify-content: space-between; align-items: center;">
@@ -495,6 +508,15 @@ const App = {
                                             ondragstart="Person.handleDragStart(event)"
                                             ondragend="Person.handleDragEnd(event)"
                                         >⋮⋮</span>
+                                        ${this.personListShowPhotos ? `
+                                            <div style="width: 48px; height: 48px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: var(--gray-200); display: flex; align-items: center; justify-content: center;">
+                                                ${person.photo ? `
+                                                    <img src="${person.photo}" alt="${person.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                ` : `
+                                                    <span style="font-size: 24px; color: var(--gray-400);">📷</span>
+                                                `}
+                                            </div>
+                                        ` : ''}
                                         <div
                                             class="list-item-content-clickable"
                                             onclick="App.navigate('#/person/${person.id}')"
@@ -529,10 +551,17 @@ const App = {
             // 関係性一覧を保存（フィルタ表示用）
             this.cachedRelationships = relationships;
             this.cachedAllPersons = allPersons;
+            this.cachedFilterRelationship = filterRelationship;
         } catch (error) {
             Utils.error('人物一覧レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
         }
+    },
+
+    // 人物一覧の写真表示トグル
+    togglePersonListPhotos() {
+        const currentFilter = this.cachedFilterRelationship || null;
+        this.renderPersons(currentFilter, !this.personListShowPhotos);
     },
 
     // 関係性フィルタ表示

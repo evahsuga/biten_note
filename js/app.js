@@ -69,9 +69,13 @@ const App = {
                     });
                     mobileDebug('✅ ログイン済み → メイン画面へ', { email: user.email });
 
-                    // sortOrderマイグレーション実行（既存データ対応）
+                    // データマイグレーション実行（既存データ対応）
                     DB.migrateSortOrder().catch(err => {
-                        Utils.error('マイグレーションエラー（継続）', err);
+                        Utils.error('sortOrderマイグレーションエラー（継続）', err);
+                    });
+
+                    DB.migratePersonStatus().catch(err => {
+                        Utils.error('statusマイグレーションエラー（継続）', err);
                     });
 
                     this.setupRouting();
@@ -419,7 +423,7 @@ const App = {
     },
 
     // 人物一覧画面
-    async renderPersons(filterRelationship = null, showPhotos = null) {
+    async renderPersons(filterRelationship = null, showPhotos = null, statusFilter = 'active') {
         // 写真表示状態を保持（明示的に指定がない場合は現在の状態を維持）
         if (showPhotos !== null) {
             this.personListShowPhotos = showPhotos;
@@ -428,8 +432,16 @@ const App = {
             this.personListShowPhotos = false;
         }
 
+        // ステータスフィルター状態を保持
+        if (!this.personListStatusFilter) {
+            this.personListStatusFilter = 'active';
+        }
+        if (statusFilter) {
+            this.personListStatusFilter = statusFilter;
+        }
+
         try {
-            const allPersons = await DB.getAllPersons();
+            const allPersons = await DB.getAllPersons(this.personListStatusFilter);
 
             // sortOrderがない人物に自動割り当て（既存データのマイグレーション）
             const needsMigration = allPersons.some(p => !p.sortOrder);
@@ -458,11 +470,31 @@ const App = {
                 ? allPersons.filter(p => p.relationship === filterRelationship)
                 : allPersons;
 
+            // 統計情報取得（タブ用）
+            const allActivePersons = await DB.getAllPersons('active');
+            const allArchivedPersons = await DB.getAllPersons('archived');
+
             const html = `
                 <div class="page">
                     <div class="page-header">
                         <h1 class="page-title">人物一覧</h1>
-                        <p class="page-subtitle">${allPersons.length}人が登録されています</p>
+                        <p class="page-subtitle">全${allActivePersons.length + allArchivedPersons.length}人が登録されています</p>
+                    </div>
+
+                    <!-- ステータスタブ -->
+                    <div class="status-tabs">
+                        <button
+                            class="status-tab ${this.personListStatusFilter === 'active' ? 'active' : ''}"
+                            onclick="App.renderPersons(null, null, 'active')"
+                        >
+                            📝 アクティブ (${allActivePersons.length})
+                        </button>
+                        <button
+                            class="status-tab ${this.personListStatusFilter === 'archived' ? 'active' : ''}"
+                            onclick="App.renderPersons(null, null, 'archived')"
+                        >
+                            📦 保管済み (${allArchivedPersons.length})
+                        </button>
                     </div>
 
                     <div class="card">
@@ -496,9 +528,13 @@ const App = {
                                     <span style="font-weight: 600; color: var(--primary);">絞り込み: ${filterRelationship} (${persons.length}人)</span>
                                     <button class="btn btn-sm btn-ghost" onclick="App.renderPersons(null)" style="padding: var(--spacing-xs) var(--spacing-md);">✕ 解除</button>
                                 </div>
+                            ` : this.personListStatusFilter === 'active' ? `
+                                <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--border-radius-md); text-align: center; font-size: 14px; color: var(--text-secondary);">
+                                    ↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ、📦で保管
+                                </div>
                             ` : `
                                 <div style="margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: var(--bg-secondary); border-radius: var(--border-radius-md); text-align: center; font-size: 14px; color: var(--text-secondary);">
-                                    ↕️ ⋮⋮をドラッグして並び替え、名前をクリックで詳細へ
+                                    📦 保管済みの人物一覧です。📝ボタンで復元できます
                                 </div>
                             `}
 
@@ -512,13 +548,17 @@ const App = {
                                         ondragover="Person.handleDragOver(event)"
                                         ondrop="Person.handleDrop(event)"
                                     >
-                                        <span
-                                            class="drag-handle"
-                                            draggable="true"
-                                            onmousedown="Person.startDrag(event)"
-                                            ondragstart="Person.handleDragStart(event)"
-                                            ondragend="Person.handleDragEnd(event)"
-                                        >⋮⋮</span>
+                                        ${this.personListStatusFilter === 'active' ? `
+                                            <span
+                                                class="drag-handle"
+                                                draggable="true"
+                                                onmousedown="Person.startDrag(event)"
+                                                ondragstart="Person.handleDragStart(event)"
+                                                ondragend="Person.handleDragEnd(event)"
+                                            >⋮⋮</span>
+                                        ` : `
+                                            <span class="status-indicator archived">📦</span>
+                                        `}
                                         ${this.personListShowPhotos ? `
                                             <div style="width: 48px; height: 48px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: var(--gray-200); display: flex; align-items: center; justify-content: center;">
                                                 ${person.photo ? `
@@ -539,14 +579,37 @@ const App = {
                                             </div>
                                             <span class="list-item-badge">→</span>
                                         </div>
+                                        ${this.personListStatusFilter === 'active' ? `
+                                            <button
+                                                class="archive-btn"
+                                                onclick="event.stopPropagation(); Person.archivePerson('${person.id}', '${person.name}')"
+                                                title="保管する"
+                                            >
+                                                📦
+                                            </button>
+                                        ` : `
+                                            <button
+                                                class="restore-btn"
+                                                onclick="event.stopPropagation(); Person.restorePerson('${person.id}', '${person.name}')"
+                                                title="復元する"
+                                            >
+                                                📝
+                                            </button>
+                                        `}
                                     </li>
                                 `).join('')}
                             </ul>
                         ` : `
                             <div class="empty-state">
-                                <div class="empty-state-icon">👥</div>
-                                <h3 class="empty-state-title">まだ誰も登録されていません</h3>
-                                <p class="empty-state-description">最初の一人を追加しましょう</p>
+                                ${this.personListStatusFilter === 'active' ? `
+                                    <div class="empty-state-icon">👥</div>
+                                    <h3 class="empty-state-title">まだ誰も登録されていません</h3>
+                                    <p class="empty-state-description">最初の一人を追加しましょう</p>
+                                ` : `
+                                    <div class="empty-state-icon">📦</div>
+                                    <h3 class="empty-state-title">保管済みの人物はいません</h3>
+                                    <p class="empty-state-description">アクティブタブから人物を保管できます</p>
+                                `}
                             </div>
                         `}
                     </div>
@@ -1530,7 +1593,7 @@ const App = {
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">提供元</h3>
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
-                            「美点発見」を体験してもらい隊
+                            あなたと一緒に「美点発見」！
                         </p>
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">開発協力</h3>
@@ -1548,7 +1611,7 @@ const App = {
                                 ※本アプリは現在開発中です。今後、小中学校向けの機能拡張を予定しています。
                             </p>
                             <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px;">
-                                © 2025 「美点発見」を体験してもらい隊
+                                © 2025 あなたと一緒に「美点発見」！
                             </p>
                         </div>
                     </div>
@@ -1620,7 +1683,7 @@ const App = {
                             </div>
                             <div style="margin-bottom: 12px;">
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">「美点発見」を体験してもらい隊</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">あなたと一緒に「美点発見」！</div>
                             </div>
                             <div>
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">開発協力</div>
@@ -1811,7 +1874,7 @@ const App = {
                 <div class="card">
                     <div class="card-body" style="line-height: 1.8;">
                         <p style="margin-bottom: 20px;">
-                            「美点発見」を体験してもらい隊（以下「当委員会」）は、本アプリケーション「美点発見note」（以下「本サービス」）におけるプライバシー情報の取り扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」）を定めます。
+                            あなたと一緒に「美点発見」！（以下「当委員会」）は、本アプリケーション「美点発見note」（以下「本サービス」）におけるプライバシー情報の取り扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」）を定めます。
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">1. 取得する情報</h2>
@@ -1872,7 +1935,7 @@ const App = {
                             本ポリシーに関するお問い合わせは、こちらからご連絡ください。
                         </p>
                         <p style="padding-left: 20px; margin-bottom: 20px;">
-                            「美点発見」を体験してもらい隊<br>
+                            あなたと一緒に「美点発見」！<br>
                             開発協力: Evahpro LLC<br>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">📝 お問い合わせはこちらから</a>
                         </p>
@@ -1914,7 +1977,7 @@ const App = {
                 <div class="card">
                     <div class="card-body" style="line-height: 1.8;">
                         <p style="margin-bottom: 20px;">
-                            この利用規約（以下「本規約」）は、「美点発見」を体験してもらい隊（以下「当委員会」）が提供する「美点発見note」（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆様には、本規約に従って本サービスをご利用いただきます。
+                            この利用規約（以下「本規約」）は、あなたと一緒に「美点発見」！（以下「当委員会」）が提供する「美点発見note」（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆様には、本規約に従って本サービスをご利用いただきます。
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">第1条（適用）</h2>

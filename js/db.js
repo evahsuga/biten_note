@@ -83,6 +83,59 @@ const DB = {
         }
     },
 
+    // statusマイグレーション処理（既存データにstatusを追加）
+    async migratePersonStatus() {
+        try {
+            const userId = this.getCurrentUserId();
+            if (!userId) return;
+
+            // LocalStorageでマイグレーション済みかチェック（高速化）
+            const migrationKey = `status_migrated_${userId}`;
+            const isMigrated = localStorage.getItem(migrationKey);
+
+            if (isMigrated === 'true') {
+                Utils.log('statusマイグレーション済み（スキップ）');
+                return;
+            }
+
+            Utils.log('statusマイグレーション開始');
+
+            const snapshot = await db.collection('users')
+                .doc(userId)
+                .collection('persons')
+                .get();
+
+            const batch = db.batch();
+            let needsMigration = false;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.status === undefined) {
+                    needsMigration = true;
+                    batch.update(doc.ref, {
+                        status: 'active',
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            });
+
+            if (needsMigration) {
+                await batch.commit();
+                Utils.log('statusマイグレーション完了');
+            } else {
+                Utils.log('statusマイグレーション不要（全データに設定済み）');
+            }
+
+            // マイグレーション完了フラグを保存
+            localStorage.setItem(migrationKey, 'true');
+            Utils.log('statusマイグレーション完了フラグを保存');
+
+        } catch (error) {
+            Utils.error('statusマイグレーションエラー', error);
+            // エラーが発生してもアプリは継続
+        }
+    },
+
     // 現在のユーザーIDを取得
     getCurrentUserId() {
         const userId = Auth.getCurrentUserId();
@@ -126,6 +179,7 @@ const DB = {
                 relationship: personData.relationship || CONFIG.DEFAULTS.RELATIONSHIP,
                 metDate: personData.metDate || Utils.getCurrentDate(),
                 sortOrder: maxSortOrder + 1,
+                status: 'active', // 新規追加: デフォルトはアクティブ状態
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -146,10 +200,10 @@ const DB = {
     },
 
     // 全人物取得
-    async getAllPersons() {
+    async getAllPersons(statusFilter = null) {
         try {
             const userId = this.getCurrentUserId();
-            Utils.log('全人物取得開始');
+            Utils.log('全人物取得開始', { statusFilter });
 
             const snapshot = await db.collection('users')
                 .doc(userId)
@@ -158,10 +212,20 @@ const DB = {
 
             const persons = [];
             snapshot.forEach(doc => {
-                persons.push({
+                const personData = {
                     id: doc.id,
                     ...doc.data()
-                });
+                };
+
+                // statusが設定されていない古いデータは 'active' として扱う
+                if (!personData.status) {
+                    personData.status = 'active';
+                }
+
+                // ステータスフィルタリング
+                if (statusFilter === null || personData.status === statusFilter) {
+                    persons.push(personData);
+                }
             });
 
             // sortOrderがない場合はcreatedAtでソート、ある場合はsortOrderでソート
@@ -248,6 +312,41 @@ const DB = {
             return updatedPerson;
         } catch (error) {
             Utils.error('updatePerson例外', error);
+            throw error;
+        }
+    },
+
+    // 人物ステータス変更（アクティブ ⇔ 保管済み）
+    async updatePersonStatus(personId, newStatus) {
+        try {
+            const userId = this.getCurrentUserId();
+            Utils.log('人物ステータス変更開始', { personId, newStatus });
+
+            if (!['active', 'archived'].includes(newStatus)) {
+                throw new Error('Invalid status value. Must be "active" or "archived".');
+            }
+
+            const personRef = db.collection('users')
+                .doc(userId)
+                .collection('persons')
+                .doc(personId);
+
+            await personRef.update({
+                status: newStatus,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            const updatedPerson = await this.getPersonById(personId);
+            Utils.log('人物ステータス変更成功', updatedPerson);
+
+            // 統計情報キャッシュを更新（非同期・ノンブロッキング）
+            this.updateStatsCache().catch(error => {
+                Utils.error('統計キャッシュ更新エラー（無視）', error);
+            });
+
+            return updatedPerson;
+        } catch (error) {
+            Utils.error('updatePersonStatus例外', error);
             throw error;
         }
     },

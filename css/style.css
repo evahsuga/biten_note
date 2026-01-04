@@ -1232,3 +1232,87 @@ body {
     scrollbar-width: thin;
     scrollbar-color: var(--gray-300) var(--gray-100);
 }
+
+/* ===========================
+   ステータスタブ
+   =========================== */
+
+.status-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing-lg);
+    padding: 0 var(--spacing-md);
+}
+
+.status-tab {
+    flex: 1;
+    padding: var(--spacing-md) var(--spacing-sm);
+    border: none;
+    border-radius: var(--border-radius-lg);
+    background: var(--gray-100);
+    color: var(--gray-700);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-tab:hover {
+    background: var(--gray-200);
+    transform: translateY(-1px);
+}
+
+.status-tab.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.status-tab:active {
+    transform: translateY(0);
+}
+
+/* ===========================
+   保管・復元ボタン
+   =========================== */
+
+.archive-btn, .restore-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: var(--spacing-sm);
+}
+
+.archive-btn:hover {
+    background: var(--warning);
+    color: white;
+    transform: scale(1.1);
+}
+
+.restore-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.status-indicator.archived {
+    width: 20px;
+    text-align: center;
+    color: var(--gray-500);
+    font-size: 14px;
+}

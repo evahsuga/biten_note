@@ -680,6 +680,120 @@ const Person = {
                 return closest;
             }
         }, { offset: Number.NEGATIVE_INFINITY }).element;
+    },
+
+    // ===========================
+    // 保管・復元機能
+    // ===========================
+
+    // 人物を保管する
+    async archivePerson(personId, personName) {
+        try {
+            // 確認ダイアログ
+            const confirmed = await this.showArchiveConfirmDialog(personName);
+            if (!confirmed) {
+                return;
+            }
+
+            showLoading();
+            await DB.updatePersonStatus(personId, 'archived');
+            hideLoading();
+
+            showToast(`${personName}を保管しました`, 'success');
+
+            // 人物一覧を再読み込み
+            App.renderPersons();
+        } catch (error) {
+            hideLoading();
+            Utils.error('人物保管エラー', error);
+            showToast('人物の保管に失敗しました', 'error');
+        }
+    },
+
+    // 人物を復元する（保管済み → アクティブ）
+    async restorePerson(personId, personName) {
+        try {
+            const confirmed = confirm(`${personName}をアクティブに戻しますか？`);
+            if (!confirmed) {
+                return;
+            }
+
+            showLoading();
+            await DB.updatePersonStatus(personId, 'active');
+            hideLoading();
+
+            showToast(`${personName}をアクティブに戻しました`, 'success');
+
+            // 人物一覧を再読み込み
+            App.renderPersons();
+        } catch (error) {
+            hideLoading();
+            Utils.error('人物復元エラー', error);
+            showToast('人物の復元に失敗しました', 'error');
+        }
+    },
+
+    // 保管確認ダイアログを表示
+    async showArchiveConfirmDialog(personName) {
+        return new Promise((resolve) => {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>📦 保管の確認</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin-bottom: var(--spacing-md); line-height: 1.6;">
+                            <strong>${personName}</strong>を保管しますか？
+                        </p>
+                        <p style="font-size: var(--font-size-sm); color: var(--gray-700); line-height: 1.6; margin-bottom: var(--spacing-lg);">
+                            保管すると：<br>
+                            ・ 通常の人物一覧に表示されなくなります<br>
+                            ・ 保管済みタブから確認・復元できます<br>
+                            ・ 記録した美点は保持されます
+                        </p>
+                        <div class="btn-group">
+                            <button class="btn btn-ghost" onclick="this.closest('.modal').remove(); arguments[0].resolve(false)">
+                                キャンセル
+                            </button>
+                            <button class="btn btn-primary" onclick="this.closest('.modal').remove(); arguments[0].resolve(true)">
+                                📦 保管する
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // ボタンイベントの設定
+            const cancelBtn = modal.querySelector('.btn-ghost');
+            const confirmBtn = modal.querySelector('.btn-primary');
+
+            cancelBtn.onclick = () => {
+                modal.remove();
+                resolve(false);
+            };
+
+            confirmBtn.onclick = () => {
+                modal.remove();
+                resolve(true);
+            };
+
+            // モーダル外クリックで閉じる
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                    resolve(false);
+                }
+            };
+
+            document.body.appendChild(modal);
+
+            // アニメーション用にタイムアウト
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        });
     }
 };
 

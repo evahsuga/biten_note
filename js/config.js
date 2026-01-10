@@ -32,7 +32,14 @@ const CONFIG = {
         TARGET_BITEN_COUNT: 100,    // 目標美点数
         MAX_BITENS_PER_PERSON: 100, // 1人あたりの美点上限（PDF印刷の関係）
         MAX_PHOTO_SIZE_KB: 150,     // 写真の最大サイズ (KB)
-        PHOTO_SIZE_PX: 400          // 写真のリサイズサイズ (px)
+        PHOTO_SIZE_PX: 400,         // 写真のリサイズサイズ (px)
+        // 背景画像設定
+        BACKGROUND_IMAGE: {
+            MAX_WIDTH: 1280,        // 背景画像の最大幅 (px)
+            MAX_HEIGHT: 1280,       // 背景画像の最大高さ (px)
+            QUALITY: 0.75,          // JPEG圧縮品質 (0.0-1.0)
+            MAX_SIZE_KB: 300        // 背景画像の最大サイズ (KB)
+        }
     },
     
     // カラーパレット

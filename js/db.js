@@ -691,6 +691,89 @@ const DB = {
             Utils.error('updatePersonsSortOrder例外', error);
             throw error;
         }
+    },
+
+    // ===========================
+    // 背景画像管理
+    // ===========================
+
+    // 背景画像を保存
+    async saveBackgroundImage(imageDataUrl) {
+        try {
+            const userId = this.getCurrentUserId();
+            if (!userId) {
+                throw new Error('ユーザーIDが取得できません');
+            }
+
+            Utils.log('背景画像保存開始');
+
+            await db.collection('users')
+                .doc(userId)
+                .collection('settings')
+                .doc('background')
+                .set({
+                    imageData: imageDataUrl,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+            Utils.log('背景画像保存成功');
+        } catch (error) {
+            Utils.error('背景画像保存エラー', error);
+            throw error;
+        }
+    },
+
+    // 背景画像を取得
+    async getBackgroundImage() {
+        try {
+            const userId = this.getCurrentUserId();
+            if (!userId) {
+                return null;
+            }
+
+            Utils.log('背景画像取得開始');
+
+            const doc = await db.collection('users')
+                .doc(userId)
+                .collection('settings')
+                .doc('background')
+                .get();
+
+            if (doc.exists) {
+                const data = doc.data();
+                Utils.log('背景画像取得成功');
+                return data.imageData || null;
+            }
+
+            Utils.log('背景画像が設定されていません');
+            return null;
+        } catch (error) {
+            Utils.error('背景画像取得エラー', error);
+            return null;
+        }
+    },
+
+    // 背景画像を削除
+    async deleteBackgroundImage() {
+        try {
+            const userId = this.getCurrentUserId();
+            if (!userId) {
+                throw new Error('ユーザーIDが取得できません');
+            }
+
+            Utils.log('背景画像削除開始');
+
+            await db.collection('users')
+                .doc(userId)
+                .collection('settings')
+                .doc('background')
+                .delete();
+
+            Utils.log('背景画像削除成功');
+        } catch (error) {
+            Utils.error('背景画像削除エラー', error);
+            throw error;
+        }
     }
 };
 

@@ -78,6 +78,11 @@ const App = {
                         Utils.error('statusマイグレーションエラー（継続）', err);
                     });
 
+                    // 背景画像を読み込んで適用
+                    this.loadAndApplyBackgroundImage().catch(err => {
+                        Utils.error('背景画像読み込みエラー（継続）', err);
+                    });
+
                     this.setupRouting();
                     this.handleRoute();
                 } else {
@@ -1650,8 +1655,32 @@ const App = {
                         <p class="page-subtitle">アカウント情報と設定</p>
                     </div>
 
+                    <!-- 目次 -->
+                    <div class="card" id="settings-menu">
+                        <div class="card-header">
+                            <h2 class="card-title">📋 目次</h2>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('account-info')">
+                                👤 アカウント情報
+                            </button>
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('background-image')">
+                                🖼️ 背景画像設定
+                            </button>
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('app-info')">
+                                ℹ️ アプリ情報
+                            </button>
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('links')">
+                                🔗 リンク
+                            </button>
+                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('danger-zone')">
+                                ⚠️ 危険な操作
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- アカウント情報 -->
-                    <div class="card">
+                    <div class="card" id="account-info">
                         <div class="card-header">
                             <h2 class="card-title">アカウント情報</h2>
                         </div>
@@ -1664,15 +1693,66 @@ const App = {
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">ログイン方法</div>
                                 <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${loginMethod}</div>
                             </div>
-                            <div>
+                            <div style="margin-bottom: 16px;">
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">アカウント作成日</div>
                                 <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${new Date(user.metadata.creationTime).toLocaleDateString('ja-JP')}</div>
                             </div>
+                            <button class="btn btn-outline btn-block mt-md" onclick="App.scrollToSection('settings-menu')">
+                                📋 目次に戻る
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 背景画像設定 -->
+                    <div class="card" id="background-image">
+                        <div class="card-header">
+                            <h2 class="card-title">🖼️ 背景画像設定</h2>
+                        </div>
+                        <div class="card-body">
+                            <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                                お好みの画像を背景に設定できます
+                            </p>
+
+                            <!-- 現在の背景画像プレビュー -->
+                            <div id="backgroundPreview" style="margin-bottom: 16px; display: none;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 8px;">現在の背景画像</div>
+                                <img id="currentBackgroundImage"
+                                     style="width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 12px; display: block; margin: 0 auto;">
+                            </div>
+
+                            <!-- 背景画像選択ボタン -->
+                            <input type="file"
+                                   id="backgroundImageInput"
+                                   accept="image/jpeg,image/png,image/webp"
+                                   style="display: none;"
+                                   onchange="App.handleBackgroundImageSelect(event)">
+
+                            <button class="btn btn-primary btn-block mb-md"
+                                    onclick="document.getElementById('backgroundImageInput').click()">
+                                📷 背景画像を選択
+                            </button>
+
+                            <button class="btn btn-outline btn-block"
+                                    onclick="App.removeBackgroundImage()"
+                                    id="removeBackgroundBtn"
+                                    style="display: none;">
+                                🗑️ 背景画像を削除
+                            </button>
+
+                            <div style="margin-top: 12px; padding: 12px; background-color: var(--gray-100); border-radius: 8px;">
+                                <p style="margin: 0; font-size: 12px; color: var(--gray-600); line-height: 1.6;">
+                                    💡 推奨サイズ: 1280×1280px以下<br>
+                                    💡 最大ファイルサイズ: 300KB
+                                </p>
+                            </div>
+                            <button class="btn btn-outline btn-block mt-md" onclick="App.scrollToSection('settings-menu')">
+                                📋 目次に戻る
+                            </button>
                         </div>
                     </div>
 
                     <!-- バージョン情報 -->
-                    <div class="card">
+                    <div class="card" id="app-info">
                         <div class="card-header">
                             <h2 class="card-title">アプリ情報</h2>
                         </div>
@@ -1685,15 +1765,18 @@ const App = {
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
                                 <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">あなたと一緒に「美点発見」！</div>
                             </div>
-                            <div>
+                            <div style="margin-bottom: 16px;">
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">開発協力</div>
                                 <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">Evahpro LLC</div>
                             </div>
+                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')">
+                                📋 目次に戻る
+                            </button>
                         </div>
                     </div>
 
                     <!-- リンク -->
-                    <div class="card">
+                    <div class="card" id="links">
                         <div class="card-body">
                             <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/privacy')">
                                 📄 プライバシーポリシー
@@ -1704,15 +1787,18 @@ const App = {
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform?pli=1"
                                target="_blank"
                                rel="noopener noreferrer"
-                               class="btn btn-outline btn-block"
+                               class="btn btn-outline btn-block mb-md"
                                style="text-decoration: none;">
                                 💬 フィードバックを送る
                             </a>
+                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')">
+                                📋 目次に戻る
+                            </button>
                         </div>
                     </div>
 
                     <!-- 危険な操作 -->
-                    <div class="card" style="border: 2px solid var(--error);">
+                    <div class="card" id="danger-zone" style="border: 2px solid var(--error);">
                         <div class="card-header" style="background-color: rgba(239, 68, 68, 0.1);">
                             <h2 class="card-title" style="color: var(--error);">⚠️ 危険な操作</h2>
                         </div>
@@ -1731,10 +1817,13 @@ const App = {
                                     ⚠️ この操作は取り消すことができません
                                 </p>
                             </div>
-                            <button class="btn btn-block"
+                            <button class="btn btn-block mb-md"
                                     onclick="App.confirmDeleteAccount()"
                                     style="background-color: var(--error); color: white; border: none;">
                                 🗑️ アカウントを削除
+                            </button>
+                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')">
+                                📋 目次に戻る
                             </button>
                         </div>
                     </div>
@@ -1747,9 +1836,217 @@ const App = {
             `;
 
             document.getElementById('app').innerHTML = html;
+
+            // 現在の背景画像を読み込んで表示
+            this.loadCurrentBackgroundImage();
+
+            // 少し遅延させてから目次にスクロール
+            setTimeout(() => {
+                const menuElement = document.getElementById('settings-menu');
+                if (menuElement) {
+                    menuElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         } catch (error) {
             Utils.error('設定画面レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
+    },
+
+    // セクションへスクロール
+    scrollToSection(sectionId) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    },
+
+    // ページトップへスクロール
+    scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    // 利用規約・プライバシーポリシーから戻る
+    goBackFromTermsOrPrivacy() {
+        // ログイン状態を確認
+        const user = Auth.getCurrentUser();
+        if (user) {
+            // ログイン済みの場合は設定画面へ戻る
+            this.navigate('#/settings');
+        } else {
+            // 未ログインの場合はログイン画面へ戻る
+            this.renderLogin();
+            setTimeout(() => this.switchAuthTab('signup'), 0);
+        }
+    },
+
+    // 現在の背景画像を読み込んで表示
+    async loadCurrentBackgroundImage() {
+        try {
+            const imageData = await DB.getBackgroundImage();
+
+            if (imageData) {
+                // プレビュー表示
+                const previewDiv = document.getElementById('backgroundPreview');
+                const previewImg = document.getElementById('currentBackgroundImage');
+                const removeBtn = document.getElementById('removeBackgroundBtn');
+
+                if (previewDiv && previewImg && removeBtn) {
+                    previewImg.src = imageData;
+                    previewDiv.style.display = 'block';
+                    removeBtn.style.display = 'block';
+                }
+            }
+        } catch (error) {
+            Utils.error('背景画像読み込みエラー', error);
+        }
+    },
+
+    // 背景画像選択ハンドラー
+    async handleBackgroundImageSelect(event) {
+        try {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // ファイルサイズチェック（KB単位）
+            const fileSizeKB = file.size / 1024;
+            if (fileSizeKB > CONFIG.LIMITS.BACKGROUND_IMAGE.MAX_SIZE_KB) {
+                showToast(`画像サイズが大きすぎます（${CONFIG.LIMITS.BACKGROUND_IMAGE.MAX_SIZE_KB}KB以下にしてください）`, 'error');
+                return;
+            }
+
+            showLoading();
+
+            // 画像をリサイズして圧縮
+            const imageDataUrl = await this.resizeAndCompressImage(
+                file,
+                CONFIG.LIMITS.BACKGROUND_IMAGE.MAX_WIDTH,
+                CONFIG.LIMITS.BACKGROUND_IMAGE.MAX_HEIGHT,
+                CONFIG.LIMITS.BACKGROUND_IMAGE.QUALITY
+            );
+
+            // Firestoreに保存
+            await DB.saveBackgroundImage(imageDataUrl);
+
+            // 背景画像を即座に適用
+            this.applyBackgroundImage(imageDataUrl);
+
+            // プレビュー更新
+            const previewDiv = document.getElementById('backgroundPreview');
+            const previewImg = document.getElementById('currentBackgroundImage');
+            const removeBtn = document.getElementById('removeBackgroundBtn');
+
+            if (previewDiv && previewImg && removeBtn) {
+                previewImg.src = imageDataUrl;
+                previewDiv.style.display = 'block';
+                removeBtn.style.display = 'block';
+            }
+
+            hideLoading();
+            showToast('背景画像を設定しました', 'success');
+        } catch (error) {
+            hideLoading();
+            Utils.error('背景画像選択エラー', error);
+            showToast('背景画像の設定に失敗しました', 'error');
+        }
+    },
+
+    // 背景画像を削除
+    async removeBackgroundImage() {
+        try {
+            const confirmed = confirm('背景画像を削除しますか？');
+            if (!confirmed) return;
+
+            showLoading();
+
+            await DB.deleteBackgroundImage();
+
+            // 背景画像をクリア
+            document.body.style.backgroundImage = 'none';
+
+            // プレビュー非表示
+            const previewDiv = document.getElementById('backgroundPreview');
+            const removeBtn = document.getElementById('removeBackgroundBtn');
+
+            if (previewDiv && removeBtn) {
+                previewDiv.style.display = 'none';
+                removeBtn.style.display = 'none';
+            }
+
+            hideLoading();
+            showToast('背景画像を削除しました', 'success');
+        } catch (error) {
+            hideLoading();
+            Utils.error('背景画像削除エラー', error);
+            showToast('背景画像の削除に失敗しました', 'error');
+        }
+    },
+
+    // 画像をリサイズ・圧縮（Photo.jsと同じロジック）
+    resizeAndCompressImage(file, maxWidth, maxHeight, quality) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const img = new Image();
+
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // アスペクト比を保持してリサイズ
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // JPEG形式で圧縮
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(dataUrl);
+                };
+
+                img.onerror = reject;
+                img.src = e.target.result;
+            };
+
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    },
+
+    // 背景画像を適用
+    applyBackgroundImage(imageDataUrl) {
+        if (imageDataUrl) {
+            document.body.style.backgroundImage = `url(${imageDataUrl})`;
+        } else {
+            document.body.style.backgroundImage = 'none';
+        }
+    },
+
+    // 背景画像を読み込んで適用（起動時）
+    async loadAndApplyBackgroundImage() {
+        try {
+            const imageData = await DB.getBackgroundImage();
+            if (imageData) {
+                this.applyBackgroundImage(imageData);
+                Utils.log('背景画像を適用しました');
+            }
+        } catch (error) {
+            Utils.error('背景画像読み込みエラー', error);
         }
     },
 
@@ -1952,11 +2249,11 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-outline btn-block mb-sm" onclick="window.scrollTo({top: 0, behavior: 'smooth'});" style="margin-bottom: 12px;">
+                <button class="btn btn-outline btn-block mb-sm" onclick="App.scrollToTop()" style="margin-bottom: 12px;">
                     ↑ ページトップに戻る
                 </button>
 
-                <button class="btn btn-secondary btn-block" onclick="App.renderLogin(); setTimeout(() => App.switchAuthTab('signup'), 0);">
+                <button class="btn btn-secondary btn-block" onclick="App.goBackFromTermsOrPrivacy()">
                     ← 戻る
                 </button>
             </div>
@@ -2054,11 +2351,11 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-outline btn-block mb-sm" onclick="window.scrollTo({top: 0, behavior: 'smooth'});" style="margin-bottom: 12px;">
+                <button class="btn btn-outline btn-block mb-sm" onclick="App.scrollToTop()" style="margin-bottom: 12px;">
                     ↑ ページトップに戻る
                 </button>
 
-                <button class="btn btn-secondary btn-block" onclick="App.renderLogin(); setTimeout(() => App.switchAuthTab('signup'), 0);">
+                <button class="btn btn-secondary btn-block" onclick="App.goBackFromTermsOrPrivacy()">
                     ← 戻る
                 </button>
             </div>

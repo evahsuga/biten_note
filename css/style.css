@@ -98,7 +98,8 @@ body {
 }
 
 /* 背景画像使用時のオーバーレイ（テキスト可読性確保） */
-body::before {
+/* 背景画像が設定されている場合のみ表示 */
+body.has-background-image::before {
     content: '';
     position: fixed;
     top: 0;

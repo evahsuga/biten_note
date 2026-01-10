@@ -1906,8 +1906,8 @@ const App = {
 
             await DB.deleteBackgroundImage();
 
-            // 背景画像をクリア
-            document.body.style.backgroundImage = 'none';
+            // 背景画像をクリア（クラスも削除）
+            this.applyBackgroundImage(null);
 
             // プレビュー非表示
             const previewDiv = document.getElementById('backgroundPreview');
@@ -1932,8 +1932,10 @@ const App = {
     applyBackgroundImage(imageDataUrl) {
         if (imageDataUrl) {
             document.body.style.backgroundImage = `url(${imageDataUrl})`;
+            document.body.classList.add('has-background-image');
         } else {
             document.body.style.backgroundImage = 'none';
+            document.body.classList.remove('has-background-image');
         }
     },
 

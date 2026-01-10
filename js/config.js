@@ -170,6 +170,20 @@ const CONFIG = {
         CROP_BOX_RESIZABLE: true,
         TOGGLE_DRAG_MODE_ON_DBLCLICK: true
     },
+
+    // 背景画像用Cropper.js設定
+    BACKGROUND_CROPPER: {
+        ASPECT_RATIO: NaN, // 自由比率
+        VIEW_MODE: 1,
+        RESPONSIVE: true,
+        RESTORE: true,
+        GUIDES: true,
+        CENTER: true,
+        HIGHLIGHT: true,
+        CROP_BOX_MOVABLE: true,
+        CROP_BOX_RESIZABLE: true,
+        TOGGLE_DRAG_MODE_ON_DBLCLICK: true
+    },
     
     // デバッグモード
     DEBUG: true

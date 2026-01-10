@@ -1704,12 +1704,27 @@ const App = {
                                    id="backgroundImageInput"
                                    accept="image/jpeg,image/png,image/webp"
                                    style="display: none;"
-                                   onchange="App.handleBackgroundImageSelect(event)">
+                                   onchange="BackgroundPhoto.handlePhotoSelect(event)">
 
                             <button class="btn btn-primary btn-block mb-md"
                                     onclick="document.getElementById('backgroundImageInput').click()">
                                 📷 背景画像を選択
                             </button>
+
+                            <!-- トリミングプレビューエリア -->
+                            <div id="backgroundPhotoPreviewArea" class="hidden" style="margin-top: 16px;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 8px;">トリミング範囲を調整</div>
+                                <div id="backgroundCropperContainer" style="max-width: 100%; margin-bottom: 16px;"></div>
+                                <button class="btn btn-primary btn-block mb-md" onclick="BackgroundPhoto.cropAndSave()">
+                                    ✂️ トリミングして保存
+                                </button>
+                                <button class="btn btn-outline btn-block mb-md" onclick="BackgroundPhoto.resetCropper()">
+                                    🔄 リセット
+                                </button>
+                                <button class="btn btn-outline btn-block mb-md" onclick="BackgroundPhoto.cancelCrop()">
+                                    ✖️ キャンセル
+                                </button>
+                            </div>
 
                             <button class="btn btn-outline btn-block"
                                     onclick="App.removeBackgroundImage()"
@@ -1720,7 +1735,8 @@ const App = {
 
                             <div style="margin-top: 12px; padding: 12px; background-color: var(--gray-100); border-radius: 8px;">
                                 <p style="margin: 0; font-size: 12px; color: var(--gray-600); line-height: 1.6;">
-                                    💡 推奨サイズ: 1280×1280px以下<br>
+                                    💡 自由にトリミングできます<br>
+                                    💡 最大サイズ: 1280×1280px<br>
                                     💡 最大ファイルサイズ: 300KB
                                 </p>
                             </div>
@@ -1879,54 +1895,6 @@ const App = {
         }
     },
 
-    // 背景画像選択ハンドラー
-    async handleBackgroundImageSelect(event) {
-        try {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // ファイルサイズチェック（KB単位）
-            const fileSizeKB = file.size / 1024;
-            if (fileSizeKB > CONFIG.LIMITS.BACKGROUND_IMAGE.MAX_SIZE_KB) {
-                showToast(`画像サイズが大きすぎます（${CONFIG.LIMITS.BACKGROUND_IMAGE.MAX_SIZE_KB}KB以下にしてください）`, 'error');
-                return;
-            }
-
-            showLoading();
-
-            // 画像をリサイズして圧縮
-            const imageDataUrl = await this.resizeAndCompressImage(
-                file,
-                CONFIG.LIMITS.BACKGROUND_IMAGE.MAX_WIDTH,
-                CONFIG.LIMITS.BACKGROUND_IMAGE.MAX_HEIGHT,
-                CONFIG.LIMITS.BACKGROUND_IMAGE.QUALITY
-            );
-
-            // Firestoreに保存
-            await DB.saveBackgroundImage(imageDataUrl);
-
-            // 背景画像を即座に適用
-            this.applyBackgroundImage(imageDataUrl);
-
-            // プレビュー更新
-            const previewDiv = document.getElementById('backgroundPreview');
-            const previewImg = document.getElementById('currentBackgroundImage');
-            const removeBtn = document.getElementById('removeBackgroundBtn');
-
-            if (previewDiv && previewImg && removeBtn) {
-                previewImg.src = imageDataUrl;
-                previewDiv.style.display = 'block';
-                removeBtn.style.display = 'block';
-            }
-
-            hideLoading();
-            showToast('背景画像を設定しました', 'success');
-        } catch (error) {
-            hideLoading();
-            Utils.error('背景画像選択エラー', error);
-            showToast('背景画像の設定に失敗しました', 'error');
-        }
-    },
 
     // 背景画像を削除
     async removeBackgroundImage() {
@@ -1959,51 +1927,6 @@ const App = {
         }
     },
 
-    // 画像をリサイズ・圧縮（Photo.jsと同じロジック）
-    resizeAndCompressImage(file, maxWidth, maxHeight, quality) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
-                const img = new Image();
-
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    // アスペクト比を保持してリサイズ
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height *= maxWidth / width;
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width *= maxHeight / height;
-                            height = maxHeight;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // JPEG形式で圧縮
-                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                    resolve(dataUrl);
-                };
-
-                img.onerror = reject;
-                img.src = e.target.result;
-            };
-
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    },
 
     // 背景画像を適用
     applyBackgroundImage(imageDataUrl) {

@@ -202,25 +202,46 @@ indexedDB.deleteDatabase('BitenNoteDB');
 
 ## Deployment
 
-**Production URL**: https://biten-note.netlify.app (Netlify)
-**Previous URL**: https://evahpro.github.io/biten_note/ (GitHub Pages - deprecated)
+### Environment Configuration
 
-**Deployment Method**:
+**Production (Netlify)**:
+- URL: https://biten-note.netlify.app
+- Branch: `production`
+- Auto-deploy: Enabled on push to production branch
+
+**Development (GitHub Pages)**:
+- URL: https://evahpro.github.io/biten_note/
+- Branch: `main`
+- Auto-deploy: Enabled on push to main branch
+
+### Deployment Workflow
+
 ```bash
-# Push to GitHub (Netlify auto-deploys from main branch)
+# 1. Development & Testing (main → GitHub Pages)
 git add .
-git commit -m "Your message"
+git commit -m "Feature: XXX"
 git push origin main
+# → Auto-deploy to GitHub Pages for testing
 
-# Netlify automatically builds and deploys from main branch
-# No build process required (static HTML/CSS/JS)
+# 2. Production Release (main → production → Netlify)
+# After testing on GitHub Pages:
+git checkout production
+git merge main
+git push origin production
+git checkout main
+# → Auto-deploy to Netlify production
 ```
 
 **Netlify Configuration**:
 - Build command: (none - static site)
 - Publish directory: . (root)
-- Production branch: main
+- Production branch: `production` (NOT main)
 - Auto-deploy: enabled
+
+**GitHub Pages Configuration**:
+- Source: Deploy from branch `main` / (root)
+
+For detailed deployment instructions, see [DEPLOY.md](DEPLOY.md).
 
 **Firebase Configuration**:
 - Project ID: `biten-note-app`

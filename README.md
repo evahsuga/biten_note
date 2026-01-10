@@ -8,8 +8,24 @@
 
 ## デプロイメント
 
+### 環境構成
+
 - **本番環境**: Netlify（https://biten-note.netlify.app）
-- **旧環境**: GitHub Pages（https://evahpro.github.io/biten_note/）
+  - ブランチ: `production`
+  - 自動デプロイ: productionブランチへのpush
+
+- **開発環境**: GitHub Pages（https://evahpro.github.io/biten_note/）
+  - ブランチ: `main`
+  - 自動デプロイ: mainブランチへのpush
+
+### デプロイフロー
+
+```
+開発 → テスト → 本番
+main → GitHub Pages → production → Netlify
+```
+
+詳細は [DEPLOY.md](DEPLOY.md) を参照してください。
 
 ## 開発状況
 

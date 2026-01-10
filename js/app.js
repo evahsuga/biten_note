@@ -1661,44 +1661,23 @@ const App = {
                             <h2 class="card-title">📋 目次</h2>
                         </div>
                         <div class="card-body">
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('background-image')">
+                                🖼️ 背景画像設定
+                            </button>
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('account-info')">
                                 👤 アカウント情報
                             </button>
-                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('background-image')">
-                                🖼️ 背景画像設定
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('danger-zone')">
+                                ⚠️ 危険な操作（アカウント削除）
                             </button>
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('app-info')">
                                 ℹ️ アプリ情報
                             </button>
-                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('links')">
-                                🔗 リンク
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/privacy')">
+                                📄 プライバシーポリシー
                             </button>
-                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('danger-zone')">
-                                ⚠️ 危険な操作
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- アカウント情報 -->
-                    <div class="card" id="account-info">
-                        <div class="card-header">
-                            <h2 class="card-title">アカウント情報</h2>
-                        </div>
-                        <div class="card-body">
-                            <div style="margin-bottom: 16px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">メールアドレス</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${user.email}</div>
-                            </div>
-                            <div style="margin-bottom: 16px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">ログイン方法</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${loginMethod}</div>
-                            </div>
-                            <div style="margin-bottom: 16px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">アカウント作成日</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${new Date(user.metadata.creationTime).toLocaleDateString('ja-JP')}</div>
-                            </div>
-                            <button class="btn btn-outline btn-block mt-md" onclick="App.scrollToSection('settings-menu')">
-                                📋 目次に戻る
+                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/terms')">
+                                📄 利用規約
                             </button>
                         </div>
                     </div>
@@ -1745,53 +1724,27 @@ const App = {
                                     💡 最大ファイルサイズ: 300KB
                                 </p>
                             </div>
-                            <button class="btn btn-outline btn-block mt-md" onclick="App.scrollToSection('settings-menu')">
+                            <button class="btn btn-outline btn-block mt-md" onclick="App.scrollToSection('settings-menu')" style="font-size: 14px; padding: 10px 16px;">
                                 📋 目次に戻る
                             </button>
                         </div>
                     </div>
 
-                    <!-- バージョン情報 -->
-                    <div class="card" id="app-info">
+                    <!-- アカウント情報 -->
+                    <div class="card" id="account-info">
                         <div class="card-header">
-                            <h2 class="card-title">アプリ情報</h2>
+                            <h2 class="card-title">👤 アカウント情報</h2>
                         </div>
                         <div class="card-body">
                             <div style="margin-bottom: 12px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">バージョン</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">1.7</div>
-                            </div>
-                            <div style="margin-bottom: 12px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">あなたと一緒に「美点発見」！</div>
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">メールアドレス</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${user.email}</div>
                             </div>
                             <div style="margin-bottom: 16px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">開発協力</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">Evahpro LLC</div>
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">ログイン方法</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">${loginMethod}</div>
                             </div>
-                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')">
-                                📋 目次に戻る
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- リンク -->
-                    <div class="card" id="links">
-                        <div class="card-body">
-                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/privacy')">
-                                📄 プライバシーポリシー
-                            </button>
-                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/terms')">
-                                📄 利用規約
-                            </button>
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform?pli=1"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               class="btn btn-outline btn-block mb-md"
-                               style="text-decoration: none;">
-                                💬 フィードバックを送る
-                            </a>
-                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')">
+                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')" style="font-size: 14px; padding: 10px 16px;">
                                 📋 目次に戻る
                             </button>
                         </div>
@@ -1822,7 +1775,31 @@ const App = {
                                     style="background-color: var(--error); color: white; border: none;">
                                 🗑️ アカウントを削除
                             </button>
-                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')">
+                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')" style="font-size: 14px; padding: 10px 16px;">
+                                📋 目次に戻る
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- バージョン情報 -->
+                    <div class="card" id="app-info">
+                        <div class="card-header">
+                            <h2 class="card-title">アプリ情報</h2>
+                        </div>
+                        <div class="card-body">
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">バージョン</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">1.7</div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">あなたと一緒に「美点発見」！</div>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">開発協力</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">Evahpro LLC</div>
+                            </div>
+                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')" style="font-size: 14px; padding: 10px 16px;">
                                 📋 目次に戻る
                             </button>
                         </div>

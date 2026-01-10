@@ -1805,7 +1805,7 @@ const App = {
                         <div class="card-body">
                             <div style="margin-bottom: 12px;">
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">バージョン</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">1.7</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">1.8</div>
                             </div>
                             <div style="margin-bottom: 12px;">
                                 <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
@@ -2277,9 +2277,19 @@ const App = {
 
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">バージョン 1.7</h2>
+                        <h2 class="card-title">バージョン 1.8</h2>
                     </div>
                     <div class="card-body">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎨 バージョン 1.8（2025年1月）</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 24px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">背景画像のカスタマイズ機能を追加</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">背景画像のトリミング機能（Cropper.js使用）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">大きな写真を自動リサイズ・圧縮（最大1280px、300KB）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">設定ページの構成を改善（目次追加）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">デフォルト青色背景で初回ログイン時の可読性向上</li>
+                            <li style="line-height: 1.8;">Netlifyでの公開開始</li>
+                        </ul>
+
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎉 バージョン 1.7（2025年1月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">人物一覧に写真表示機能を追加</li>

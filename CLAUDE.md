@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **美点発見note** (Biten Note) - A web application for recording virtues/good qualities about people in your life, based on the 美点発見® (Virtue Discovery) methodology used by 43,000 ANA employees.
 
-**Current Version**: 1.7 - Cloud sync with Firebase (production)
+**Current Version**: 1.8 - Background image customization with cropping (production)
 **Repository**: https://github.com/evahsuga/biten_note.git
 
 ## Development Commands
@@ -202,18 +202,25 @@ indexedDB.deleteDatabase('BitenNoteDB');
 
 ## Deployment
 
-**Production URL**: https://evahpro.github.io/biten_note/ (GitHub Pages)
+**Production URL**: https://biten-note.netlify.app (Netlify)
+**Previous URL**: https://evahpro.github.io/biten_note/ (GitHub Pages - deprecated)
 
 **Deployment Method**:
 ```bash
-# Manual push to GitHub Pages
+# Push to GitHub (Netlify auto-deploys from main branch)
 git add .
 git commit -m "Your message"
 git push origin main
 
-# GitHub Pages serves directly from the main branch
+# Netlify automatically builds and deploys from main branch
 # No build process required (static HTML/CSS/JS)
 ```
+
+**Netlify Configuration**:
+- Build command: (none - static site)
+- Publish directory: . (root)
+- Production branch: main
+- Auto-deploy: enabled
 
 **Firebase Configuration**:
 - Project ID: `biten-note-app`
@@ -230,6 +237,14 @@ git push origin main
 - **IndexedDB Migration**: One-way migration from IndexedDB to Firestore on first login (legacy v1.0 data)
 
 ## Development History
+
+**Version 1.8 (2025-01)**: Background customization & Netlify deployment
+- Background image customization feature
+- Cropper.js integration for image trimming
+- Auto-resize and compression (max 1280px, 300KB)
+- Settings page reorganization with table of contents
+- Default blue gradient background for better readability
+- Netlify deployment started
 
 **Version 1.7 (2025-01)**: UI/UX improvements
 - Photo display toggle in person list

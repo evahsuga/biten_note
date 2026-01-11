@@ -14,7 +14,7 @@
   - ブランチ: `production`
   - 自動デプロイ: productionブランチへのpush
 
-- **開発環境**: GitHub Pages（https://evahpro.github.io/biten_note/）
+- **開発環境**: GitHub Pages（https://evahsuga.github.io/biten_note/）
   - ブランチ: `main`
   - 自動デプロイ: mainブランチへのpush
 
@@ -33,7 +33,12 @@ main → GitHub Pages → production → Netlify
 
 ### バージョン履歴
 
-- **1.8**（2025年1月）：背景画像カスタマイズ機能、トリミング機能、設定ページ改善、Netlify公開開始
+- **1.8**（2025年1月）
+  - 背景画像カスタマイズ機能（トリミング対応）
+  - 最新情報ページの実装（News欄追加）
+  - 使い方ページの改善（ステップ5追加、自己肯定感キーワード強調）
+  - 設定ページの構成改善（目次追加）
+  - Netlify本番環境公開開始
 - **1.7**（2025年1月）：UI/UX改善、写真表示機能、モバイル最適化
 - **1.5**（2024年12月）：Firebase連携、クラウド同期、無制限登録
 - **1.0**（2024年11月）：初回リリース、IndexedDB版

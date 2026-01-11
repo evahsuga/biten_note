@@ -2304,16 +2304,33 @@ const App = {
                     </div>
                     <div class="card-body" style="padding: 20px;">
                         <!-- News項目（日付順に新しい順） -->
+
+                        <!-- 背景画像カスタマイズ機能リリース -->
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
                                 <span style="color: var(--gray-600); font-size: 14px;">2025年1月</span>
                             </div>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                🎨 背景画像のカスタマイズ機能をリリースしました！
+                            </p>
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                お好きな写真でアプリの背景をカスタマイズできるようになりました。思い出の写真や好きな風景で、あなただけの美点発見noteに。
+                            </p>
+                            <a href="#/settings" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
+                                ⚙️ 設定ページで背景を変更 →
+                            </a>
+                        </div>
+
+                        <!-- リマインド機能開発スタート -->
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--success); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">開発中</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2025年1月</span>
+                            </div>
                             <p style="margin: 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
                                 🚀 リマインド機能開発スタート！
                             </p>
-                            <!-- 将来的にここにリンクを追加 -->
-                            <!-- <a href="#/guide#reminder" style="color: var(--primary); text-decoration: none; font-size: 14px; margin-top: 8px; display: inline-block;">詳しくはこちら →</a> -->
                         </div>
                     </div>
                 </div>
@@ -2379,6 +2396,9 @@ const App = {
         `;
 
         document.getElementById('app').innerHTML = html;
+
+        // ページトップへスクロール（News欄を表示）
+        window.scrollTo(0, 0);
     },
 
     // ===========================

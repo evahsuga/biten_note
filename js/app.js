@@ -219,6 +219,9 @@ const App = {
             await this.renderPdfSelect();
         } else if (hash === '#/release-notes') {
             await this.renderReleaseNotes();
+            // 最新情報ページは確実に最上部へスクロール
+            window.scrollTo(0, 0);
+            return;
         } else {
             // 不明なルートはホームへ
             this.navigate('#/');
@@ -2396,9 +2399,7 @@ const App = {
         `;
 
         document.getElementById('app').innerHTML = html;
-
-        // ページトップへスクロール（News欄を表示）
-        window.scrollTo(0, 0);
+        // スクロールはrouter()側で処理
     },
 
     // ===========================

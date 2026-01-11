@@ -1279,8 +1279,7 @@ const App = {
 
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">PDF出力</h3>
                         <p style="line-height: 1.8; color: var(--gray-700);">
-                            記録した美点をPDFとして保存できます。<br>
-                            プレゼントや記念にどうぞ！
+                            記録した美点をPDFとして保存できます。
                         </p>
                     </div>
                 </div>
@@ -1312,6 +1311,31 @@ const App = {
                     </div>
                 </div>
 
+                <!-- ステップ5: その他の機能 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🎨 ステップ5: その他の機能</h2>
+                    </div>
+                    <div class="card-body">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">🖼️ 背景画像のカスタマイズ</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            アプリの背景を自分好みの画像に変更できます。
+                        </p>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ホーム画面で「⚙️ 設定」をクリック</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">「🖼️ 背景画像設定」セクションで「📷 背景画像を選択」をクリック</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">お好みの写真を選択</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">トリミング範囲を調整（ドラッグで移動・リサイズ可能）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">「✂️ トリミングして保存」をクリック</li>
+                        </ol>
+                        <div style="background-color: rgba(33, 150, 243, 0.1); padding: 12px; border-radius: 8px;">
+                            <p style="margin: 0; line-height: 1.8; color: #2196f3; font-size: 14px;">
+                                💡 <strong>ヒント:</strong> 大きな写真でも自動でリサイズ・圧縮されるので、スマホの写真をそのまま使えます。背景画像を削除して、デフォルトの青色背景に戻すこともできます。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 美点発見とは -->
                 <div class="card">
                     <div class="card-header">
@@ -1333,7 +1357,7 @@ const App = {
                                 💡 「美点発見」を続けていくと...
                             </p>
                             <p style="margin: 0; line-height: 1.8; color: var(--gray-700);">
-                                自分の心のメガネが『相手の美点が見えるメガネ』にかけ変わります。それと同時に、自分自身の美点もどんどん見えるようになり、自然と自己肯定感が上がっていきます。
+                                自分の心のメガネが『相手の美点が見えるメガネ』にかけ変わります。それと同時に、<strong>自分自身の美点もどんどん見えるようになり、自然と<span style="color: var(--primary); font-size: 18px; font-weight: 900;">自己肯定感</span>が上がっていきます。</strong>
                             </p>
                         </div>
 
@@ -1606,14 +1630,9 @@ const App = {
                             Evahpro LLC
                         </p>
 
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">現在のバージョン</h3>
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
-                            1.7
-                        </p>
-
                         <div style="border-top: 1px solid var(--gray-200); padding-top: 16px; margin-top: 20px;">
                             <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px; margin-bottom: 8px;">
-                                ※本アプリは現在開発中です。今後、小中学校向けの機能拡張を予定しています。
+                                ※本アプリは継続開発中です。今後、小中学校向けへ応用開発を予定しております。
                             </p>
                             <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px;">
                                 © 2025 あなたと一緒に「美点発見」！

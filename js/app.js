@@ -318,7 +318,7 @@ const App = {
                                 💬 ご意見・ご感想をお聞かせください
                             </a>
                             <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')">
-                                📋 リリース情報
+                                🔔 最新情報！
                             </button>
                         </div>
                     </div>
@@ -2290,13 +2290,38 @@ const App = {
         const html = `
             <div class="page">
                 <div class="page-header">
-                    <h1 class="page-title">📋 リリース情報</h1>
-                    <p class="page-subtitle">バージョン履歴と更新内容</p>
+                    <h1 class="page-title">🔔 最新情報！</h1>
+                    <p class="page-subtitle">お知らせとバージョン履歴</p>
                 </div>
 
-                <div class="card">
+                <!-- News欄 -->
+                <div class="card" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%); border: 2px solid var(--primary);">
+                    <div class="card-header" style="background: var(--primary); color: white; border-radius: 12px 12px 0 0; padding: 16px;">
+                        <h2 class="card-title" style="color: white; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 24px;">📢</span>
+                            <span>News - 最新のお知らせ</span>
+                        </h2>
+                    </div>
+                    <div class="card-body" style="padding: 20px;">
+                        <!-- News項目（日付順に新しい順） -->
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2025年1月</span>
+                            </div>
+                            <p style="margin: 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                🚀 リマインド機能開発スタート！
+                            </p>
+                            <!-- 将来的にここにリンクを追加 -->
+                            <!-- <a href="#/guide#reminder" style="color: var(--primary); text-decoration: none; font-size: 14px; margin-top: 8px; display: inline-block;">詳しくはこちら →</a> -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- リリース情報 -->
+                <div class="card" style="margin-top: 16px;">
                     <div class="card-header">
-                        <h2 class="card-title">バージョン 1.8</h2>
+                        <h2 class="card-title">📋 バージョン履歴</h2>
                     </div>
                     <div class="card-body">
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎨 バージョン 1.8（2025年1月）</h3>

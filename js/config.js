@@ -29,10 +29,20 @@ const CONFIG = {
         MAX_NAME_LENGTH: 50,        // 名前の最大文字数
         MIN_NAME_LENGTH: 1,         // 名前の最小文字数
         MAX_RELATIONSHIP_LENGTH: 20, // 関係性の最大文字数
-        TARGET_BITEN_COUNT: 100,    // 目標美点数
-        MAX_BITENS_PER_PERSON: 100, // 1人あたりの美点上限（PDF印刷の関係）
+        TARGET_BITEN_COUNT: 100,    // 目標美点数（1ページあたり）
+        MAX_BITENS_PER_PERSON: 100, // 1人あたりの美点上限（デフォルト、動的に拡張可能）
         MAX_PHOTO_SIZE_KB: 150,     // 写真の最大サイズ (KB)
         PHOTO_SIZE_PX: 400,         // 写真のリサイズサイズ (px)
+
+        // 美点ページング設定
+        DEFAULT_BITEN_LIMIT: 100,   // 初期上限
+        BITEN_LIMIT_INCREMENT: 100, // 増加単位
+        BITENS_PER_PAGE: 100,       // 1ページあたりの表示件数
+        MAX_BITEN_LIMIT: null,      // 上限の上限（nullで無制限）
+
+        // 将来の制限用（現時点では使用しない）
+        FREE_MAX_EXTENSIONS: null,  // 無料版の拡張回数上限
+        PRO_MAX_EXTENSIONS: null,   // Pro版の拡張回数上限
         // 背景画像設定
         BACKGROUND_IMAGE: {
             MAX_WIDTH: 1280,        // 背景画像の最大幅 (px)

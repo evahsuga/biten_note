@@ -180,6 +180,7 @@ const DB = {
                 metDate: personData.metDate || Utils.getCurrentDate(),
                 sortOrder: maxSortOrder + 1,
                 status: 'active', // 新規追加: デフォルトはアクティブ状態
+                bitenLimit: CONFIG.LIMITS.DEFAULT_BITEN_LIMIT, // 美点上限（デフォルト100）
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -314,6 +315,60 @@ const DB = {
             Utils.error('updatePerson例外', error);
             throw error;
         }
+    },
+
+    // 人物の美点上限を取得（デフォルト100）
+    getPersonBitenLimit(person) {
+        return person.bitenLimit || CONFIG.LIMITS.DEFAULT_BITEN_LIMIT;
+    },
+
+    // 人物の美点上限を拡張（+100）
+    async extendPersonBitenLimit(personId) {
+        try {
+            const userId = this.getCurrentUserId();
+            Utils.log('美点上限拡張開始', personId);
+
+            const person = await this.getPersonById(personId);
+            if (!person) {
+                throw new Error('人物が見つかりません');
+            }
+
+            const currentLimit = this.getPersonBitenLimit(person);
+            const newLimit = currentLimit + CONFIG.LIMITS.BITEN_LIMIT_INCREMENT;
+
+            // 将来の制限チェック（現時点では常にtrue）
+            if (!this.canExtendBitenLimit(person)) {
+                throw new Error('これ以上美点上限を拡張できません');
+            }
+
+            const personRef = db.collection('users')
+                .doc(userId)
+                .collection('persons')
+                .doc(personId);
+
+            await personRef.update({
+                bitenLimit: newLimit,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            Utils.log('美点上限拡張成功', { personId, newLimit });
+            return newLimit;
+        } catch (error) {
+            Utils.error('extendPersonBitenLimit例外', error);
+            throw error;
+        }
+    },
+
+    // 美点上限拡張が可能かチェック（将来の制限用）
+    canExtendBitenLimit(person) {
+        // 現時点では常にtrue（無制限）
+        // 将来: userPlanに応じた制限チェックを実装
+        const maxLimit = CONFIG.LIMITS.MAX_BITEN_LIMIT;
+        if (maxLimit === null) {
+            return true; // 無制限
+        }
+        const currentLimit = this.getPersonBitenLimit(person);
+        return currentLimit < maxLimit;
     },
 
     // 人物ステータス変更（アクティブ ⇔ 保管済み）

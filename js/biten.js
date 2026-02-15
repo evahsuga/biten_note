@@ -3,15 +3,23 @@
 // ================================
 
 const Biten = {
+    // 現在編集中のpersonIdを保持
+    currentPersonId: null,
+
     // 美点追加処理
     async handleSubmit(personId) {
         try {
-            // 既存の美点数をチェック
-            const existingBitens = await DB.getBitensByPersonId(personId);
+            // 現在のpersonIdを保存（モーダル用）
+            this.currentPersonId = personId;
 
-            // 100個達成済みの場合
-            if (existingBitens.length >= CONFIG.LIMITS.MAX_BITENS_PER_PERSON) {
-                this.showAchievementModal();
+            // 人物情報と美点を取得
+            const person = await DB.getPersonById(personId);
+            const existingBitens = await DB.getBitensByPersonId(personId);
+            const bitenLimit = DB.getPersonBitenLimit(person);
+
+            // 上限達成済みの場合
+            if (existingBitens.length >= bitenLimit) {
+                this.showAchievementModal(bitenLimit);
                 return;
             }
 
@@ -46,11 +54,11 @@ const Biten = {
             const updatedBitens = await DB.getBitensByPersonId(personId);
             const count = updatedBitens.length;
 
-            // 100個達成したかチェック
-            if (count >= CONFIG.LIMITS.MAX_BITENS_PER_PERSON) {
+            // 上限達成したかチェック
+            if (count >= bitenLimit) {
                 // 入力欄を無効化
                 input.disabled = true;
-                input.placeholder = '100個達成しました！';
+                input.placeholder = `${bitenLimit}個達成しました！`;
 
                 // 送信ボタンを無効化
                 const sendBtn = document.querySelector('.chat-send-btn');
@@ -62,10 +70,10 @@ const Biten = {
 
                 // 達成モーダルを表示
                 setTimeout(() => {
-                    this.showAchievementModal();
+                    this.showAchievementModal(bitenLimit);
                 }, 500);
-            } else if (count === 50) {
-                // 50個達成時の応援メッセージ
+            } else if (count === 50 || (count > 100 && count % 100 === 50)) {
+                // 50個達成時、または150, 250...個達成時の応援メッセージ
                 // フォーカスを外してモーダルに集中
                 input.blur();
                 setTimeout(() => {
@@ -82,11 +90,44 @@ const Biten = {
         }
     },
 
-    // 100個達成モーダルを表示
-    showAchievementModal() {
+    // 達成モーダルを表示
+    showAchievementModal(count) {
         const modal = document.getElementById('achievementModal');
+        const countElement = document.getElementById('achievementCount');
         if (modal) {
+            if (countElement) {
+                countElement.textContent = count;
+            }
             modal.classList.remove('hidden');
+        }
+    },
+
+    // 達成モーダルから上限拡張
+    async extendLimitFromModal() {
+        if (!this.currentPersonId) {
+            showToast('エラーが発生しました', 'error');
+            return;
+        }
+
+        try {
+            // モーダルを閉じる
+            const modal = document.getElementById('achievementModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+
+            showLoading();
+            const newLimit = await DB.extendPersonBitenLimit(this.currentPersonId);
+            hideLoading();
+            showToast(`美点上限を${newLimit}個に拡張しました`, 'success');
+
+            // 新しいページへ移動して画面を再レンダリング
+            const newPage = Math.ceil(newLimit / CONFIG.LIMITS.BITENS_PER_PAGE);
+            await App.renderBitenNew(this.currentPersonId, newPage);
+        } catch (error) {
+            hideLoading();
+            Utils.error('美点上限拡張エラー', error);
+            showToast('美点上限の拡張に失敗しました', 'error');
         }
     },
 

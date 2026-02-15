@@ -35,6 +35,8 @@ const App = {
     currentRoute: null,
     authUnsubscribe: null,
     routingSetup: false,  // ルーティング設定済みフラグ
+    currentBitenPage: 1,  // 美点追加ページの現在ページ番号（1始まり）
+    currentDetailPage: 1, // 個人詳細ページの美点一覧ページ番号（1始まり）
 
     // アプリケーション初期化
     async init() {
@@ -832,7 +834,7 @@ const App = {
     },
     
     // 人物詳細画面
-    async renderPersonDetail(personId) {
+    async renderPersonDetail(personId, page = null) {
         try {
             const person = await DB.getPersonById(personId);
             if (!person) {
@@ -840,8 +842,18 @@ const App = {
                 this.navigate('#/persons');
                 return;
             }
-            
+
             const bitens = await DB.getBitensByPersonId(personId);
+            const bitenLimit = DB.getPersonBitenLimit(person);
+            const perPage = CONFIG.LIMITS.BITENS_PER_PAGE;
+            const totalPages = Math.ceil(bitenLimit / perPage);
+
+            // ページ番号の決定
+            if (page !== null) {
+                this.currentDetailPage = page;
+            } else if (this.currentDetailPage > totalPages) {
+                this.currentDetailPage = 1;
+            }
 
             // Firestoreタイムスタンプを数値に変換する関数
             const getTimestamp = (biten) => {
@@ -860,13 +872,46 @@ const App = {
                 bitenNumberMap[biten.id] = index + 1;
             });
 
-            // 表示は新しい順（最後に書いたものが上）
-            bitens.sort((a, b) => getTimestamp(b) - getTimestamp(a));
-
-            console.log('=== 個人ページ 美点表示順序 ===');
-            bitens.forEach((biten, index) => {
-                console.log(`表示順${index + 1}: [${bitenNumberMap[biten.id]}] ${biten.content} (${biten.createdAt})`);
+            // 現在ページに該当する美点をフィルタリング
+            const pageStart = (this.currentDetailPage - 1) * perPage + 1;
+            const pageEnd = this.currentDetailPage * perPage;
+            const filteredBitens = bitens.filter(biten => {
+                const num = bitenNumberMap[biten.id];
+                return num >= pageStart && num <= pageEnd;
             });
+
+            // 表示は新しい順（最後に書いたものが上）
+            filteredBitens.sort((a, b) => getTimestamp(b) - getTimestamp(a));
+
+            // 進捗率の計算
+            const progressPercent = Math.min((bitens.length / bitenLimit) * 100, 100);
+
+            // セグメントコントロールを生成
+            const segmentControlHtml = totalPages > 1 ? `
+                <div class="segment-control" style="margin-top: var(--spacing-sm);">
+                    ${Array.from({ length: totalPages }, (_, i) => {
+                        const pageNum = i + 1;
+                        const start = i * perPage + 1;
+                        const end = Math.min((i + 1) * perPage, bitenLimit);
+                        const isActive = pageNum === this.currentDetailPage;
+                        return `
+                            <button class="segment-control-item ${isActive ? 'active' : ''}"
+                                    onclick="App.switchDetailPage('${personId}', ${pageNum})"
+                                    data-page="${pageNum}">
+                                ${start}-${end}
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            ` : '';
+
+            // 上限到達時の拡張ボタン
+            const isLimitReached = bitens.length >= bitenLimit;
+            const extendButtonHtml = isLimitReached ? `
+                <button class="extend-limit-btn" onclick="App.extendBitenLimitFromDetail('${personId}')" style="margin-top: var(--spacing-md);">
+                    📄 +100枠を追加する
+                </button>
+            ` : '';
 
             const html = `
                 <div class="page">
@@ -902,12 +947,13 @@ const App = {
                         <div class="progress-container">
                             <div class="progress-header">
                                 <span class="progress-label">美点の数</span>
-                                <span class="progress-value">${bitens.length}/100</span>
+                                <span class="progress-value">${bitens.length}/${bitenLimit}</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${Math.min((bitens.length / 100) * 100, 100)}%"></div>
+                                <div class="progress-fill" style="width: ${progressPercent}%"></div>
                             </div>
                         </div>
+                        ${extendButtonHtml}
                     </div>
 
                     <!-- アクション -->
@@ -928,23 +974,30 @@ const App = {
                         <div class="card-header">
                             <h2 class="card-title">美点一覧（${bitens.length}個）</h2>
                         </div>
-                        ${bitens.length > 0 ? `
+                        ${segmentControlHtml}
+                        ${filteredBitens.length > 0 ? `
                             <div class="card-body">
                                 <ul class="list">
-                                    ${bitens.map(biten => `
-                                        <li class="list-item">
-                                            <div class="list-item-content">
-                                                <div class="list-item-title">${biten.content}</div>
-                                            </div>
-                                        </li>
-                                    `).join('')}
+                                    ${filteredBitens.map(biten => {
+                                        const bitenNumber = bitenNumberMap[biten.id];
+                                        return `
+                                            <li class="list-item">
+                                                <div class="list-item-content">
+                                                    <div class="list-item-title">
+                                                        <span style="color: var(--gray-500); margin-right: 8px;">${bitenNumber}.</span>
+                                                        ${biten.content}
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        `;
+                                    }).join('')}
                                 </ul>
                             </div>
                         ` : `
                             <div class="empty-state">
                                 <div class="empty-state-icon">✨</div>
-                                <h3 class="empty-state-title">まだ美点が記録されていません</h3>
-                                <p class="empty-state-description">最初の美点を見つけましょう</p>
+                                <h3 class="empty-state-title">${this.currentDetailPage === 1 ? 'まだ美点が記録されていません' : 'このページには美点がありません'}</h3>
+                                <p class="empty-state-description">${this.currentDetailPage === 1 ? '最初の美点を見つけましょう' : '他のページで美点を確認できます'}</p>
                             </div>
                         `}
                     </div>
@@ -960,15 +1013,47 @@ const App = {
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
         }
     },
+
+    // 個人詳細ページの美点一覧ページ切り替え
+    async switchDetailPage(personId, page) {
+        this.currentDetailPage = page;
+        await this.renderPersonDetail(personId, page);
+        // 美点一覧カードまでスクロール
+        setTimeout(() => {
+            const bitenCard = document.querySelector('.card:last-child');
+            if (bitenCard) {
+                bitenCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
+    },
+
+    // 個人詳細ページから美点上限拡張
+    async extendBitenLimitFromDetail(personId) {
+        try {
+            showLoading();
+            const newLimit = await DB.extendPersonBitenLimit(personId);
+            hideLoading();
+            showToast(`美点上限を${newLimit}個に拡張しました`, 'success');
+
+            // 新しいページへ移動
+            const newPage = Math.ceil(newLimit / CONFIG.LIMITS.BITENS_PER_PAGE);
+            this.currentDetailPage = newPage;
+            await this.renderPersonDetail(personId, newPage);
+        } catch (error) {
+            hideLoading();
+            Utils.error('美点上限拡張エラー', error);
+            showToast('美点上限の拡張に失敗しました', 'error');
+        }
+    },
     
     // 美点追加画面
-    async renderBitenNew(personId) {
+    async renderBitenNew(personId, page = null) {
         if (!personId) {
             showToast(CONFIG.MESSAGES.ERROR.NO_PERSON_SELECTED, 'error');
             this.navigate('#/persons');
             return;
         }
-        
+
         try {
             const person = await DB.getPersonById(personId);
             if (!person) {
@@ -976,8 +1061,23 @@ const App = {
                 this.navigate('#/persons');
                 return;
             }
-            
+
             const bitens = await DB.getBitensByPersonId(personId);
+            const bitenLimit = DB.getPersonBitenLimit(person);
+            const perPage = CONFIG.LIMITS.BITENS_PER_PAGE;
+            const totalPages = Math.ceil(bitenLimit / perPage);
+
+            // ページ番号の決定（指定がなければ最新ページ、または記憶していたページ）
+            if (page !== null) {
+                this.currentBitenPage = page;
+            } else if (this.currentBitenPage > totalPages) {
+                this.currentBitenPage = totalPages;
+            }
+            // 美点数が現在ページの範囲を超えている場合は最新ページへ
+            const currentPageStart = (this.currentBitenPage - 1) * perPage;
+            if (bitens.length > 0 && bitens.length > currentPageStart + perPage) {
+                this.currentBitenPage = Math.ceil(bitens.length / perPage);
+            }
 
             // Firestoreタイムスタンプを数値に変換する関数
             const getTimestamp = (biten) => {
@@ -996,40 +1096,73 @@ const App = {
                 bitenNumberMap[biten.id] = index + 1; // 記入順の番号（1から始まる）
             });
 
-            // デバッグ情報
-            console.log('=== 美点番号デバッグ ===');
-            console.log('総数:', bitens.length);
-            bitensOldest.forEach((biten, index) => {
-                console.log(`${index + 1}番: ${biten.content} (作成日時: ${biten.createdAt})`);
+            // 現在ページに該当する美点をフィルタリング
+            const pageStart = (this.currentBitenPage - 1) * perPage + 1;
+            const pageEnd = this.currentBitenPage * perPage;
+            const filteredBitens = bitens.filter(biten => {
+                const num = bitenNumberMap[biten.id];
+                return num >= pageStart && num <= pageEnd;
             });
 
             // 新しい順（降順）にソート - 最後に書いたものが上に表示される
-            bitens.sort((a, b) => getTimestamp(b) - getTimestamp(a));
+            filteredBitens.sort((a, b) => getTimestamp(b) - getTimestamp(a));
 
             // 日付ごとにグループ化
             const bitensByDate = {};
-            bitens.forEach(biten => {
+            filteredBitens.forEach(biten => {
                 const date = biten.date;
                 if (!bitensByDate[date]) {
                     bitensByDate[date] = [];
                 }
                 bitensByDate[date].push(biten);
             });
-            
+
+            // セグメントコントロールを生成
+            const segmentControlHtml = totalPages > 1 ? `
+                <div class="segment-control" id="bitenSegmentControl">
+                    ${Array.from({ length: totalPages }, (_, i) => {
+                        const pageNum = i + 1;
+                        const start = i * perPage + 1;
+                        const end = Math.min((i + 1) * perPage, bitenLimit);
+                        const isActive = pageNum === this.currentBitenPage;
+                        return `
+                            <button class="segment-control-item ${isActive ? 'active' : ''}"
+                                    onclick="App.switchBitenPage('${personId}', ${pageNum})"
+                                    data-page="${pageNum}">
+                                ${start}-${end}
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            ` : '';
+
+            // 上限到達時の拡張ボタン
+            const isLimitReached = bitens.length >= bitenLimit;
+            const extendButtonHtml = isLimitReached ? `
+                <button class="extend-limit-btn" onclick="App.extendBitenLimit('${personId}')">
+                    📄 +100枠を追加する
+                </button>
+            ` : '';
+
             const html = `
                 <div class="page" style="padding-bottom: 100px;">
-                    <div class="page-header">
+                    <!-- 固定ヘッダー -->
+                    <div class="biten-page-header">
                         <h1 class="page-title">${person.name}さんの美点</h1>
-                        <p class="page-subtitle">100個書き出してみよう！ (<span id="bitenCount">${bitens.length}</span>/100)</p>
+                        <p class="page-subtitle">
+                            ${perPage}個ずつ書き出してみよう！
+                            (<span id="bitenCount">${bitens.length}</span>/<span id="bitenLimit">${bitenLimit}</span>)
+                        </p>
+                        ${segmentControlHtml}
                     </div>
-                    
+
                     <!-- チャット表示エリア -->
                     <div class="chat-container" id="chatContainer">
-                        ${bitens.length === 0 ? `
+                        ${filteredBitens.length === 0 ? `
                             <div class="empty-state">
                                 <div class="empty-state-icon">💬</div>
-                                <h3 class="empty-state-title">まだ美点がありません</h3>
-                                <p class="empty-state-description">下の入力欄から最初の美点を追加しましょう</p>
+                                <h3 class="empty-state-title">${this.currentBitenPage === 1 ? 'まだ美点がありません' : 'このページには美点がありません'}</h3>
+                                <p class="empty-state-description">${this.currentBitenPage === 1 ? '下の入力欄から最初の美点を追加しましょう' : '前のページで美点を確認できます'}</p>
                             </div>
                         ` : `
                             ${Object.keys(bitensByDate).sort((a, b) => new Date(b) - new Date(a)).map(date => `
@@ -1055,9 +1188,10 @@ const App = {
                                 }).join('')}
                             `).join('')}
                         `}
+                        ${extendButtonHtml}
                     </div>
                 </div>
-                
+
                 <!-- 固定入力欄 -->
                 <div class="chat-input-container">
                     <div class="chat-input-wrapper">
@@ -1078,17 +1212,17 @@ const App = {
                     </button>
                 </div>
             `;
-            
+
             document.getElementById('app').innerHTML = html;
 
-            // 100個達成済みの場合、入力欄を無効化
-            if (bitens.length >= CONFIG.LIMITS.MAX_BITENS_PER_PERSON) {
+            // 上限達成済みの場合、入力欄を無効化
+            if (isLimitReached) {
                 const input = document.getElementById('bitenInput');
                 const sendBtn = document.querySelector('.chat-send-btn');
 
                 if (input) {
                     input.disabled = true;
-                    input.placeholder = '100個達成しました！';
+                    input.placeholder = `${bitenLimit}個達成しました！`;
                 }
 
                 if (sendBtn) {
@@ -1111,6 +1245,30 @@ const App = {
         } catch (error) {
             Utils.error('美点追加画面レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
+    },
+
+    // 美点ページ切り替え
+    async switchBitenPage(personId, page) {
+        this.currentBitenPage = page;
+        await this.renderBitenNew(personId, page);
+    },
+
+    // 美点上限拡張
+    async extendBitenLimit(personId) {
+        try {
+            showLoading();
+            const newLimit = await DB.extendPersonBitenLimit(personId);
+            hideLoading();
+            showToast(`美点上限を${newLimit}個に拡張しました`, 'success');
+
+            // 新しいページへ移動
+            const newPage = Math.ceil(newLimit / CONFIG.LIMITS.BITENS_PER_PAGE);
+            await this.renderBitenNew(personId, newPage);
+        } catch (error) {
+            hideLoading();
+            Utils.error('美点上限拡張エラー', error);
+            showToast('美点上限の拡張に失敗しました', 'error');
         }
     },
     

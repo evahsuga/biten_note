@@ -408,6 +408,23 @@ const PDF = {
             </div>
         `;
 
+        // 各人物のページ数を計算（100枠ごとに1ページ）
+        const perPage = CONFIG.LIMITS.BITENS_PER_PAGE;
+        let currentPageNum = 3; // 表紙と目次の次から
+        const personPageInfo = personsWithBitens.map((item, index) => {
+            const bitenLimit = DB.getPersonBitenLimit(item.person);
+            const pageCount = Math.ceil(bitenLimit / perPage);
+            const startPage = currentPageNum;
+            currentPageNum += pageCount;
+            return {
+                index,
+                item,
+                bitenLimit,
+                pageCount,
+                startPage
+            };
+        });
+
         // 目次ページ
         bodyHTML += `
             <div class="page toc-page">
@@ -415,15 +432,15 @@ const PDF = {
                 <ul class="toc-list">
         `;
 
-        personsWithBitens.forEach((item, index) => {
-            const pageNum = index + 3;
+        personPageInfo.forEach(({ index, item, bitenLimit, pageCount, startPage }) => {
+            const pageRange = pageCount > 1 ? `${startPage}-${startPage + pageCount - 1}` : `${startPage}`;
             bodyHTML += `
                 <li class="toc-item">
                     <span class="toc-number">${index + 1}.</span>
                     <span class="toc-name">${this.escapeHtml(item.person.name)}</span>
-                    <span class="toc-count">(${item.bitens.length}個)</span>
+                    <span class="toc-count">(${item.bitens.length}/${bitenLimit}個)</span>
                     <span class="toc-dots">..........................................</span>
-                    <span class="toc-page">${pageNum}</span>
+                    <span class="toc-page">${pageRange}</span>
                 </li>
             `;
         });
@@ -433,9 +450,9 @@ const PDF = {
             </div>
         `;
 
-        // 各人物のページ
-        personsWithBitens.forEach((item, index) => {
-            bodyHTML += this.generatePersonPage(item, index + 3);
+        // 各人物のページ（100枠ごとに分割）
+        personPageInfo.forEach(({ item, bitenLimit, pageCount, startPage }) => {
+            bodyHTML += this.generatePersonPages(item, bitenLimit, pageCount, startPage);
         });
 
         // 戻るボタン（印刷時は非表示）
@@ -610,6 +627,17 @@ const PDF = {
             flex: 1;
         }
 
+        /* コンパクトヘッダー（2ページ目以降） */
+        .person-header-compact {
+            margin-bottom: 8px;
+        }
+
+        .person-header-compact .person-name {
+            font-size: 14pt;
+            color: #667eea;
+            font-weight: bold;
+        }
+
         .person-name {
             font-size: 16pt;
             color: #667eea;
@@ -779,70 +807,107 @@ const PDF = {
         }
     },
 
-    // 個人ページHTML生成
-    generatePersonPage(item, pageNumber) {
+    // 個人ページHTML生成（複数ページ対応）
+    generatePersonPages(item, bitenLimit, pageCount, startPage) {
         try {
-            Utils.log('generatePersonPage開始', {
+            Utils.log('generatePersonPages開始', {
                 personName: item.person.name,
                 bitenCount: item.bitens.length,
-                pageNumber
+                bitenLimit,
+                pageCount,
+                startPage
             });
 
             const person = item.person;
             const bitens = item.bitens;
+            const perPage = CONFIG.LIMITS.BITENS_PER_PAGE;
+            let pagesHTML = '';
 
-            const photoHTML = person.photo
-                ? `<img src="${person.photo}" class="person-photo" alt="${this.escapeHtml(person.name)}">`
-                : `<div class="person-photo-placeholder"></div>`;
+            for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+                const pageNumber = startPage + pageIndex;
+                const rangeStart = pageIndex * perPage + 1;
+                const rangeEnd = Math.min((pageIndex + 1) * perPage, bitenLimit);
+                const isFirstPage = pageIndex === 0;
 
-            const metDateText = person.metDate
-                ? new Date(person.metDate).toLocaleDateString('ja-JP')
-                : '未設定';
+                // このページに該当する美点を抽出
+                const pageBitens = bitens.slice(pageIndex * perPage, (pageIndex + 1) * perPage);
 
-            Utils.log('美点グリッド生成開始');
-            let bitenGridHTML = this.generateBitenGrid(bitens);
-            Utils.log('美点グリッド生成完了');
+                const photoHTML = isFirstPage && person.photo
+                    ? `<img src="${person.photo}" class="person-photo" alt="${this.escapeHtml(person.name)}">`
+                    : isFirstPage ? `<div class="person-photo-placeholder"></div>` : '';
 
-            return `
-            <div class="page person-page">
-                <div class="person-header">
-                    ${photoHTML}
-                    <div class="person-info">
-                        <div class="person-name">${this.escapeHtml(person.name)}</div>
-                        <div class="person-detail">関係性: ${this.escapeHtml(person.relationship)}</div>
-                        <div class="person-detail">出会った日: ${metDateText}</div>
+                const metDateText = person.metDate
+                    ? new Date(person.metDate).toLocaleDateString('ja-JP')
+                    : '未設定';
+
+                // ヘッダー（最初のページのみフル表示、2ページ目以降は簡易）
+                const headerHTML = isFirstPage ? `
+                    <div class="person-header">
+                        ${photoHTML}
+                        <div class="person-info">
+                            <div class="person-name">${this.escapeHtml(person.name)}</div>
+                            <div class="person-detail">関係性: ${this.escapeHtml(person.relationship)}</div>
+                            <div class="person-detail">出会った日: ${metDateText}</div>
+                        </div>
                     </div>
-                </div>
-
-                <hr class="divider">
-
-                <div class="bitens-grid">
-                    ${bitenGridHTML}
-                </div>
-
-                <div class="memo-section">
-                    <div class="memo-title">メモ:</div>
-                    <div class="memo-lines">
-                        <div class="memo-line"></div>
-                        <div class="memo-line"></div>
-                        <div class="memo-line"></div>
+                    <hr class="divider">
+                ` : `
+                    <div class="person-header-compact">
+                        <div class="person-name">${this.escapeHtml(person.name)} (${rangeStart}-${rangeEnd})</div>
                     </div>
-                </div>
+                    <hr class="divider">
+                `;
 
-                <div class="page-footer">
-                    - ${pageNumber} - 美点発見note
-                </div>
-            </div>
-        `;
+                Utils.log(`美点グリッド生成開始 (${rangeStart}-${rangeEnd})`);
+                let bitenGridHTML = this.generateBitenGridForPage(pageBitens, rangeStart, perPage);
+                Utils.log('美点グリッド生成完了');
+
+                // メモ欄は最後のページのみ
+                const memoHTML = pageIndex === pageCount - 1 ? `
+                    <div class="memo-section">
+                        <div class="memo-title">メモ:</div>
+                        <div class="memo-lines">
+                            <div class="memo-line"></div>
+                            <div class="memo-line"></div>
+                            <div class="memo-line"></div>
+                        </div>
+                    </div>
+                ` : '';
+
+                pagesHTML += `
+                    <div class="page person-page">
+                        ${headerHTML}
+                        <div class="bitens-grid">
+                            ${bitenGridHTML}
+                        </div>
+                        ${memoHTML}
+                        <div class="page-footer">
+                            - ${pageNumber} - 美点発見note
+                        </div>
+                    </div>
+                `;
+            }
+
+            return pagesHTML;
 
         } catch (error) {
-            Utils.error('generatePersonPageエラー', error);
+            Utils.error('generatePersonPagesエラー', error);
             throw error;
         }
     },
 
-    // 美点グリッド生成（4列×5段×5ブロック = 100個）
+    // 個人ページHTML生成（旧互換用・単一ページ）
+    generatePersonPage(item, pageNumber) {
+        return this.generatePersonPages(item, 100, 1, pageNumber);
+    },
+
+    // 美点グリッド生成（4列×5段×5ブロック = 100個）- 旧互換用
     generateBitenGrid(bitens) {
+        return this.generateBitenGridForPage(bitens, 1, 100);
+    },
+
+    // 美点グリッド生成（ページ用）
+    generateBitenGridForPage(bitens, startNumber, itemCount) {
         let html = '';
         const blocksCount = 5;
         const itemsPerBlock = 20;
@@ -856,9 +921,11 @@ const PDF = {
                 html += '<div class="biten-row">';
 
                 for (let col = 0; col < cols; col++) {
-                    const index = block * itemsPerBlock + row * cols + col;
-                    const biten = bitens[index];
-                    const number = index + 1;
+                    const localIndex = block * itemsPerBlock + row * cols + col;
+                    if (localIndex >= itemCount) break;
+
+                    const biten = bitens[localIndex];
+                    const number = startNumber + localIndex;
 
                     const cellClass = biten ? 'biten-cell' : 'biten-cell empty';
                     const content = biten ? this.escapeHtml(biten.content) : '';

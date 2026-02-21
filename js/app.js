@@ -339,6 +339,9 @@ const App = {
                             </button>
                         </div>
                     </div>
+
+                    <!-- バージョン表示 -->
+                    <p class="version-text">ver.${CONFIG.VERSION}</p>
                 </div>
             `;
 
@@ -1146,13 +1149,17 @@ const App = {
 
             const html = `
                 <div class="page" style="padding-bottom: 100px;">
-                    <!-- 固定ヘッダー -->
-                    <div class="biten-page-header">
+                    <!-- タイトル部分 -->
+                    <div class="page-header">
                         <h1 class="page-title">${person.name}さんの美点</h1>
                         <p class="page-subtitle">
                             ${perPage}個ずつ書き出してみよう！
                             (<span id="bitenCount">${bitens.length}</span>/<span id="bitenLimit">${bitenLimit}</span>)
                         </p>
+                    </div>
+
+                    <!-- ページ切替タブ（固定ヘッダー） -->
+                    <div class="biten-page-header">
                         ${segmentControlHtml}
                     </div>
 

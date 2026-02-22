@@ -222,7 +222,11 @@ const App = {
         } else if (hash === '#/release-notes') {
             await this.renderReleaseNotes();
             // 最新情報ページは確実に最上部へスクロール
-            window.scrollTo(0, 0);
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            }, 50);
             return;
         } else {
             // 不明なルートはホームへ
@@ -2547,12 +2551,14 @@ const App = {
                     </div>
                 </div>
 
-                <!-- リリース情報 -->
+                <!-- リリース情報（アコーディオン） -->
                 <div class="card" style="margin-top: 16px;">
-                    <div class="card-header">
-                        <h2 class="card-title">📋 バージョン履歴</h2>
-                    </div>
-                    <div class="card-body">
+                    <details style="cursor: pointer;">
+                        <summary style="padding: 16px; font-size: 18px; font-weight: bold; color: var(--gray-800); list-style: none; display: flex; align-items: center; justify-content: space-between;">
+                            <span>📋 バージョン履歴</span>
+                            <span style="font-size: 14px; color: var(--gray-500);">▼ タップで開く</span>
+                        </summary>
+                        <div style="padding: 0 16px 16px 16px;">
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">📄 バージョン 1.9（2025年2月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">美点100個以上の拡張機能を追加</li>
@@ -2606,7 +2612,8 @@ const App = {
                             <li style="margin-bottom: 8px; line-height: 1.8;">LINEスタイルのチャットUI</li>
                             <li style="line-height: 1.8;">進捗トラッキング（100美点目標）</li>
                         </ul>
-                    </div>
+                        </div>
+                    </details>
                 </div>
 
                 <button class="btn btn-outline btn-block" onclick="App.navigate('#/')">

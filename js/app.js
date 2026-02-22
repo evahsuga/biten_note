@@ -1288,15 +1288,27 @@ const App = {
                     <p class="page-subtitle">大切な人の良いところを記録しよう</p>
                 </div>
 
+                <!-- はじめに -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📱 はじめに</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            「美点発見note」は、大切な人の良いところを記録するアプリです。
+                        </p>
+                        <p style="line-height: 1.8; color: var(--gray-700);">
+                            複数のデバイスで使え、データは安全にクラウドに保存されます。
+                        </p>
+                    </div>
+                </div>
+
                 <!-- 目次 -->
                 <div class="card" id="guide-menu">
                     <div class="card-header">
                         <h2 class="card-title">📋 目次</h2>
                     </div>
                     <div class="card-body">
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-intro')">
-                            📱 はじめに
-                        </button>
                         <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step0')">
                             📝 使い方
                         </button>
@@ -1306,26 +1318,11 @@ const App = {
                         <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-developer')">
                             👤 メソッド開発者紹介
                         </button>
-                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-appinfo')">
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-appinfo')">
                             📋 アプリについて
                         </button>
-                    </div>
-                </div>
-
-                <!-- はじめに -->
-                <div class="card" id="guide-intro">
-                    <div class="card-header">
-                        <h2 class="card-title">📱 はじめに</h2>
-                    </div>
-                    <div class="card-body">
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
-                            「美点発見note」は、大切な人の良いところを記録するアプリです。
-                        </p>
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
-                            複数のデバイスで使え、データは安全にクラウドに保存されます。
-                        </p>
-                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px;">
-                            📋 目次に戻る
+                        <button class="btn btn-primary btn-block" onclick="App.navigate('#/')">
+                            🏠 ホームに戻る
                         </button>
                     </div>
                 </div>
@@ -1724,9 +1721,12 @@ const App = {
 
                             <!-- プロフィール情報 -->
                             <div style="flex: 1; min-width: 280px;">
-                                <h3 style="font-size: 24px; margin-bottom: 8px; color: var(--gray-900); text-align: center;">
-                                    佐藤康行（さとう・やすゆき）
+                                <h3 style="font-size: 24px; margin-bottom: 4px; color: var(--gray-900); text-align: center;">
+                                    佐藤康行
                                 </h3>
+                                <p style="font-size: 80%; color: var(--gray-700); text-align: center; margin-bottom: 8px;">
+                                    （さとう・やすゆき）
+                                </p>
                                 <p style="color: var(--gray-600); font-size: 14px; margin-bottom: 20px; text-align: center;">
                                     1951年、北海道美唄市生まれ
                                 </p>

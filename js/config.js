@@ -5,7 +5,7 @@
 const CONFIG = {
     // アプリ基本情報
     APP_NAME: '美点ノート',
-    VERSION: '0.0',
+    VERSION: '1.9',
     PHASE: 'Phase 1',
 
     // デバッグモード（本番環境では false に設定）

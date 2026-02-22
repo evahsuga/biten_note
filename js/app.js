@@ -2473,6 +2473,20 @@ const App = {
                     <div class="card-body" style="padding: 20px;">
                         <!-- News項目（日付順に新しい順） -->
 
+                        <!-- 美点+100件拡張機能リリース -->
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2025年2月</span>
+                            </div>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                📄 美点100個を超えて記録できるようになりました！
+                            </p>
+                            <p style="margin: 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                100個達成後、+100枠を追加できます。200個、300個...と無限に美点を記録し続けられます。ページ切替タブで簡単に閲覧できます。
+                            </p>
+                        </div>
+
                         <!-- 背景画像カスタマイズ機能リリース -->
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -2509,6 +2523,14 @@ const App = {
                         <h2 class="card-title">📋 バージョン履歴</h2>
                     </div>
                     <div class="card-body">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">📄 バージョン 1.9（2025年2月）</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 24px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">美点100個以上の拡張機能を追加</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">100個達成後に+100枠を追加可能に</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ページネーション機能（1-100、101-200...）</li>
+                            <li style="line-height: 1.8;">PDF出力も拡張枠に対応</li>
+                        </ul>
+
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎨 バージョン 1.8（2025年1月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">背景画像のカスタマイズ機能を追加</li>

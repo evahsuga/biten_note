@@ -2057,7 +2057,14 @@ const App = {
     scrollToSection(sectionId) {
         const element = document.getElementById(sectionId);
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // 複数の方法を試して確実にスクロール
+            const rect = element.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetPosition = rect.top + scrollTop - 20; // 少し上に余白
+
+            window.scrollTo(0, targetPosition);
+            document.documentElement.scrollTop = targetPosition;
+            document.body.scrollTop = targetPosition;
         }
     },
 

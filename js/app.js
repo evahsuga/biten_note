@@ -1298,40 +1298,13 @@ const App = {
                             📱 はじめに
                         </button>
                         <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step0')">
-                            🔐 ステップ0: アカウント作成
-                        </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step1')">
-                            👤 ステップ1: 人物を登録
-                        </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step2')">
-                            ✍️ ステップ2: 美点を記録
-                        </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step3')">
-                            📖 ステップ3: 振り返る
-                        </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step4')">
-                            ☁️ ステップ4: 複数デバイスで使う
-                        </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step5')">
-                            🎨 ステップ5: その他の機能
+                            📝 使い方
                         </button>
                         <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-about')">
                             🌟 美点発見®とは？
                         </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-tips')">
-                            💡 美点の書き方のコツ
-                        </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-faq')">
-                            ❓ よくある質問
-                        </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-examples')">
-                            🎁 活用例
-                        </button>
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-books')">
-                            📚 書籍紹介
-                        </button>
                         <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-developer')">
-                            👤 メソッド開発者
+                            👤 メソッド開発者紹介
                         </button>
                         <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-appinfo')">
                             📋 アプリについて
@@ -1348,9 +1321,12 @@ const App = {
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
                             「美点発見note」は、大切な人の良いところを記録するアプリです。
                         </p>
-                        <p style="line-height: 1.8; color: var(--gray-700);">
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
                             複数のデバイスで使え、データは安全にクラウドに保存されます。
                         </p>
+                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px;">
+                            📋 目次に戻る
+                        </button>
                     </div>
                 </div>
 
@@ -1547,11 +1523,14 @@ const App = {
                             <li style="margin-bottom: 8px; line-height: 1.8;">トリミング範囲を調整（ドラッグで移動・リサイズ可能）</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">「✂️ トリミングして保存」をクリック</li>
                         </ol>
-                        <div style="background-color: rgba(33, 150, 243, 0.1); padding: 12px; border-radius: 8px;">
+                        <div style="background-color: rgba(33, 150, 243, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
                             <p style="margin: 0; line-height: 1.8; color: #2196f3; font-size: 14px;">
                                 💡 <strong>ヒント:</strong> 大きな写真でも自動でリサイズ・圧縮されるので、スマホの写真をそのまま使えます。背景画像を削除して、デフォルトの青色背景に戻すこともできます。
                             </p>
                         </div>
+                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px;">
+                            📋 目次に戻る
+                        </button>
                     </div>
                 </div>
 
@@ -1722,6 +1701,9 @@ const App = {
                                 📚 Amazonで見る
                             </a>
                         </div>
+                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px; margin-top: 16px;">
+                            📋 目次に戻る
+                        </button>
                     </div>
                 </div>
 
@@ -1799,6 +1781,9 @@ const App = {
                                 🏫 心の学校 公式サイトへ
                             </a>
                         </div>
+                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px; margin-top: 16px;">
+                            📋 目次に戻る
+                        </button>
                     </div>
                 </div>
 
@@ -1838,6 +1823,9 @@ const App = {
                                 © 2025 あなたと一緒に「美点発見」！
                             </p>
                         </div>
+                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px; margin-top: 16px;">
+                            📋 目次に戻る
+                        </button>
                     </div>
                 </div>
 

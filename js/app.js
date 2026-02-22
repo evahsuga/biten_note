@@ -2043,7 +2043,10 @@ const App = {
 
     // ページトップへスクロール
     scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // 複数の方法を試して確実にスクロール
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     },
 
     // 利用規約・プライバシーポリシーから戻る

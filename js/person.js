@@ -754,7 +754,7 @@ const Person = {
                             ・ 記録した美点は保持されます
                         </p>
                         <div class="btn-group">
-                            <button class="btn btn-ghost" onclick="this.closest('.modal').remove(); arguments[0].resolve(false)">
+                            <button class="btn btn-outline" onclick="this.closest('.modal').remove(); arguments[0].resolve(false)">
                                 キャンセル
                             </button>
                             <button class="btn btn-primary" onclick="this.closest('.modal').remove(); arguments[0].resolve(true)">
@@ -766,7 +766,7 @@ const Person = {
             `;
 
             // ボタンイベントの設定
-            const cancelBtn = modal.querySelector('.btn-ghost');
+            const cancelBtn = modal.querySelector('.btn-outline');
             const confirmBtn = modal.querySelector('.btn-primary');
 
             cancelBtn.onclick = () => {

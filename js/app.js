@@ -1288,8 +1288,59 @@ const App = {
                     <p class="page-subtitle">大切な人の良いところを記録しよう</p>
                 </div>
 
+                <!-- 目次 -->
+                <div class="card" id="guide-menu">
+                    <div class="card-header">
+                        <h2 class="card-title">📋 目次</h2>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-intro')">
+                            📱 はじめに
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step0')">
+                            🔐 ステップ0: アカウント作成
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step1')">
+                            👤 ステップ1: 人物を登録
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step2')">
+                            ✍️ ステップ2: 美点を記録
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step3')">
+                            📖 ステップ3: 振り返る
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step4')">
+                            ☁️ ステップ4: 複数デバイスで使う
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step5')">
+                            🎨 ステップ5: その他の機能
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-about')">
+                            🌟 美点発見®とは？
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-tips')">
+                            💡 美点の書き方のコツ
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-faq')">
+                            ❓ よくある質問
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-examples')">
+                            🎁 活用例
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-books')">
+                            📚 書籍紹介
+                        </button>
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-developer')">
+                            👤 メソッド開発者
+                        </button>
+                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-appinfo')">
+                            📋 アプリについて
+                        </button>
+                    </div>
+                </div>
+
                 <!-- はじめに -->
-                <div class="card">
+                <div class="card" id="guide-intro">
                     <div class="card-header">
                         <h2 class="card-title">📱 はじめに</h2>
                     </div>
@@ -1304,7 +1355,7 @@ const App = {
                 </div>
 
                 <!-- ステップ0: ログイン -->
-                <div class="card">
+                <div class="card" id="guide-step0">
                     <div class="card-header">
                         <h2 class="card-title">🔐 ステップ0: アカウント作成・ログイン</h2>
                     </div>
@@ -1355,7 +1406,7 @@ const App = {
                 </div>
 
                 <!-- ステップ1: 人物登録 -->
-                <div class="card">
+                <div class="card" id="guide-step1">
                     <div class="card-header">
                         <h2 class="card-title">👤 ステップ1: 人物を登録する</h2>
                     </div>
@@ -1387,7 +1438,7 @@ const App = {
                 </div>
 
                 <!-- ステップ2: 美点記録 -->
-                <div class="card">
+                <div class="card" id="guide-step2">
                     <div class="card-header">
                         <h2 class="card-title">✍️ ステップ2: 美点を記録する</h2>
                     </div>
@@ -1433,7 +1484,7 @@ const App = {
                 </div>
 
                 <!-- ステップ3: 振り返る -->
-                <div class="card">
+                <div class="card" id="guide-step3">
                     <div class="card-header">
                         <h2 class="card-title">📖 ステップ3: 振り返る</h2>
                     </div>
@@ -1453,7 +1504,7 @@ const App = {
                 </div>
 
                 <!-- ステップ4: クラウド同期 -->
-                <div class="card">
+                <div class="card" id="guide-step4">
                     <div class="card-header">
                         <h2 class="card-title">☁️ ステップ4: 複数デバイスで使う</h2>
                     </div>
@@ -1480,7 +1531,7 @@ const App = {
                 </div>
 
                 <!-- ステップ5: その他の機能 -->
-                <div class="card">
+                <div class="card" id="guide-step5">
                     <div class="card-header">
                         <h2 class="card-title">🎨 ステップ5: その他の機能</h2>
                     </div>
@@ -1505,7 +1556,7 @@ const App = {
                 </div>
 
                 <!-- 美点発見とは -->
-                <div class="card">
+                <div class="card" id="guide-about">
                     <div class="card-header">
                         <h2 class="card-title">🌟 美点発見®とは？</h2>
                     </div>
@@ -1546,7 +1597,7 @@ const App = {
                 </div>
 
                 <!-- 美点の書き方のコツ -->
-                <div class="card">
+                <div class="card" id="guide-tips">
                     <div class="card-header">
                         <h2 class="card-title">💡 美点の書き方のコツ</h2>
                     </div>
@@ -1573,7 +1624,7 @@ const App = {
                 </div>
 
                 <!-- よくある質問 -->
-                <div class="card">
+                <div class="card" id="guide-faq">
                     <div class="card-header">
                         <h2 class="card-title">❓ よくある質問</h2>
                     </div>
@@ -1616,7 +1667,7 @@ const App = {
                 </div>
 
                 <!-- 美点発見noteの活用例 -->
-                <div class="card">
+                <div class="card" id="guide-examples">
                     <div class="card-header">
                         <h2 class="card-title">🎁 美点発見noteの活用例</h2>
                     </div>
@@ -1632,7 +1683,7 @@ const App = {
                 </div>
 
                 <!-- 書籍紹介 -->
-                <div class="card">
+                <div class="card" id="guide-books">
                     <div class="card-header">
                         <h2 class="card-title">📚 美点発見をもっと深く学ぶ</h2>
                     </div>
@@ -1675,7 +1726,7 @@ const App = {
                 </div>
 
                 <!-- 美点発見メソッド開発者 -->
-                <div class="card">
+                <div class="card" id="guide-developer">
                     <div class="card-header">
                         <h2 class="card-title">👤 美点発見®メソッド開発者</h2>
                     </div>
@@ -1751,27 +1802,8 @@ const App = {
                     </div>
                 </div>
 
-                <!-- お問い合わせ -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">📧 お問い合わせ</h2>
-                    </div>
-                    <div class="card-body">
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
-                            不具合やご要望は、Googleフォームからお送りください。
-                        </p>
-                        <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform?pli=1"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="btn btn-outline btn-block"
-                           style="text-decoration: none;">
-                            💬 フィードバックを送る
-                        </a>
-                    </div>
-                </div>
-
                 <!-- アプリ情報 -->
-                <div class="card">
+                <div class="card" id="guide-appinfo">
                     <div class="card-header">
                         <h2 class="card-title">📋 アプリについて</h2>
                     </div>
@@ -2341,7 +2373,7 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-outline btn-block mb-sm" onclick="App.scrollToTop()" style="margin-bottom: 12px;">
+                <button class="btn btn-primary btn-block mb-sm" onclick="App.scrollToTop()" style="margin-bottom: 12px;">
                     ↑ ページトップに戻る
                 </button>
 
@@ -2443,7 +2475,7 @@ const App = {
                     </div>
                 </div>
 
-                <button class="btn btn-outline btn-block mb-sm" onclick="App.scrollToTop()" style="margin-bottom: 12px;">
+                <button class="btn btn-primary btn-block mb-sm" onclick="App.scrollToTop()" style="margin-bottom: 12px;">
                     ↑ ページトップに戻る
                 </button>
 

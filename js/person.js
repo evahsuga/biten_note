@@ -753,11 +753,11 @@ const Person = {
                             ・ 保管済みタブから確認・復元できます<br>
                             ・ 記録した美点は保持されます
                         </p>
-                        <div class="btn-group">
-                            <button class="btn btn-outline" onclick="this.closest('.modal').remove(); arguments[0].resolve(false)">
+                        <div class="btn-group" style="display: flex; gap: 12px;">
+                            <button class="btn btn-outline" style="flex: 1;" onclick="this.closest('.modal').remove(); arguments[0].resolve(false)">
                                 キャンセル
                             </button>
-                            <button class="btn btn-primary" onclick="this.closest('.modal').remove(); arguments[0].resolve(true)">
+                            <button class="btn btn-primary" style="flex: 1;" onclick="this.closest('.modal').remove(); arguments[0].resolve(true)">
                                 📦 保管する
                             </button>
                         </div>

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **美点発見note** (Biten Note) - A web application for recording virtues/good qualities about people in your life, based on the 美点発見® (Virtue Discovery) methodology used by 43,000 ANA employees.
 
-**Current Version**: 1.8 - Background image customization with cropping (production)
+**Current Version**: 1.9 - 100+ virtues expansion with pagination (production)
 **Repository**: https://github.com/evahsuga/biten_note.git
 
 ## Development Commands
@@ -99,7 +99,7 @@ js/
 ### Data Limits (CONFIG.LIMITS)
 - Maximum 3 persons in free version
 - Maximum 15 characters per virtue entry (`MAX_BITEN_LENGTH`)
-- Maximum 100 virtues per person (`MAX_BITENS_PER_PERSON`)
+- Default 100 virtues per person, expandable by +100 increments (v1.9+)
 - Photo size: 400×400px JPEG, max 150KB
 
 ### Storage Rules
@@ -189,14 +189,16 @@ indexedDB.deleteDatabase('BitenNoteDB');
 - Auto-scroll to latest message
 
 ### Progress Tracking
-- Counter display: ○/100 virtues per person
+- Counter display: ○/N virtues per person (N = 100, 200, 300... expandable)
 - Visual progress bar on detail page
 - Statistics on home screen (total persons, total virtues, streak days)
+- +100 expansion button appears when limit is reached
 
 ### PDF Export
 - Cover page with summary stats
 - Table of contents with page numbers
-- Individual pages per person (photo + 100 numbered slots)
+- Individual pages per person (photo + numbered slots matching expanded limit)
+- Pagination support for 100+ virtues (multiple pages per person)
 - Empty slots shown as blank lines with numbers
 - Download or open in new tab
 
@@ -258,6 +260,12 @@ For detailed deployment instructions, see [DEPLOY.md](DEPLOY.md).
 - **IndexedDB Migration**: One-way migration from IndexedDB to Firestore on first login (legacy v1.0 data)
 
 ## Development History
+
+**Version 1.9 (2025-02)**: 100+ virtues expansion
+- Added +100 expansion feature after reaching 100 virtues
+- Pagination tabs for navigating 1-100, 101-200, etc.
+- PDF export supports expanded virtue limits
+- Version display on home screen
 
 **Version 1.8 (2025-01)**: Background customization & Netlify deployment
 - Background image customization feature

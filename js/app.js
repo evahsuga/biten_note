@@ -1678,6 +1678,11 @@ const App = {
                             <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px; margin-bottom: 12px;">
                                 著者: 佐藤康行
                             </p>
+                            <div style="text-align: center; margin-bottom: 12px;">
+                                <img src="images/202402-monday-book.png"
+                                     alt="しんどい月曜の朝がラクになる本"
+                                     style="max-width: 150px; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            </div>
                             <a href="https://www.amazon.co.jp/dp/4763141090"
                                target="_blank"
                                rel="noopener noreferrer"
@@ -1694,6 +1699,11 @@ const App = {
                             <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px; margin-bottom: 12px;">
                                 著者: 佐藤康行
                             </p>
+                            <div style="text-align: center; margin-bottom: 12px;">
+                                <img src="images/201610満月の法則.png"
+                                     alt="一瞬で悩みが消えてなくなる満月の法則"
+                                     style="max-width: 150px; height: auto; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            </div>
                             <a href="https://www.amazon.co.jp/dp/4763161237"
                                target="_blank"
                                rel="noopener noreferrer"
@@ -1755,7 +1765,7 @@ const App = {
                         <!-- YouTube動画 -->
                         <div style="background-color: var(--gray-50); padding: 20px; border-radius: 12px; margin-bottom: 24px;">
                             <h3 style="font-size: 20px; margin-bottom: 16px; text-align: center; color: var(--gray-900);">
-                                📺 美点発見®メソッドの解説動画
+                                📺 美点発見®メソッド<br>解説動画
                             </h3>
                             <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
                                 <iframe
@@ -1881,14 +1891,14 @@ const App = {
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('danger-zone')">
                                 ⚠️ 危険な操作（アカウント削除）
                             </button>
-                            <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('app-info')">
-                                ℹ️ アプリ情報
-                            </button>
                             <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/privacy')">
                                 📄 プライバシーポリシー
                             </button>
-                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/terms')">
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/terms')">
                                 📄 利用規約
+                            </button>
+                            <button class="btn btn-primary btn-block" onclick="App.navigate('#/')">
+                                🏠 ホームに戻る
                             </button>
                         </div>
                     </div>
@@ -2008,32 +2018,8 @@ const App = {
                         </div>
                     </div>
 
-                    <!-- バージョン情報 -->
-                    <div class="card" id="app-info">
-                        <div class="card-header">
-                            <h2 class="card-title">アプリ情報</h2>
-                        </div>
-                        <div class="card-body">
-                            <div style="margin-bottom: 12px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">バージョン</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">1.8</div>
-                            </div>
-                            <div style="margin-bottom: 12px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">提供元</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">あなたと一緒に「美点発見」！</div>
-                            </div>
-                            <div style="margin-bottom: 16px;">
-                                <div style="font-size: 14px; color: var(--gray-600); margin-bottom: 4px;">開発協力</div>
-                                <div style="font-size: 16px; font-weight: 500; color: var(--gray-800);">Evahpro LLC</div>
-                            </div>
-                            <button class="btn btn-outline btn-block" onclick="App.scrollToSection('settings-menu')" style="font-size: 14px; padding: 10px 16px;">
-                                📋 目次に戻る
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- 戻るボタン -->
-                    <button class="btn btn-outline btn-block" onclick="App.navigate('#/')">
+                    <button class="btn btn-primary btn-block" onclick="App.navigate('#/')">
                         ← ホームに戻る
                     </button>
                 </div>
@@ -2044,12 +2030,9 @@ const App = {
             // 現在の背景画像を読み込んで表示
             this.loadCurrentBackgroundImage();
 
-            // 少し遅延させてから目次にスクロール
+            // ページトップへスクロール
             setTimeout(() => {
-                const menuElement = document.getElementById('settings-menu');
-                if (menuElement) {
-                    menuElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                App.scrollToTop();
             }, 100);
         } catch (error) {
             Utils.error('設定画面レンダリングエラー', error);

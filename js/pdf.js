@@ -272,13 +272,9 @@ const PDF = {
 
             doc.setFontSize(8);
             doc.setTextColor(102, 102, 102);
-            const metDateText = person.metDate
-                ? new Date(person.metDate).toLocaleDateString('ja-JP')
-                : '未設定';
             doc.text(`関係性: ${person.relationship}`, textX, yPos + 12);
-            doc.text(`出会った日: ${metDateText}`, textX, yPos + 18);
 
-            yPos = person.photo ? yPos + 35 : yPos + 25;
+            yPos = person.photo ? yPos + 30 : yPos + 20;
 
             // 区切り線
             doc.setDrawColor(204, 204, 204);
@@ -837,10 +833,6 @@ const PDF = {
                     ? `<img src="${person.photo}" class="person-photo" alt="${this.escapeHtml(person.name)}">`
                     : isFirstPage ? `<div class="person-photo-placeholder"></div>` : '';
 
-                const metDateText = person.metDate
-                    ? new Date(person.metDate).toLocaleDateString('ja-JP')
-                    : '未設定';
-
                 // ヘッダー（最初のページのみフル表示、2ページ目以降は簡易）
                 const headerHTML = isFirstPage ? `
                     <div class="person-header">
@@ -848,7 +840,6 @@ const PDF = {
                         <div class="person-info">
                             <div class="person-name">${this.escapeHtml(person.name)}</div>
                             <div class="person-detail">関係性: ${this.escapeHtml(person.relationship)}</div>
-                            <div class="person-detail">出会った日: ${metDateText}</div>
                         </div>
                     </div>
                     <hr class="divider">

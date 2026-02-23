@@ -3070,7 +3070,9 @@ const App = {
     showGuestRegistration() {
         // ゲストモードを終了せずに新規登録画面を表示
         // 登録完了時にauth.jsのサインアップ処理でデータ移行が行われる
-        this.renderSignup();
+        this.renderLogin();
+        // ログイン画面表示後、新規登録タブに切り替え
+        setTimeout(() => this.switchAuthTab('signup'), 0);
     },
 
     // パスワードリセット表示

@@ -38,6 +38,15 @@ const App = {
     currentBitenPage: 1,  // 美点追加ページの現在ページ番号（1始まり）
     currentDetailPage: 1, // 個人詳細ページの美点一覧ページ番号（1始まり）
 
+    // ===========================
+    // データベースヘルパー（ゲストモード対応）
+    // ===========================
+
+    // ゲストモードの場合はLocalDB、それ以外はDBを返す
+    getDB() {
+        return Auth.isGuestMode() ? LocalDB : DB;
+    },
+
     // アプリケーション初期化
     async init() {
         try {
@@ -88,9 +97,27 @@ const App = {
                     this.setupRouting();
                     this.handleRoute();
                 } else {
-                    // 未ログイン: ログイン不要ページかチェック
+                    // 未ログイン: ゲストモードまたはログイン不要ページかチェック
                     const hash = window.location.hash || '#/';
-                    if (hash === '#/privacy' || hash === '#/terms') {
+
+                    if (Auth.isGuestMode()) {
+                        // ゲストモード: メイン画面へ
+                        Utils.log('👤 ゲストモードユーザー検出、メイン画面へ遷移');
+                        mobileDebug('👤 ゲストモード → メイン画面へ');
+
+                        // IndexedDBを初期化
+                        LocalDB.init().catch(err => {
+                            Utils.error('IndexedDB初期化エラー', err);
+                        });
+
+                        // 背景画像を読み込んで適用（ローカル）
+                        this.loadAndApplyBackgroundImageLocal().catch(err => {
+                            Utils.error('背景画像読み込みエラー（継続）', err);
+                        });
+
+                        this.setupRouting();
+                        this.handleRoute();
+                    } else if (hash === '#/privacy' || hash === '#/terms') {
                         // プライバシーポリシー・利用規約はログイン不要
                         this.setupRouting();
                         this.handleRoute();
@@ -249,11 +276,33 @@ const App = {
     // ホーム画面
     async renderHome() {
         try {
+            const database = this.getDB();
+            const isGuestMode = Auth.isGuestMode();
+
             // まず人物リストだけ取得（軽量）
-            const persons = await DB.getAllPersons();
+            const persons = await database.getAllPersons();
+
+            // ゲストモードバナーHTML
+            const guestBannerHtml = isGuestMode ? `
+                <div class="guest-banner">
+                    <div class="guest-banner-icon">📱</div>
+                    <div class="guest-banner-content">
+                        <div class="guest-banner-title">ゲストモードで使用中</div>
+                        <div class="guest-banner-text">
+                            データはこの端末のブラウザ内に保存されます。<br>
+                            ブラウザの「履歴を削除」を行うとデータが消える場合があります。
+                        </div>
+                        <button class="guest-banner-btn" onclick="App.showGuestRegistration()">
+                            アカウント登録する（無料）→
+                        </button>
+                    </div>
+                </div>
+            ` : '';
 
             const html = `
                 <div class="page">
+                    ${guestBannerHtml}
+
                     <div class="page-header">
                         <h1 class="page-title">美点発見note</h1>
                         <p class="page-subtitle">大切な人の美点を記録しよう</p>
@@ -339,7 +388,7 @@ const App = {
                                 ⚙️ 設定
                             </button>
                             <button class="btn btn-outline btn-block" onclick="App.handleLogout()" style="color: var(--error);">
-                                🚪 ログアウト
+                                ${isGuestMode ? '🚪 ゲストモード終了' : '🚪 ログアウト'}
                             </button>
                         </div>
                     </div>
@@ -364,9 +413,10 @@ const App = {
     async loadStatsAsync(persons) {
         try {
             Utils.log('統計情報の非同期読み込み開始');
+            const database = this.getDB();
 
             // 統計情報を取得（重い処理）
-            const stats = await DB.getStats();
+            const stats = await database.getStats();
 
             Utils.log('統計情報の非同期読み込み完了', stats);
 
@@ -458,19 +508,20 @@ const App = {
         }
 
         try {
-            const allPersons = await DB.getAllPersons(this.personListStatusFilter);
+            const database = this.getDB();
+            const allPersons = await database.getAllPersons(this.personListStatusFilter);
 
             // sortOrderがない人物に自動割り当て（既存データのマイグレーション）
             const needsMigration = allPersons.some(p => !p.sortOrder);
-            if (needsMigration) {
+            if (needsMigration && database.updatePersonsSortOrder) {
                 Utils.log('sortOrderマイグレーション開始');
                 const updates = allPersons.map((person, index) => ({
                     id: person.id,
                     sortOrder: person.sortOrder || (index + 1)
                 }));
-                await DB.updatePersonsSortOrder(updates);
+                await database.updatePersonsSortOrder(updates);
                 // 再取得
-                const updatedPersons = await DB.getAllPersons();
+                const updatedPersons = await database.getAllPersons();
                 allPersons.length = 0;
                 allPersons.push(...updatedPersons);
                 Utils.log('sortOrderマイグレーション完了');
@@ -488,8 +539,8 @@ const App = {
                 : allPersons;
 
             // 統計情報取得（タブ用）
-            const allActivePersons = await DB.getAllPersons('active');
-            const allArchivedPersons = await DB.getAllPersons('archived');
+            const allActivePersons = await database.getAllPersons('active');
+            const allArchivedPersons = await database.getAllPersons('archived');
 
             const html = `
                 <div class="page">
@@ -843,15 +894,16 @@ const App = {
     // 人物詳細画面
     async renderPersonDetail(personId, page = null) {
         try {
-            const person = await DB.getPersonById(personId);
+            const database = this.getDB();
+            const person = await database.getPerson(personId);
             if (!person) {
                 showToast(CONFIG.MESSAGES.ERROR.PERSON_NOT_FOUND, 'error');
                 this.navigate('#/persons');
                 return;
             }
 
-            const bitens = await DB.getBitensByPersonId(personId);
-            const bitenLimit = DB.getPersonBitenLimit(person);
+            const bitens = await database.getBitensByPersonId(personId);
+            const bitenLimit = person.bitenLimit || CONFIG.LIMITS.DEFAULT_BITEN_LIMIT;
             const perPage = CONFIG.LIMITS.BITENS_PER_PAGE;
             const totalPages = Math.ceil(bitenLimit / perPage);
 
@@ -1037,8 +1089,13 @@ const App = {
     // 個人詳細ページから美点上限拡張
     async extendBitenLimitFromDetail(personId) {
         try {
+            const database = this.getDB();
             showLoading();
-            const newLimit = await DB.extendPersonBitenLimit(personId);
+            // ゲストモード対応: 上限拡張
+            const person = await database.getPerson(personId);
+            const currentLimit = person.bitenLimit || CONFIG.LIMITS.DEFAULT_BITEN_LIMIT;
+            const newLimit = currentLimit + 100;
+            await database.updatePerson(personId, { bitenLimit: newLimit });
             hideLoading();
             showToast(`美点上限を${newLimit}個に拡張しました`, 'success');
 
@@ -1062,15 +1119,16 @@ const App = {
         }
 
         try {
-            const person = await DB.getPersonById(personId);
+            const database = this.getDB();
+            const person = await database.getPerson(personId);
             if (!person) {
                 showToast(CONFIG.MESSAGES.ERROR.PERSON_NOT_FOUND, 'error');
                 this.navigate('#/persons');
                 return;
             }
 
-            const bitens = await DB.getBitensByPersonId(personId);
-            const bitenLimit = DB.getPersonBitenLimit(person);
+            const bitens = await database.getBitensByPersonId(personId);
+            const bitenLimit = person.bitenLimit || CONFIG.LIMITS.DEFAULT_BITEN_LIMIT;
             const perPage = CONFIG.LIMITS.BITENS_PER_PAGE;
             const totalPages = Math.ceil(bitenLimit / perPage);
 
@@ -1162,10 +1220,12 @@ const App = {
                         </p>
                     </div>
 
-                    <!-- ページ切替タブ（固定ヘッダー） -->
+                    <!-- ページ切替タブ（固定ヘッダー） - 複数ページある場合のみ表示 -->
+                    ${totalPages > 1 ? `
                     <div class="biten-page-header">
                         ${segmentControlHtml}
                     </div>
+                    ` : ''}
 
                     <!-- チャット表示エリア -->
                     <div class="chat-container" id="chatContainer">
@@ -1268,8 +1328,13 @@ const App = {
     // 美点上限拡張
     async extendBitenLimit(personId) {
         try {
+            const database = this.getDB();
             showLoading();
-            const newLimit = await DB.extendPersonBitenLimit(personId);
+            // ゲストモード対応: 上限拡張
+            const person = await database.getPerson(personId);
+            const currentLimit = person.bitenLimit || CONFIG.LIMITS.DEFAULT_BITEN_LIMIT;
+            const newLimit = currentLimit + 100;
+            await database.updatePerson(personId, { bitenLimit: newLimit });
             hideLoading();
             showToast(`美点上限を${newLimit}個に拡張しました`, 'success');
 
@@ -2080,7 +2145,8 @@ const App = {
     // 現在の背景画像を読み込んで表示
     async loadCurrentBackgroundImage() {
         try {
-            const imageData = await DB.getBackgroundImage();
+            const database = this.getDB();
+            const imageData = await database.getBackgroundImage();
 
             if (imageData) {
                 // プレビュー表示
@@ -2108,7 +2174,13 @@ const App = {
 
             showLoading();
 
-            await DB.deleteBackgroundImage();
+            const database = this.getDB();
+            // ゲストモード対応: deleteBackgroundImageがない場合はremoveBackgroundImageを使用
+            if (database.deleteBackgroundImage) {
+                await database.deleteBackgroundImage();
+            } else if (database.removeBackgroundImage) {
+                await database.removeBackgroundImage();
+            }
 
             // 背景画像をクリア（クラスも削除）
             this.applyBackgroundImage(null);
@@ -2156,10 +2228,24 @@ const App = {
         }
     },
 
+    // 背景画像を読み込んで適用（ゲストモード用）
+    async loadAndApplyBackgroundImageLocal() {
+        try {
+            const imageData = await LocalDB.getBackgroundImage();
+            if (imageData) {
+                this.applyBackgroundImage(imageData);
+                Utils.log('背景画像を適用しました（ローカル）');
+            }
+        } catch (error) {
+            Utils.error('背景画像読み込みエラー（ローカル）', error);
+        }
+    },
+
     // PDF出力人物選択画面
     async renderPdfSelect() {
         try {
-            const persons = await DB.getAllPersons();
+            const database = this.getDB();
+            const persons = await database.getAllPersons();
 
             if (persons.length === 0) {
                 showToast('登録された人物がいません', 'info');
@@ -2173,7 +2259,7 @@ const App = {
             // 各人物の美点数を取得
             const personsWithCount = [];
             for (const person of persons) {
-                const bitens = await DB.getBitensByPersonId(person.id);
+                const bitens = await database.getBitensByPersonId(person.id);
                 personsWithCount.push({
                     ...person,
                     bitenCount: bitens.length
@@ -2756,6 +2842,21 @@ const App = {
                         </svg>
                         Googleでログイン
                     </button>
+
+                    <!-- 区切り線 -->
+                    <div style="display: flex; align-items: center; margin: 24px 0 16px 0;">
+                        <div style="flex: 1; height: 1px; background-color: var(--gray-300);"></div>
+                        <span style="padding: 0 16px; color: var(--gray-500); font-size: 14px;">または</span>
+                        <div style="flex: 1; height: 1px; background-color: var(--gray-300);"></div>
+                    </div>
+
+                    <!-- ゲストモードボタン -->
+                    <button class="btn btn-outline btn-block" onclick="App.enterGuestMode()" style="border-color: var(--gray-400); color: var(--gray-700);">
+                        まず試してみる（登録不要）
+                    </button>
+                    <p style="text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 8px;">
+                        データはこの端末のブラウザ内に保存されます
+                    </p>
                 </div>
             </div>
         `;
@@ -2938,6 +3039,40 @@ const App = {
         }
     },
 
+    // ゲストモード開始
+    async enterGuestMode() {
+        try {
+            Utils.log('ゲストモード開始');
+            showLoading();
+
+            // IndexedDBを初期化
+            await LocalDB.init();
+
+            // ゲストモードフラグを設定
+            Auth.enterGuestMode();
+
+            hideLoading();
+
+            // ホーム画面へ遷移
+            this.setupRouting();
+            window.location.hash = '#/';
+            this.handleRoute();
+
+            showToast('ゲストモードで開始しました', 'success');
+        } catch (error) {
+            hideLoading();
+            Utils.error('ゲストモード開始エラー', error);
+            showToast('エラーが発生しました', 'error');
+        }
+    },
+
+    // ゲストモードからアカウント登録画面を表示
+    showGuestRegistration() {
+        // ゲストモードを終了せずに新規登録画面を表示
+        // 登録完了時にauth.jsのサインアップ処理でデータ移行が行われる
+        this.renderSignup();
+    },
+
     // パスワードリセット表示
     showPasswordReset() {
         const email = prompt('パスワードリセット用のメールアドレスを入力してください\n\n※ 登録済みのメールアドレスを入力してください');
@@ -3003,6 +3138,19 @@ const App = {
 
     // ログアウト処理
     async handleLogout() {
+        // ゲストモードの場合
+        if (Auth.isGuestMode()) {
+            if (!confirm('ゲストモードを終了しますか？\n\n※ データはこの端末に残ります。\n次回「まず試してみる」ボタンで再開できます。')) {
+                return;
+            }
+
+            Auth.exitGuestMode();
+            showToast('ゲストモードを終了しました', 'success');
+            this.renderLogin();
+            return;
+        }
+
+        // 通常のログアウト
         if (!confirm('ログアウトしますか？')) {
             return;
         }

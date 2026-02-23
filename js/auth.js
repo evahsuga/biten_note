@@ -4,6 +4,33 @@
 
 const Auth = {
     currentUser: null,
+    GUEST_MODE_KEY: 'bitenNote_guestMode',
+
+    // ===========================
+    // ゲストモード管理
+    // ===========================
+
+    // ゲストモードかどうかを確認
+    isGuestMode() {
+        return localStorage.getItem(this.GUEST_MODE_KEY) === 'true';
+    },
+
+    // ゲストモードを開始
+    enterGuestMode() {
+        localStorage.setItem(this.GUEST_MODE_KEY, 'true');
+        Utils.log('ゲストモード開始');
+    },
+
+    // ゲストモードを終了
+    exitGuestMode() {
+        localStorage.removeItem(this.GUEST_MODE_KEY);
+        Utils.log('ゲストモード終了');
+    },
+
+    // ログイン中またはゲストモードかを確認
+    isAuthenticated() {
+        return this.isLoggedIn() || this.isGuestMode();
+    },
 
     // ===========================
     // 認証状態の監視
@@ -119,6 +146,23 @@ const Auth = {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
+            // ゲストモードからの登録の場合、データを移行
+            if (this.isGuestMode()) {
+                try {
+                    const hasData = await LocalDB.hasData();
+                    if (hasData) {
+                        Utils.log('ゲストモードのデータをFirestoreへ移行開始');
+                        const result = await LocalDB.migrateToFirestore(user.uid);
+                        Utils.log('データ移行完了', result);
+                        showToast(`${result.persons}人の人物と${result.bitens}件の美点を移行しました`, 'success');
+                    }
+                } catch (migrationError) {
+                    Utils.error('データ移行エラー', migrationError);
+                    showToast('データの移行中にエラーが発生しました', 'error');
+                }
+                this.exitGuestMode();
+            }
+
             return user;
         } catch (error) {
             Utils.error('サインアップエラー', error);
@@ -208,6 +252,23 @@ const Auth = {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+
+            // ゲストモードからの登録の場合、データを移行
+            if (this.isGuestMode()) {
+                try {
+                    const hasData = await LocalDB.hasData();
+                    if (hasData) {
+                        Utils.log('ゲストモードのデータをFirestoreへ移行開始');
+                        const result = await LocalDB.migrateToFirestore(user.uid);
+                        Utils.log('データ移行完了', result);
+                        showToast(`${result.persons}人の人物と${result.bitens}件の美点を移行しました`, 'success');
+                    }
+                } catch (migrationError) {
+                    Utils.error('データ移行エラー', migrationError);
+                    showToast('データの移行中にエラーが発生しました', 'error');
+                }
+                this.exitGuestMode();
+            }
 
             return user;
         } catch (error) {

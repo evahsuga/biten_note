@@ -45,7 +45,8 @@ const Person = {
             };
             
             // データベースに追加
-            const newPerson = await DB.addPerson(personData);
+            const database = App.getDB();
+            const newPerson = await database.addPerson(personData);
             
             hideLoading();
             showToast(CONFIG.MESSAGES.SUCCESS.PERSON_ADDED, 'success');
@@ -74,7 +75,8 @@ const Person = {
             showLoading();
             
             // データベースから削除（美点も一緒に削除される）
-            await DB.deletePerson(personId);
+            const database = App.getDB();
+            await database.deletePerson(personId);
             
             hideLoading();
             showToast(CONFIG.MESSAGES.SUCCESS.PERSON_DELETED, 'success');
@@ -93,8 +95,9 @@ const Person = {
     async updatePerson(personId, updateData) {
         try {
             showLoading();
-            
-            const updatedPerson = await DB.updatePerson(personId, updateData);
+
+            const database = App.getDB();
+            const updatedPerson = await database.updatePerson(personId, updateData);
             
             hideLoading();
             showToast(CONFIG.MESSAGES.SUCCESS.PERSON_UPDATED, 'success');
@@ -179,8 +182,9 @@ const Person = {
         try {
             showLoading();
 
+            const database = App.getDB();
             // 人物データを取得
-            const person = await DB.getPersonById(this.editingPersonId);
+            const person = await database.getPerson(this.editingPersonId);
 
             // 写真を更新
             const updateData = {
@@ -189,7 +193,7 @@ const Person = {
                 updatedAt: Utils.getCurrentDateTime()
             };
 
-            await DB.updatePerson(this.editingPersonId, updateData);
+            await database.updatePerson(this.editingPersonId, updateData);
 
             // モーダルを閉じる
             this.closePhotoEditor();
@@ -213,7 +217,8 @@ const Person = {
         const modal = document.getElementById('nameEditModal');
         if (modal) {
             // 現在の名前を取得してモーダルに表示
-            DB.getPersonById(personId).then(person => {
+            const database = App.getDB();
+            database.getPerson(personId).then(person => {
                 const nameInput = document.getElementById('nameEditInput');
                 if (nameInput) {
                     nameInput.value = person.name;
@@ -250,8 +255,9 @@ const Person = {
         try {
             showLoading();
 
+            const database = App.getDB();
             // 人物データを取得
-            const person = await DB.getPersonById(this.editingPersonId);
+            const person = await database.getPerson(this.editingPersonId);
 
             // 名前を更新
             const updateData = {
@@ -260,7 +266,7 @@ const Person = {
                 updatedAt: Utils.getCurrentDateTime()
             };
 
-            await DB.updatePerson(this.editingPersonId, updateData);
+            await database.updatePerson(this.editingPersonId, updateData);
 
             // モーダルを閉じる
             this.closeNameEditor();
@@ -284,7 +290,8 @@ const Person = {
         const modal = document.getElementById('relationshipEditModal');
         if (modal) {
             // 現在の関係性を取得してモーダルに表示
-            DB.getPersonById(personId).then(person => {
+            const database = App.getDB();
+            database.getPerson(personId).then(person => {
                 const relationshipInput = document.getElementById('relationshipEditInput');
                 if (relationshipInput) {
                     relationshipInput.value = person.relationship;
@@ -324,8 +331,9 @@ const Person = {
         try {
             showLoading();
 
+            const database = App.getDB();
             // 人物データを取得
-            const person = await DB.getPersonById(this.editingPersonId);
+            const person = await database.getPerson(this.editingPersonId);
 
             // 関係性を更新
             const updateData = {
@@ -334,7 +342,7 @@ const Person = {
                 updatedAt: Utils.getCurrentDateTime()
             };
 
-            await DB.updatePerson(this.editingPersonId, updateData);
+            await database.updatePerson(this.editingPersonId, updateData);
 
             // モーダルを閉じる
             this.closeRelationshipEditor();
@@ -472,7 +480,10 @@ const Person = {
                 });
 
                 // データベースに保存（バックグラウンドで実行）
-                await DB.updatePersonsSortOrder(newOrder);
+                const database = App.getDB();
+                if (database.updatePersonsSortOrder) {
+                    await database.updatePersonsSortOrder(newOrder);
+                }
 
                 Utils.log('並び順を更新しました', newOrder);
                 showToast('並び順を更新しました', 'success');
@@ -637,7 +648,10 @@ const Person = {
                 });
 
                 // データベースに保存（バックグラウンドで実行）
-                await DB.updatePersonsSortOrder(newOrder);
+                const database = App.getDB();
+                if (database.updatePersonsSortOrder) {
+                    await database.updatePersonsSortOrder(newOrder);
+                }
 
                 Utils.log('進捗状況の並び順を更新しました', newOrder);
                 showToast('並び順を更新しました', 'success');
@@ -696,7 +710,13 @@ const Person = {
             }
 
             showLoading();
-            await DB.updatePersonStatus(personId, 'archived');
+            const database = App.getDB();
+            // ゲストモード対応: updatePersonStatusがない場合はupdatePersonを使用
+            if (database.updatePersonStatus) {
+                await database.updatePersonStatus(personId, 'archived');
+            } else {
+                await database.updatePerson(personId, { status: 'archived' });
+            }
             hideLoading();
 
             showToast(`${personName}を保管しました`, 'success');
@@ -719,7 +739,13 @@ const Person = {
             }
 
             showLoading();
-            await DB.updatePersonStatus(personId, 'active');
+            const database = App.getDB();
+            // ゲストモード対応: updatePersonStatusがない場合はupdatePersonを使用
+            if (database.updatePersonStatus) {
+                await database.updatePersonStatus(personId, 'active');
+            } else {
+                await database.updatePerson(personId, { status: 'active' });
+            }
             hideLoading();
 
             showToast(`${personName}をアクティブに戻しました`, 'success');

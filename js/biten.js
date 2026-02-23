@@ -12,10 +12,11 @@ const Biten = {
             // 現在のpersonIdを保存（モーダル用）
             this.currentPersonId = personId;
 
+            const database = App.getDB();
             // 人物情報と美点を取得
-            const person = await DB.getPersonById(personId);
-            const existingBitens = await DB.getBitensByPersonId(personId);
-            const bitenLimit = DB.getPersonBitenLimit(person);
+            const person = await database.getPerson(personId);
+            const existingBitens = await database.getBitensByPersonId(personId);
+            const bitenLimit = person.bitenLimit || CONFIG.LIMITS.DEFAULT_BITEN_LIMIT;
 
             // 上限達成済みの場合
             if (existingBitens.length >= bitenLimit) {
@@ -42,7 +43,7 @@ const Biten = {
             };
 
             // データベースに追加
-            const newBiten = await DB.addBiten(bitenData);
+            const newBiten = await database.addBiten(bitenData);
 
             // 入力欄クリア
             input.value = '';
@@ -51,7 +52,7 @@ const Biten = {
             await this.appendBitenToChat(newBiten);
 
             // 達成チェック
-            const updatedBitens = await DB.getBitensByPersonId(personId);
+            const updatedBitens = await database.getBitensByPersonId(personId);
             const count = updatedBitens.length;
 
             // 上限達成したかチェック
@@ -117,7 +118,12 @@ const Biten = {
             }
 
             showLoading();
-            const newLimit = await DB.extendPersonBitenLimit(this.currentPersonId);
+            const database = App.getDB();
+            // ゲストモード対応: 上限拡張
+            const person = await database.getPerson(this.currentPersonId);
+            const currentLimit = person.bitenLimit || CONFIG.LIMITS.DEFAULT_BITEN_LIMIT;
+            const newLimit = currentLimit + 100;
+            await database.updatePerson(this.currentPersonId, { bitenLimit: newLimit });
             hideLoading();
             showToast(`美点上限を${newLimit}個に拡張しました`, 'success');
 
@@ -167,7 +173,8 @@ const Biten = {
         const existingSeparator = chatContainer.querySelector(`[data-date="${today}"]`);
 
         // データベースから全美点を取得して正確な番号を計算
-        const allBitens = await DB.getBitensByPersonId(biten.personId);
+        const database = App.getDB();
+        const allBitens = await database.getBitensByPersonId(biten.personId);
         const bitensOldest = [...allBitens].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         const bitenNumber = bitensOldest.findIndex(b => b.id === biten.id) + 1;
 
@@ -221,8 +228,9 @@ const Biten = {
             this.editingBitenId = bitenId;
             this.editingPersonId = personId;
 
+            const database = App.getDB();
             // 美点データを取得
-            const bitens = await DB.getBitensByPersonId(personId);
+            const bitens = await database.getBitensByPersonId(personId);
             const biten = bitens.find(b => b.id === bitenId);
 
             if (!biten) {
@@ -269,8 +277,9 @@ const Biten = {
         try {
             showLoading();
 
+            const database = App.getDB();
             // 美点データを取得
-            const bitens = await DB.getBitensByPersonId(this.editingPersonId);
+            const bitens = await database.getBitensByPersonId(this.editingPersonId);
             const biten = bitens.find(b => b.id === this.editingBitenId);
 
             if (!biten) {
@@ -285,7 +294,7 @@ const Biten = {
                 content: newContent
             };
 
-            await DB.updateBiten(this.editingBitenId, updateData);
+            await database.updateBiten(this.editingBitenId, updateData);
 
             // モーダルを閉じる
             this.closeBitenEditor();
@@ -312,11 +321,12 @@ const Biten = {
         try {
             showLoading();
 
+            const database = App.getDB();
             // モーダルを閉じる
             this.closeBitenEditor();
 
             // データベースから削除
-            await DB.deleteBiten(this.editingBitenId);
+            await database.deleteBiten(this.editingBitenId);
 
             // 画面を再レンダリング
             await App.renderBitenNew(this.editingPersonId);

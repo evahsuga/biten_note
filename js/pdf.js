@@ -9,8 +9,9 @@ const PDF = {
             showLoading();
             Utils.log('PDF生成開始（jsPDF直接ダウンロード方式）', { selectedPersonIds });
 
+            const database = App.getDB();
             // 全人物と美点を取得
-            const allPersons = await DB.getAllPersons();
+            const allPersons = await database.getAllPersons();
             Utils.log('取得した人物数:', allPersons.length);
 
             if (allPersons.length === 0) {
@@ -39,7 +40,7 @@ const PDF = {
             // 各人物の美点を取得
             const personsWithBitens = [];
             for (const person of persons) {
-                const bitens = await DB.getBitensByPersonId(person.id);
+                const bitens = await database.getBitensByPersonId(person.id);
                 // 日付順にソート
                 bitens.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                 personsWithBitens.push({
@@ -412,7 +413,7 @@ const PDF = {
         const perPage = CONFIG.LIMITS.BITENS_PER_PAGE;
         let currentPageNum = 3; // 表紙と目次の次から
         const personPageInfo = personsWithBitens.map((item, index) => {
-            const bitenLimit = DB.getPersonBitenLimit(item.person);
+            const bitenLimit = item.person.bitenLimit || CONFIG.LIMITS.DEFAULT_BITEN_LIMIT;
             const pageCount = Math.ceil(bitenLimit / perPage);
             const startPage = currentPageNum;
             currentPageNum += pageCount;

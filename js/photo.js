@@ -348,8 +348,13 @@ const BackgroundPhoto = {
                 return;
             }
 
-            // Firestoreに保存
-            await DB.saveBackgroundImage(base64Data);
+            // データベースに保存（ゲストモード対応）
+            const database = App.getDB();
+            if (database.saveBackgroundImage) {
+                await database.saveBackgroundImage(base64Data);
+            } else if (database.setBackgroundImage) {
+                await database.setBackgroundImage(base64Data);
+            }
 
             // 背景画像として適用
             App.applyBackgroundImage(base64Data);

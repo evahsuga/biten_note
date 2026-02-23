@@ -1899,7 +1899,7 @@ const App = {
                                 ※本アプリは継続開発中です。今後、小中学校向けへ応用開発を予定しております。
                             </p>
                             <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px;">
-                                © 2025 あなたと一緒に「美点発見」！
+                                © 2026 あなたと一緒に「美点発見」！
                             </p>
                         </div>
                         <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px; margin-top: 16px;">
@@ -2435,8 +2435,8 @@ const App = {
                         </p>
 
                         <p style="text-align: right; color: var(--gray-600); margin-top: 32px;">
-                            制定日: 2025年10月18日<br>
-                            最終更新日: 2025年10月18日
+                            制定日: 2026年10月18日<br>
+                            最終更新日: 2026年10月18日
                         </p>
                     </div>
                 </div>
@@ -2537,8 +2537,8 @@ const App = {
                         </ol>
 
                         <p style="text-align: right; color: var(--gray-600); margin-top: 32px;">
-                            制定日: 2025年10月18日<br>
-                            最終更新日: 2025年10月18日
+                            制定日: 2026年10月18日<br>
+                            最終更新日: 2026年10月18日
                         </p>
                     </div>
                 </div>
@@ -2580,7 +2580,7 @@ const App = {
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
-                                <span style="color: var(--gray-600); font-size: 14px;">2025年2月</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年2月</span>
                             </div>
                             <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
                                 📄 美点100個を超えて記録できるようになりました！
@@ -2594,7 +2594,7 @@ const App = {
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
-                                <span style="color: var(--gray-600); font-size: 14px;">2025年1月</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年1月</span>
                             </div>
                             <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
                                 🎨 背景画像のカスタマイズ機能をリリースしました！
@@ -2611,7 +2611,7 @@ const App = {
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="background: var(--success); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">開発中</span>
-                                <span style="color: var(--gray-600); font-size: 14px;">2025年1月</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年1月</span>
                             </div>
                             <p style="margin: 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
                                 🚀 リマインド機能開発スタート！
@@ -2628,15 +2628,16 @@ const App = {
                             <span style="font-size: 14px; color: var(--gray-500);">▼ タップで開く</span>
                         </summary>
                         <div style="padding: 0 16px 16px 16px;">
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">📄 バージョン 1.9（2025年2月）</h3>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">📄 バージョン 1.9（2026年2月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">美点100個以上の拡張機能を追加</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">100個達成後に+100枠を追加可能に</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">ページネーション機能（1-100、101-200...）</li>
-                            <li style="line-height: 1.8;">PDF出力も拡張枠に対応</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">PDF出力も拡張枠に対応</li>
+                            <li style="line-height: 1.8;">ゲストモード機能の追加</li>
                         </ul>
 
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎨 バージョン 1.8（2025年1月）</h3>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎨 バージョン 1.8（2026年1月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">背景画像のカスタマイズ機能を追加</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">背景画像のトリミング機能（Cropper.js使用）</li>
@@ -2646,7 +2647,7 @@ const App = {
                             <li style="line-height: 1.8;">Netlifyでの公開開始</li>
                         </ul>
 
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎉 バージョン 1.7（2025年1月）</h3>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎉 バージョン 1.7（2026年1月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">人物一覧に写真表示機能を追加</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">チェックボックスによる表示オプション選択を実装</li>

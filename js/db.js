@@ -289,6 +289,11 @@ const DB = {
         }
     },
 
+    // 人物取得（エイリアス - LocalDBとの互換性のため）
+    async getPerson(personId) {
+        return this.getPersonById(personId);
+    },
+
     // 人物更新
     async updatePerson(personId, updateData) {
         try {

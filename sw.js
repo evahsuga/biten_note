@@ -3,22 +3,27 @@
 // v2.0 - リマインダー機能対応
 // ================================
 
-const CACHE_NAME = 'biten-note-v2.0';
+const CACHE_NAME = 'biten-note-v2.0.1';
+
+// 相対パスで指定（GitHub Pagesサブディレクトリ対応）
 const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    '/css/style.css',
-    '/css/responsive.css',
-    '/js/config.js',
-    '/js/app.js',
-    '/js/db.js',
-    '/js/auth.js',
-    '/js/person.js',
-    '/js/biten.js',
-    '/js/photo.js',
-    '/js/pdf.js',
-    '/icons/icon-192.png',
-    '/icons/icon-512.png'
+    './',
+    './index.html',
+    './css/style.css',
+    './css/responsive.css',
+    './css/notifications.css',
+    './js/config.js',
+    './js/firebase-config.js',
+    './js/auth.js',
+    './js/db.js',
+    './js/db-local.js',
+    './js/app.js',
+    './js/person.js',
+    './js/biten.js',
+    './js/photo.js',
+    './js/pdf.js',
+    './js/notifications.js',
+    './js/notification-messages.js'
 ];
 
 // ================================
@@ -30,10 +35,17 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('[SW] Caching static assets');
-                return cache.addAll(STATIC_ASSETS);
+                // 個別にキャッシュして失敗を許容
+                return Promise.allSettled(
+                    STATIC_ASSETS.map(url =>
+                        cache.add(url).catch(err => {
+                            console.warn('[SW] Failed to cache:', url, err.message);
+                        })
+                    )
+                );
             })
             .catch((error) => {
-                console.error('[SW] Cache addAll failed:', error);
+                console.error('[SW] Cache open failed:', error);
             })
     );
     // 即座にアクティブ化
@@ -66,22 +78,36 @@ self.addEventListener('activate', (event) => {
 // Network First with Cache Fallback
 // ================================
 self.addEventListener('fetch', (event) => {
+    const url = event.request.url;
+
+    // http/https以外のスキームはスキップ（chrome-extension等）
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return;
+    }
+
     // Firebase関連のリクエストはキャッシュしない
-    if (event.request.url.includes('firebase') ||
-        event.request.url.includes('googleapis') ||
-        event.request.url.includes('firestore')) {
+    if (url.includes('firebase') ||
+        url.includes('googleapis') ||
+        url.includes('firestore') ||
+        url.includes('gstatic')) {
         return;
     }
 
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                // 成功したらキャッシュを更新
-                if (response.status === 200) {
+                // 成功したらキャッシュを更新（GETリクエストのみ）
+                if (response.status === 200 && event.request.method === 'GET') {
                     const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
-                    });
+                    caches.open(CACHE_NAME)
+                        .then((cache) => {
+                            cache.put(event.request, responseClone).catch(() => {
+                                // キャッシュ保存失敗は無視
+                            });
+                        })
+                        .catch(() => {
+                            // キャッシュオープン失敗は無視
+                        });
                 }
                 return response;
             })
@@ -101,11 +127,11 @@ self.addEventListener('push', (event) => {
     let data = {
         title: '美点発見note',
         body: '今日も美点を発見しましょう！',
-        icon: '/icons/icon-192.png',
-        badge: '/icons/icon-72.png',
+        icon: './icons/icon-192.png',
+        badge: './icons/icon-72.png',
         tag: 'biten-reminder',
         data: {
-            url: '/'
+            url: './'
         }
     };
 
@@ -161,7 +187,7 @@ self.addEventListener('notificationclick', (event) => {
     }
 
     // ホーム画面を開く
-    const urlToOpen = event.notification.data?.url || '/';
+    const urlToOpen = event.notification.data?.url || './';
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })

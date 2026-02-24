@@ -244,6 +244,9 @@ const App = {
             return;
         } else if (hash === '#/settings') {
             await this.renderSettings();
+        } else if (hash === '#/notification-settings') {
+            await Notifications.init();
+            Notifications.renderSettingsPage();
         } else if (hash === '#/pdf-select') {
             await this.renderPdfSelect();
         } else if (hash === '#/release-notes') {
@@ -1950,6 +1953,9 @@ const App = {
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('background-image')">
                                 🖼️ 背景画像設定
                             </button>
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/notification-settings')">
+                                🔔 リマインダー設定
+                            </button>
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('account-info')">
                                 👤 アカウント情報
                             </button>
@@ -2607,15 +2613,21 @@ const App = {
                             </a>
                         </div>
 
-                        <!-- リマインド機能開発スタート -->
+                        <!-- リマインド機能リリース -->
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                <span style="background: var(--success); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">開発中</span>
-                                <span style="color: var(--gray-600); font-size: 14px;">2026年1月</span>
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年2月</span>
                             </div>
-                            <p style="margin: 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
-                                🚀 リマインド機能開発スタート！
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                🔔 リマインダー機能をリリースしました！
                             </p>
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                美点発見を習慣化するためのリマインド通知機能です。お好みのスタイル・頻度・時間帯を設定して、毎日の美点発見をサポートします。
+                            </p>
+                            <a href="#/notification-settings" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
+                                🔔 リマインダー設定へ →
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -2628,6 +2640,16 @@ const App = {
                             <span style="font-size: 14px; color: var(--gray-500);">▼ タップで開く</span>
                         </summary>
                         <div style="padding: 0 16px 16px 16px;">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🔔 バージョン 2.0（2026年2月）</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 24px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">リマインダー機能を追加</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">3種類の通知スタイル（友人、コーチング、お祭り）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">通知頻度の選択（毎日、週3回、カスタム）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">通知時間帯の設定（朝・昼・夜・カスタム）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">PWA対応（ホーム画面に追加可能）</li>
+                            <li style="line-height: 1.8;">プッシュ通知対応</li>
+                        </ul>
+
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">📄 バージョン 1.9（2026年2月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">美点100個以上の拡張機能を追加</li>

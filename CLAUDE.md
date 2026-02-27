@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **美点発見note** (Biten Note) - A web application for recording virtues/good qualities about people, based on the 美点発見® (Virtue Discovery) methodology.
 
-**Current Version**: 1.9
+**Current Version**: 2.0
 **Repository**: https://github.com/evahsuga/biten_note.git
 
 ## Development Commands
@@ -40,6 +40,8 @@ Migration requires Firebase Admin SDK service account key from [Firebase Console
 - **Frontend**: Pure HTML/CSS/JavaScript (ES6+), no build process
 - **Storage**: Firestore (cloud sync) + IndexedDB fallback (anonymous users)
 - **Authentication**: Firebase Auth (Email/Password + Google OAuth)
+- **Notifications**: Firebase Cloud Messaging (FCM), Cloud Functions (scheduled)
+- **PWA**: Service Worker, Web Push
 - **External Libraries** (CDN): Cropper.js v1.6.1, jsPDF v2.5.1, Firebase SDK v8.x
 
 ### Module Structure
@@ -48,15 +50,24 @@ The app uses global objects exposed via `<script>` tags (no bundler):
 
 ```
 js/
-├── firebase-config.js  # Firebase initialization
-├── auth.js             # Authentication wrapper (Auth object)
-├── db.js               # Database operations (DB object)
-├── config.js           # Constants (CONFIG object)
-├── app.js              # SPA router & main logic (App object)
-├── person.js           # Person management UI
-├── biten.js            # Virtue recording UI
-├── photo.js            # Photo cropping
-└── pdf.js              # PDF generation
+├── firebase-config.js      # Firebase initialization
+├── auth.js                 # Authentication wrapper (Auth object)
+├── db.js                   # Database operations (DB object)
+├── db-local.js             # IndexedDB for guest mode (LocalDB object)
+├── config.js               # Constants (CONFIG object)
+├── app.js                  # SPA router & main logic (App object)
+├── person.js               # Person management UI
+├── biten.js                # Virtue recording UI
+├── photo.js                # Photo cropping
+├── pdf.js                  # PDF generation
+├── notifications.js        # Reminder settings & FCM (Notifications object)
+└── notification-messages.js # Message templates for reminders
+
+functions/
+└── index.js                # Cloud Functions (scheduled notifications, FCM)
+
+sw.js                       # Service Worker (PWA, push notifications)
+manifest.json               # PWA manifest
 ```
 
 **CRITICAL - Script Load Order** in `index.html`:

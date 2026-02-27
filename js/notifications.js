@@ -124,14 +124,110 @@ const Notifications = {
                 return null;
             }
 
-            // FCMトークンの取得（Firebase Cloud Messagingが設定されている場合）
-            // 注: FCMの完全な設定にはCloud Functionsとの連携が必要
             Utils.log('通知許可取得成功');
+
+            // FCMトークンの取得
+            const fcmToken = await this.getFCMToken();
+            if (fcmToken) {
+                // Cloud Functionにトークンを登録
+                await this.registerFCMToken(fcmToken);
+            }
+
             return true;
         } catch (error) {
             Utils.error('通知許可エラー', error);
             showToast('通知の設定中にエラーが発生しました', 'error');
             return null;
+        }
+    },
+
+    // FCMトークンを取得
+    async getFCMToken() {
+        try {
+            // Firebase Messagingが利用可能か確認
+            if (!firebase.messaging) {
+                Utils.log('Firebase Messaging未対応');
+                return null;
+            }
+
+            const messaging = firebase.messaging();
+
+            // Service Workerの登録を確認
+            const swRegistration = await navigator.serviceWorker.ready;
+            Utils.log('Service Worker ready for FCM');
+
+            // VAPIDキーは開発/本番で異なる場合があります
+            // 現在は環境に応じて取得
+            const vapidKey = this.getVAPIDKey();
+
+            const token = await messaging.getToken({
+                vapidKey: vapidKey,
+                serviceWorkerRegistration: swRegistration
+            });
+
+            if (token) {
+                Utils.log('FCMトークン取得成功', token.substring(0, 20) + '...');
+                return token;
+            } else {
+                Utils.log('FCMトークン取得失敗: トークンなし');
+                return null;
+            }
+        } catch (error) {
+            Utils.error('FCMトークン取得エラー', error);
+            // トークン取得失敗でも通知設定自体は続行
+            return null;
+        }
+    },
+
+    // VAPIDキーを取得（環境に応じて）
+    getVAPIDKey() {
+        // 本番用VAPIDキー（biten-note-app）
+        // 開発環境でも本番キーを使用（FCMは同じプロジェクトで動作確認）
+        return 'BJW71LS5rM79ss4IrZothktWC5S4fBdTecLSlEVuiE2UMDG-xcRiR2TuhxFMs0AYS2Rlp8iQqPY5mtYqyXVurGg';
+    },
+
+    // Cloud FunctionにFCMトークンを登録
+    async registerFCMToken(fcmToken) {
+        try {
+            const userId = Auth.getCurrentUserId();
+            if (!userId) {
+                Utils.log('FCMトークン登録スキップ: 未ログイン');
+                return false;
+            }
+
+            // 環境に応じたCloud Functions URL
+            const isDev = window.location.hostname === 'localhost' ||
+                          window.location.hostname === '127.0.0.1';
+
+            const baseUrl = isDev
+                ? 'https://registerfcmtoken-ijaeqvhvca-an.a.run.app'  // 開発用
+                : 'https://asia-northeast1-biten-note-app.cloudfunctions.net/registerFcmToken';  // 本番用
+
+            const response = await fetch(baseUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    fcmToken: fcmToken
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Utils.log('FCMトークン登録成功');
+                // ローカル設定にもトークンを保存
+                this.currentSettings.fcmToken = fcmToken;
+                return true;
+            } else {
+                Utils.error('FCMトークン登録失敗', result.error);
+                return false;
+            }
+        } catch (error) {
+            Utils.error('FCMトークン登録エラー', error);
+            return false;
         }
     },
 

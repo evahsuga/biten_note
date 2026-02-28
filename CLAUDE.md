@@ -34,6 +34,45 @@ rm *-firebase-adminsdk-*.json
 
 Migration requires Firebase Admin SDK service account key from [Firebase Console](https://console.firebase.google.com/project/biten-note-app/settings/serviceaccounts/adminsdk). See `MIGRATION.md` for details.
 
+### Cloud Functions
+
+```bash
+cd functions
+
+# Install dependencies
+npm install
+
+# Deploy to Firebase (requires Blaze plan)
+npm run deploy
+# or
+firebase deploy --only functions
+
+# View logs
+npm run logs
+# or
+firebase functions:log
+
+# Local emulator
+npm run serve
+```
+
+**Firebase Projects**:
+- Development: `biten-note-dev` (testing Cloud Functions)
+- Production: `biten-note-app` (live users)
+
+```bash
+# Switch project
+firebase use biten-note-dev   # for testing
+firebase use biten-note-app   # for production
+```
+
+### Push Notification Setup
+
+VAPID key is stored in `js/notifications.js` → `getVAPIDKey()`. To regenerate:
+1. Firebase Console → Project Settings → Cloud Messaging
+2. Generate new Web Push certificate
+3. Update `getVAPIDKey()` with new key
+
 ## Architecture
 
 ### Technology Stack
@@ -147,7 +186,9 @@ git checkout production && git merge main && git push origin production && git c
 
 See `DEPLOY.md` for detailed instructions.
 
-**Firebase Project**: `biten-note-app`
+**Firebase Projects**:
+- Production: `biten-note-app` (Blaze plan, live users)
+- Development: `biten-note-dev` (Blaze plan, testing)
 
 ## Known Issues
 

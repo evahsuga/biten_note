@@ -15,6 +15,7 @@ const Notifications = {
         timeSlot: 'evening',       // morning, afternoon, evening, custom
         customTime: '20:00',
         method: 'push',            // push, email, both
+        email: null,               // メール通知用アドレス
         fcmToken: null,
         lastSentAt: null
     },
@@ -483,6 +484,11 @@ const Notifications = {
                         <span>📱+📧 両方</span>
                     </label>
                 </div>
+                <div id="emailInputContainer" class="email-input-container ${settings.method === 'email' || settings.method === 'both' ? '' : 'hidden'}">
+                    <label class="form-label">メールアドレス</label>
+                    <input type="email" id="notificationEmail" value="${settings.email || ''}" class="form-input" placeholder="example@gmail.com">
+                    <p class="form-hint">リマインダーをこのアドレスに送信します</p>
+                </div>
             </div>
         `;
     },
@@ -541,6 +547,18 @@ const Notifications = {
                 radio.closest('.style-option').classList.add('selected');
             });
         });
+
+        // 通知方法の変更でメール入力欄の表示切り替え
+        document.querySelectorAll('input[name="notificationMethod"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const container = document.getElementById('emailInputContainer');
+                if (e.target.value === 'email' || e.target.value === 'both') {
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
+            });
+        });
     },
 
     // フォームから設定を保存
@@ -581,6 +599,25 @@ const Notifications = {
             customTime = timeInput.value || '20:00';
         }
 
+        // メールアドレスの取得と検証
+        let email = null;
+        if (method.value === 'email' || method.value === 'both') {
+            const emailInput = document.getElementById('notificationEmail');
+            email = emailInput ? emailInput.value.trim() : '';
+
+            if (!email) {
+                showToast('メールアドレスを入力してください', 'error');
+                return;
+            }
+
+            // 簡易メールバリデーション
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('正しいメールアドレスを入力してください', 'error');
+                return;
+            }
+        }
+
         const settings = {
             enabled: true,
             style: style.value,
@@ -588,7 +625,8 @@ const Notifications = {
             customDays: customDays,
             timeSlot: timeSlot.value,
             customTime: customTime,
-            method: method.value
+            method: method.value,
+            email: email
         };
 
         const success = await this.saveSettings(settings);

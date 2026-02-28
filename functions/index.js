@@ -279,6 +279,51 @@ async function getUserStats(userId) {
 }
 
 /**
+ * メール通知を送信（Trigger Email Extension経由）
+ */
+async function sendEmailNotification(email, title, body) {
+    if (!email) {
+        logger.warn('Email address is missing');
+        return false;
+    }
+
+    try {
+        // mail コレクションにドキュメントを追加すると、
+        // Trigger Email Extension が自動的にメール送信を行う
+        await db.collection('mail').add({
+            to: email,
+            message: {
+                subject: title,
+                html: `
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h1 style="color: #007AFF; font-size: 24px; margin: 0;">美点発見note</h1>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 24px; color: white;">
+                            <p style="font-size: 16px; line-height: 1.6; margin: 0;">${body}</p>
+                        </div>
+                        <div style="text-align: center; margin-top: 24px;">
+                            <a href="https://bitennote.netlify.app" style="display: inline-block; background: #007AFF; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">美点ノートを開く</a>
+                        </div>
+                        <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+                            <p>このメールは美点発見noteのリマインダー通知です。</p>
+                            <p>通知設定はアプリの設定画面から変更できます。</p>
+                        </div>
+                    </div>
+                `,
+                text: `${body}\n\n美点ノートを開く: https://bitennote.netlify.app`
+            }
+        });
+
+        logger.info(`Email notification queued for ${email}`);
+        return true;
+    } catch (error) {
+        logger.error('Email notification error:', error);
+        return false;
+    }
+}
+
+/**
  * FCMプッシュ通知を送信
  */
 async function sendPushNotification(fcmToken, title, body) {
@@ -413,24 +458,28 @@ exports.sendScheduledNotifications = onSchedule({
                 const { type, message } = generateMessage(settings, userStats);
 
                 // 通知を送信
-                let sent = false;
+                let pushSent = false;
+                let emailSent = false;
 
                 if (settings.method === 'push' || settings.method === 'both') {
-                    sent = await sendPushNotification(
+                    pushSent = await sendPushNotification(
                         settings.fcmToken,
                         '美点発見note',
                         message
                     );
                 }
 
-                // メール通知（将来実装）
+                // メール通知
                 if (settings.method === 'email' || settings.method === 'both') {
-                    // TODO: メール送信実装
-                    logger.info('Email notification not implemented yet');
+                    emailSent = await sendEmailNotification(
+                        settings.email,
+                        '美点発見note - リマインダー',
+                        message
+                    );
                 }
 
                 // 履歴を保存
-                if (sent || settings.method === 'email') {
+                if (pushSent || emailSent) {
                     await saveNotificationHistory(userId, {
                         type,
                         message,

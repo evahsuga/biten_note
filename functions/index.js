@@ -148,11 +148,12 @@ function getNotificationHour(settings) {
 }
 
 /**
- * 今日が通知日かチェック
+ * 今日が通知日かチェック（JST基準）
  */
 function isNotificationDay(settings) {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0=日曜, 1=月曜...
+    const now = new Date();
+    const jstTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const dayOfWeek = jstTime.getDay(); // 0=日曜, 1=月曜...
 
     switch (settings.frequency) {
         case 'daily':
@@ -171,18 +172,20 @@ function isNotificationDay(settings) {
 }
 
 /**
- * 本日すでに送信済みかチェック
+ * 本日すでに送信済みかチェック（JST基準）
  */
 function isAlreadySentToday(lastSentAt) {
     if (!lastSentAt) return false;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const jstToday = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    jstToday.setHours(0, 0, 0, 0);
 
     const lastSent = lastSentAt.toDate ? lastSentAt.toDate() : new Date(lastSentAt);
-    lastSent.setHours(0, 0, 0, 0);
+    const jstLastSent = new Date(lastSent.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    jstLastSent.setHours(0, 0, 0, 0);
 
-    return lastSent.getTime() === today.getTime();
+    return jstLastSent.getTime() === jstToday.getTime();
 }
 
 /**
@@ -200,8 +203,10 @@ function generateMessage(settings, userData) {
         };
     }
 
-    // 時間帯を取得
-    const hour = new Date().getHours();
+    // 時間帯を取得（JST基準）
+    const now = new Date();
+    const jstTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const hour = jstTime.getHours();
     const timeSlot = getTimeSlot(hour);
 
     // メッセージタイプを決定
@@ -349,7 +354,11 @@ exports.sendScheduledNotifications = onSchedule({
 }, async (event) => {
     logger.info("sendScheduledNotifications started");
 
-    const currentHour = new Date().getHours();
+    // JST（日本標準時）で現在時刻を取得
+    const now = new Date();
+    const jstTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const currentHour = jstTime.getHours();
+    logger.info(`Current JST hour: ${currentHour}`);
     const processedUsers = [];
     const errors = [];
 
@@ -365,22 +374,37 @@ exports.sendScheduledNotifications = onSchedule({
                 const settingsDoc = await db.collection('users').doc(userId)
                     .collection('settings').doc('notifications').get();
 
-                if (!settingsDoc.exists) continue;
+                if (!settingsDoc.exists) {
+                    logger.info(`User ${userId}: No notification settings`);
+                    continue;
+                }
 
                 const settings = settingsDoc.data();
 
                 // 通知が無効ならスキップ
-                if (!settings.enabled) continue;
+                if (!settings.enabled) {
+                    logger.info(`User ${userId}: Notifications disabled`);
+                    continue;
+                }
 
                 // 今日が通知日かチェック
-                if (!isNotificationDay(settings)) continue;
+                if (!isNotificationDay(settings)) {
+                    logger.info(`User ${userId}: Not notification day (frequency: ${settings.frequency})`);
+                    continue;
+                }
 
                 // 設定時刻と一致するかチェック
                 const notificationHour = getNotificationHour(settings);
-                if (currentHour !== notificationHour) continue;
+                if (currentHour !== notificationHour) {
+                    logger.info(`User ${userId}: Hour mismatch (current: ${currentHour}, setting: ${notificationHour})`);
+                    continue;
+                }
 
                 // 本日すでに送信済みかチェック
-                if (isAlreadySentToday(settings.lastSentAt)) continue;
+                if (isAlreadySentToday(settings.lastSentAt)) {
+                    logger.info(`User ${userId}: Already sent today`);
+                    continue;
+                }
 
                 // ユーザー統計を取得
                 const userStats = await getUserStats(userId);

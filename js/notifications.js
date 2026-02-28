@@ -195,13 +195,13 @@ const Notifications = {
                 return false;
             }
 
-            // 環境に応じたCloud Functions URL
+            // 環境に応じたCloud Functions URL（v2形式）
             const isDev = window.location.hostname === 'localhost' ||
                           window.location.hostname === '127.0.0.1';
 
             const baseUrl = isDev
-                ? 'https://registerfcmtoken-ijaeqvhvca-an.a.run.app'  // 開発用
-                : 'https://asia-northeast1-biten-note-app.cloudfunctions.net/registerFcmToken';  // 本番用
+                ? 'https://registerfcmtoken-ijaeqvhvca-an.a.run.app'  // 開発用 (biten-note-dev)
+                : 'https://registerfcmtoken-khpoqsgq7q-an.a.run.app';  // 本番用 (biten-note-app)
 
             const response = await fetch(baseUrl, {
                 method: 'POST',

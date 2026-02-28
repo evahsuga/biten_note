@@ -7,14 +7,14 @@
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
 
-// Firebase設定（firebase-config.jsと同じ設定）
+// Firebase設定（firebase-config.jsの本番設定と一致させる）
 firebase.initializeApp({
-    apiKey: "AIzaSyDdT-_lPhke_fMpC4mf2JZiIPDctzEXJFI",
+    apiKey: "AIzaSyCXTjvd__i_8MYDbjGVK9o6nyi5eFFmCyk",
     authDomain: "biten-note-app.firebaseapp.com",
     projectId: "biten-note-app",
     storageBucket: "biten-note-app.firebasestorage.app",
     messagingSenderId: "862949639595",
-    appId: "1:862949639595:web:81f5f09e5b2ae5ec1d9c3d"
+    appId: "1:862949639595:web:b18a86e318b8ed8091feee"
 });
 
 // Firebase Messagingインスタンスを取得

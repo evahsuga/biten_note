@@ -33,14 +33,13 @@ main → GitHub Pages → production → Netlify
 
 ### バージョン履歴
 
-- **2.0**（2026年2月）
-  - リマインダー機能を追加（プッシュ通知対応）
+- **2.0**（2026年3月）
+  - リマインダー機能を追加（メール通知）
   - 3種類の通知スタイル（友人、コーチング、お祭り）
-  - 通知頻度の選択（毎日、週3回、カスタム）
-  - 通知時間帯の設定（朝・昼・夜・カスタム）
+  - 毎日指定時刻にメールでリマインド
   - PWA対応（ホーム画面に追加可能）
   - Firebase Cloud Functions によるスケジュール送信
-  - Firebase Cloud Messaging によるプッシュ通知
+  - Firebase Extension "Trigger Email" によるメール配信
 - **1.9**（2026年2月）
   - 美点100個以上の拡張機能を追加
   - 100個達成後に+100枠を追加可能に
@@ -66,7 +65,7 @@ main → GitHub Pages → production → Netlify
 - Firebase Authentication
 - Firebase Firestore
 - Firebase Cloud Functions
-- Firebase Cloud Messaging (FCM)
+- Firebase Extension "Trigger Email from Firestore"
 - PWA (Service Worker)
 - Firebase App Check (reCAPTCHA v3)
 

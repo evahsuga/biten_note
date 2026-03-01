@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **美点発見note** (Biten Note) - A web application for recording virtues/good qualities about people, based on the 美点発見® (Virtue Discovery) methodology.
 
-**Current Version**: 2.0
+**Current Version**: 2.0 (Email Reminder)
 **Repository**: https://github.com/evahsuga/biten_note.git
 
 ## Version Management
@@ -102,12 +102,22 @@ firebase use biten-note-dev   # for testing
 firebase use biten-note-app   # for production
 ```
 
-### Push Notification Setup
+### Email Notification Setup (Firebase Extension)
 
-VAPID key is stored in `js/notifications.js` → `getVAPIDKey()`. To regenerate:
-1. Firebase Console → Project Settings → Cloud Messaging
-2. Generate new Web Push certificate
-3. Update `getVAPIDKey()` with new key
+Email reminders use Firebase Extension "Trigger Email from Firestore":
+- SMTP: Gmail via App Password (stored in Secret Manager)
+- Config: `extensions/firestore-send-email.env`
+- Mail collection: `mail` (Firestore)
+
+```bash
+# Update SMTP password in Secret Manager
+firebase functions:secrets:set SMTP_PASSWORD --project biten-note-app
+
+# Deploy extension changes
+firebase deploy --only extensions --project biten-note-app
+```
+
+**Note**: Push notifications were investigated but deprioritized due to device compatibility issues. See `docs/PUSH_NOTIFICATION_INVESTIGATION.md` for details.
 
 ## Architecture
 
@@ -115,8 +125,8 @@ VAPID key is stored in `js/notifications.js` → `getVAPIDKey()`. To regenerate:
 - **Frontend**: Pure HTML/CSS/JavaScript (ES6+), no build process
 - **Storage**: Firestore (cloud sync) + IndexedDB fallback (anonymous users)
 - **Authentication**: Firebase Auth (Email/Password + Google OAuth)
-- **Notifications**: Firebase Cloud Messaging (FCM), Cloud Functions (scheduled)
-- **PWA**: Service Worker, Web Push
+- **Notifications**: Email via Firebase Extension "Trigger Email from Firestore", Cloud Functions (scheduled)
+- **PWA**: Service Worker, manifest.json, icons (8 sizes)
 - **External Libraries** (CDN): Cropper.js v1.6.1, jsPDF v2.5.1, Firebase SDK v8.x
 
 ### Module Structure
@@ -183,6 +193,9 @@ users/{userId}/bitens/{bitenId}
 
 users/{userId}/settings/appSettings
   - stats, userPlan, lastSyncAt
+
+users/{userId}/settings/notifications
+  - enabled, style, frequency, customTime, method ('email'), email, lastSentAt
 ```
 
 **IndexedDB** (BitenNoteDB v1): `persons`, `bitens`, `appSettings` ObjectStores
@@ -228,6 +241,7 @@ See `DEPLOY.md` for detailed instructions.
 
 ## Known Issues
 
+- **Push Notifications Not Working**: FCM sends successfully but devices don't display. Email-only reminder system implemented instead. See `docs/PUSH_NOTIFICATION_INVESTIGATION.md`
 - **App Check Disabled**: Currently disabled for performance testing (see `firebase-config.js`)
 - **Photo Storage**: Base64 in Firestore (not Cloud Storage) - not scalable for large photos
 - **Offline Multi-tab**: Firestore persistence causes `failed-precondition` error with multiple tabs

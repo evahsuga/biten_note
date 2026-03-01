@@ -9,6 +9,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Current Version**: 2.0
 **Repository**: https://github.com/evahsuga/biten_note.git
 
+## Version Management
+
+バージョン更新時は以下の場所を確認・更新してください：
+
+### 必須更新箇所（チェックリスト）
+
+| 更新箇所 | ファイル | 場所 | 備考 |
+|---------|---------|------|------|
+| ✅ バージョン番号 | `js/config.js` | `CONFIG.VERSION` | **唯一の定義場所** - ホーム画面に自動反映 |
+| ✅ CLAUDE.md | `CLAUDE.md` | `Current Version:` | ドキュメント用 |
+| ✅ 最新情報 | `js/app.js` | `renderReleaseNotesPage()` | NEWバッジ付きの新着情報を追加 |
+| ✅ バージョン履歴 | `js/app.js` | `📋 バージョン履歴` | アコーディオン内の履歴を追加 |
+
+### バージョン更新手順
+
+```bash
+# 1. config.js のバージョンを更新
+#    js/config.js: VERSION: 'X.X'
+
+# 2. CLAUDE.md の Current Version を更新
+
+# 3. app.js の最新情報に新しい記事を追加（最上段に）
+
+# 4. app.js のバージョン履歴に新セクションを追加
+
+# 5. コミット・プッシュ
+git add -A
+git commit -m "Release: バージョン X.X"
+git push origin main
+```
+
+### 現在の参照状況
+
+- **ホーム画面**: `CONFIG.VERSION` を参照（`js/app.js` line ~400）
+- **最新情報ページ**: ハードコードされた日付・内容（`js/app.js` renderReleaseNotesPage内）
+
 ## Development Commands
 
 ```bash

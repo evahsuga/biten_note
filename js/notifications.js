@@ -261,7 +261,7 @@ const Notifications = {
                 <!-- iOSユーザー向け案内 -->
                 ${this.renderIOSGuide()}
 
-                <button class="btn btn-outline btn-block" onclick="App.navigate('#/settings')">
+                <button class="btn btn-back" onclick="App.navigate('#/settings')">
                     ← 設定に戻る
                 </button>
             </div>
@@ -470,6 +470,46 @@ const Notifications = {
             <!-- 通知方法 -->
             <div class="form-section">
                 <label class="form-label">通知の方法</label>
+                ${this.renderNotificationMethodOptions(settings)}
+            </div>
+        `;
+    },
+
+    // 通知方法オプションのレンダリング
+    renderNotificationMethodOptions(settings) {
+        const user = Auth.getCurrentUser();
+        const isGuest = !user || !user.email;
+        const userEmail = user?.email || '';
+
+        if (isGuest) {
+            // ゲストユーザーの場合
+            return `
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="notificationMethod" value="push" checked>
+                        <span>📱 プッシュ通知（画面に表示・すぐ気づける）</span>
+                    </label>
+                    <label class="radio-option disabled">
+                        <input type="radio" name="notificationMethod" value="email" disabled>
+                        <span>📧 メール通知</span>
+                        <span class="option-badge">要アカウント</span>
+                    </label>
+                    <label class="radio-option disabled">
+                        <input type="radio" name="notificationMethod" value="both" disabled>
+                        <span>📱+📧 両方</span>
+                        <span class="option-badge">要アカウント</span>
+                    </label>
+                </div>
+                <div class="guest-notice">
+                    <p>📧 メール通知を利用するには<br>アカウント登録が必要です</p>
+                    <button class="btn btn-primary btn-sm" onclick="App.navigate('#/settings'); setTimeout(() => document.querySelector('.auth-section .btn-primary')?.click(), 100);">
+                        アカウントを作成する →
+                    </button>
+                </div>
+            `;
+        } else {
+            // ログインユーザーの場合
+            return `
                 <div class="radio-group">
                     <label class="radio-option">
                         <input type="radio" name="notificationMethod" value="push" ${settings.method === 'push' ? 'checked' : ''}>
@@ -484,13 +524,11 @@ const Notifications = {
                         <span>📱+📧 両方</span>
                     </label>
                 </div>
-                <div id="emailInputContainer" class="email-input-container ${settings.method === 'email' || settings.method === 'both' ? '' : 'hidden'}">
-                    <label class="form-label">メールアドレス</label>
-                    <input type="email" id="notificationEmail" value="${settings.email || ''}" class="form-input" placeholder="example@gmail.com">
-                    <p class="form-hint">リマインダーをこのアドレスに送信します</p>
+                <div id="emailInfoContainer" class="email-info ${settings.method === 'email' || settings.method === 'both' ? '' : 'hidden'}">
+                    <p class="form-hint">📧 <strong>${userEmail}</strong> にリマインダーを送信します</p>
                 </div>
-            </div>
-        `;
+            `;
+        }
     },
 
     // iOS向けガイド
@@ -548,14 +586,16 @@ const Notifications = {
             });
         });
 
-        // 通知方法の変更でメール入力欄の表示切り替え
+        // 通知方法の変更でメール情報の表示切り替え
         document.querySelectorAll('input[name="notificationMethod"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
-                const container = document.getElementById('emailInputContainer');
-                if (e.target.value === 'email' || e.target.value === 'both') {
-                    container.classList.remove('hidden');
-                } else {
-                    container.classList.add('hidden');
+                const container = document.getElementById('emailInfoContainer');
+                if (container) {
+                    if (e.target.value === 'email' || e.target.value === 'both') {
+                        container.classList.remove('hidden');
+                    } else {
+                        container.classList.add('hidden');
+                    }
                 }
             });
         });
@@ -599,23 +639,15 @@ const Notifications = {
             customTime = timeInput.value || '20:00';
         }
 
-        // メールアドレスの取得と検証
+        // メールアドレスの取得（アカウントのメールを使用）
         let email = null;
         if (method.value === 'email' || method.value === 'both') {
-            const emailInput = document.getElementById('notificationEmail');
-            email = emailInput ? emailInput.value.trim() : '';
-
-            if (!email) {
-                showToast('メールアドレスを入力してください', 'error');
+            const user = Auth.getCurrentUser();
+            if (!user || !user.email) {
+                showToast('メール通知にはアカウント登録が必要です', 'error');
                 return;
             }
-
-            // 簡易メールバリデーション
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showToast('正しいメールアドレスを入力してください', 'error');
-                return;
-            }
+            email = user.email;
         }
 
         const settings = {

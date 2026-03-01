@@ -2582,6 +2582,23 @@ const App = {
                     <div class="card-body" style="padding: 20px;">
                         <!-- News項目（日付順に新しい順） -->
 
+                        <!-- リマインド機能（総合調整中） -->
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年3月</span>
+                            </div>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                🔔 リマインダー機能が総合調整に入りました！
+                            </p>
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                美点発見を習慣化するためのリマインド通知機能です。お好みのスタイル・頻度・時間帯を設定して、毎日の美点発見をサポートします。
+                            </p>
+                            <a href="#/notification-settings" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
+                                🔔 リマインダー設定へ →
+                            </a>
+                        </div>
+
                         <!-- 美点+100件拡張機能リリース -->
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -2610,23 +2627,6 @@ const App = {
                             </p>
                             <a href="#/settings" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
                                 ⚙️ 設定ページで背景を変更 →
-                            </a>
-                        </div>
-
-                        <!-- リマインド機能リリース -->
-                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
-                                <span style="color: var(--gray-600); font-size: 14px;">2026年2月</span>
-                            </div>
-                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
-                                🔔 リマインダー機能をリリースしました！
-                            </p>
-                            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
-                                美点発見を習慣化するためのリマインド通知機能です。お好みのスタイル・頻度・時間帯を設定して、毎日の美点発見をサポートします。
-                            </p>
-                            <a href="#/notification-settings" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
-                                🔔 リマインダー設定へ →
                             </a>
                         </div>
                     </div>

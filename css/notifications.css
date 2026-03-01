@@ -263,6 +263,76 @@
     border-top: 1px solid var(--gray-200);
 }
 
+/* ゲストユーザー向け通知 */
+.guest-notice {
+    margin-top: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(255, 149, 0, 0.1) 0%, rgba(255, 204, 0, 0.1) 100%);
+    border: 1px solid rgba(255, 149, 0, 0.3);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.guest-notice p {
+    font-size: 14px;
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.guest-notice .btn {
+    margin-top: 8px;
+}
+
+/* 無効なオプション */
+.radio-option.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.radio-option.disabled:hover {
+    border-color: var(--gray-200);
+    background: white;
+}
+
+.radio-option.disabled input {
+    cursor: not-allowed;
+}
+
+/* オプションバッジ */
+.option-badge {
+    font-size: 11px;
+    background: var(--gray-400);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: auto;
+    font-weight: 500;
+}
+
+/* メール情報表示 */
+.email-info {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.1) 0%, rgba(0, 199, 190, 0.1) 100%);
+    border-radius: 10px;
+}
+
+.email-info.hidden {
+    display: none;
+}
+
+.email-info .form-hint {
+    margin: 0;
+    font-size: 14px;
+    color: var(--gray-700);
+}
+
+.email-info strong {
+    color: var(--primary);
+}
+
 /* iOSガイド */
 .ios-guide {
     margin-bottom: 20px;

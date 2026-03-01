@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "biten-note-app"
+  },
+  "targets": {},
+  "etags": {
+    "biten-note-app": {
+      "extensionInstances": {
+        "firestore-send-email": "95a8b1a791bfb157e78a1d88d38573720fdb576a4749352215800484a6cd6a90"
+      }
+    }
   }
 }

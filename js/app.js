@@ -378,8 +378,9 @@ const App = {
                                style="text-decoration: none;">
                                 💬 ご意見・ご感想をお聞かせください
                             </a>
-                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')">
-                                🔔 最新情報！
+                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')" style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                <span>🔔 最新情報！</span>
+                                <span style="font-size: 11px; color: var(--gray-500);">（2026/3/1更新）</span>
                             </button>
                         </div>
                     </div>

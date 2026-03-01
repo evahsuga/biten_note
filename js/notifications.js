@@ -10,11 +10,11 @@ const Notifications = {
     defaultSettings: {
         enabled: false,
         style: 'friend',           // friend, coaching, festival
-        frequency: 'daily',        // daily, weekly3, weekly1, custom
-        customDays: [],            // [0,1,2,3,4,5,6] 日曜=0
-        timeSlot: 'evening',       // morning, afternoon, evening, custom
+        frequency: 'daily',        // daily のみ
+        customDays: [],            // 使用しない
+        timeSlot: 'custom',        // custom のみ
         customTime: '20:00',
-        method: 'push',            // push, email, both
+        method: 'email',           // email のみ
         email: null,               // メール通知用アドレス
         fcmToken: null,
         lastSentAt: null
@@ -258,9 +258,6 @@ const Notifications = {
 
                 ${isEnabled ? this.renderEditForm(settings) : this.renderSetupForm()}
 
-                <!-- iOSユーザー向け案内 -->
-                ${this.renderIOSGuide()}
-
                 <button class="btn btn-back" onclick="App.navigate('#/settings')">
                     ← 設定に戻る
                 </button>
@@ -295,32 +292,24 @@ const Notifications = {
             festival: '🎊 お祭りスタイル'
         };
         const frequencyLabels = {
-            daily: '毎日',
-            weekly3: '週3回（月・水・金）',
-            weekly1: '週1回',
-            custom: 'カスタム'
+            daily: '毎日'
         };
         const timeLabels = {
-            morning: '朝（8:00）',
-            afternoon: '昼（12:00）',
-            evening: '夜（20:00）',
             custom: settings.customTime
         };
         const methodLabels = {
-            push: '📱 プッシュ通知',
-            email: '📧 メール通知',
-            both: '📱+📧 両方'
+            email: '📧 メール通知'
         };
 
         return `
             <div class="notification-status enabled">
                 <div class="status-item">
-                    <span class="status-icon">✅</span>
-                    <span class="status-text">${frequencyLabels[settings.frequency]} ${timeLabels[settings.timeSlot]}</span>
+                    <span class="status-icon">⏰</span>
+                    <span class="status-text">毎日 ${settings.customTime || timeLabels.custom} に配信</span>
                 </div>
                 <div class="status-item">
-                    <span class="status-icon">${methodLabels[settings.method].split(' ')[0]}</span>
-                    <span class="status-text">${methodLabels[settings.method].split(' ').slice(1).join(' ')}</span>
+                    <span class="status-icon">📧</span>
+                    <span class="status-text">メールで通知</span>
                 </div>
                 <div class="status-item">
                     <span class="status-icon">${styleLabels[settings.style].split(' ')[0]}</span>
@@ -408,145 +397,35 @@ const Notifications = {
                 </div>
             </div>
 
-            <!-- 通知頻度 -->
-            <div class="form-section">
-                <label class="form-label">通知する頻度</label>
-                <div class="radio-group">
-                    <label class="radio-option">
-                        <input type="radio" name="notificationFrequency" value="daily" ${settings.frequency === 'daily' ? 'checked' : ''}>
-                        <span>毎日</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="notificationFrequency" value="weekly3" ${settings.frequency === 'weekly3' ? 'checked' : ''}>
-                        <span>週3回（月・水・金）</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="notificationFrequency" value="weekly1" ${settings.frequency === 'weekly1' ? 'checked' : ''}>
-                        <span>週1回</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="notificationFrequency" value="custom" ${settings.frequency === 'custom' ? 'checked' : ''}>
-                        <span>自分で曜日を選ぶ</span>
-                    </label>
-                </div>
-                <div id="customDaysContainer" class="custom-days ${settings.frequency === 'custom' ? '' : 'hidden'}">
-                    <div class="day-checkboxes">
-                        ${['日', '月', '火', '水', '木', '金', '土'].map((day, i) => `
-                            <label class="day-checkbox">
-                                <input type="checkbox" name="customDay" value="${i}" ${settings.customDays.includes(i) ? 'checked' : ''}>
-                                <span>${day}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                </div>
-            </div>
+            <!-- 通知頻度（毎日固定） -->
+            <input type="hidden" name="notificationFrequency" value="daily">
 
-            <!-- 通知時間 -->
+            <!-- 通知時間（正時のみ選択可能） -->
             <div class="form-section">
                 <label class="form-label">通知する時間</label>
-                <div class="radio-group">
-                    <label class="radio-option">
-                        <input type="radio" name="notificationTime" value="morning" ${settings.timeSlot === 'morning' ? 'checked' : ''}>
-                        <span>朝（8:00）</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="notificationTime" value="afternoon" ${settings.timeSlot === 'afternoon' ? 'checked' : ''}>
-                        <span>昼（12:00）</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="notificationTime" value="evening" ${settings.timeSlot === 'evening' ? 'checked' : ''}>
-                        <span>夜（20:00）</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="notificationTime" value="custom" ${settings.timeSlot === 'custom' ? 'checked' : ''}>
-                        <span>自分で時間を選ぶ</span>
-                    </label>
-                </div>
-                <div id="customTimeContainer" class="custom-time ${settings.timeSlot === 'custom' ? '' : 'hidden'}">
-                    <input type="time" id="customTimeInput" value="${settings.customTime}" class="form-input">
+                <input type="hidden" name="notificationTime" value="custom">
+                <div class="time-select-container">
+                    <select id="customTimeSelect" class="form-select time-select">
+                        ${Array.from({length: 24}, (_, i) => {
+                            const hour = String(i).padStart(2, '0');
+                            const time = hour + ':00';
+                            const selected = settings.customTime === time ? 'selected' : '';
+                            return `<option value="${time}" ${selected}>${hour}:00</option>`;
+                        }).join('')}
+                    </select>
                 </div>
             </div>
 
-            <!-- 通知方法 -->
+            <!-- 通知方法（メールのみ） -->
             <div class="form-section">
                 <label class="form-label">通知の方法</label>
-                ${this.renderNotificationMethodOptions(settings)}
-            </div>
-        `;
-    },
-
-    // 通知方法オプションのレンダリング
-    renderNotificationMethodOptions(settings) {
-        const user = Auth.getCurrentUser();
-        const isGuest = !user || !user.email;
-        const userEmail = user?.email || '';
-
-        if (isGuest) {
-            // ゲストユーザーの場合
-            return `
-                <div class="radio-group">
-                    <label class="radio-option">
-                        <input type="radio" name="notificationMethod" value="push" checked>
-                        <span>📱 プッシュ通知（画面に表示・すぐ気づける）</span>
-                    </label>
-                    <label class="radio-option disabled">
-                        <input type="radio" name="notificationMethod" value="email" disabled>
-                        <span>📧 メール通知</span>
-                        <span class="option-badge">要アカウント</span>
-                    </label>
-                    <label class="radio-option disabled">
-                        <input type="radio" name="notificationMethod" value="both" disabled>
-                        <span>📱+📧 両方</span>
-                        <span class="option-badge">要アカウント</span>
-                    </label>
-                </div>
-                <div class="guest-notice">
-                    <p>📧 メール通知を利用するには<br>アカウント登録が必要です</p>
-                    <button class="btn btn-primary btn-sm" onclick="App.navigate('#/settings'); setTimeout(() => document.querySelector('.auth-section .btn-primary')?.click(), 100);">
-                        アカウントを作成する →
-                    </button>
-                </div>
-            `;
-        } else {
-            // ログインユーザーの場合
-            return `
-                <div class="radio-group">
-                    <label class="radio-option">
-                        <input type="radio" name="notificationMethod" value="push" ${settings.method === 'push' ? 'checked' : ''}>
-                        <span>📱 プッシュ通知（画面に表示・すぐ気づける）</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="notificationMethod" value="email" ${settings.method === 'email' ? 'checked' : ''}>
-                        <span>📧 メール通知（自分のペースで確認）</span>
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="notificationMethod" value="both" ${settings.method === 'both' ? 'checked' : ''}>
-                        <span>📱+📧 両方</span>
-                    </label>
-                </div>
-                <div id="emailInfoContainer" class="email-info ${settings.method === 'email' || settings.method === 'both' ? '' : 'hidden'}">
-                    <p class="form-hint">📧 <strong>${userEmail}</strong> にリマインダーを送信します</p>
-                </div>
-            `;
-        }
-    },
-
-    // iOS向けガイド
-    renderIOSGuide() {
-        // iOS判定
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        if (!isIOS) return '';
-
-        return `
-            <div class="card ios-guide">
-                <div class="card-body">
-                    <h3>📱 iPhoneでプッシュ通知を受け取るには</h3>
-                    <p>Safariで開き、「共有」→「ホーム画面に追加」してください。</p>
-                    <ol>
-                        <li>Safariの「共有」ボタン（□に↑）をタップ</li>
-                        <li>「ホーム画面に追加」を選択</li>
-                        <li>「追加」をタップ</li>
-                    </ol>
+                <input type="hidden" name="notificationMethod" value="email">
+                <div class="email-notification-info">
+                    <div class="email-icon">📧</div>
+                    <div class="email-text">
+                        <p class="email-method">メール通知</p>
+                        <p class="email-hint">アカウント登録のメールへ届きます</p>
+                    </div>
                 </div>
             </div>
         `;
@@ -554,30 +433,6 @@ const Notifications = {
 
     // イベントリスナーの設定
     attachEventListeners() {
-        // 頻度のカスタム表示切り替え
-        document.querySelectorAll('input[name="notificationFrequency"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const container = document.getElementById('customDaysContainer');
-                if (e.target.value === 'custom') {
-                    container.classList.remove('hidden');
-                } else {
-                    container.classList.add('hidden');
-                }
-            });
-        });
-
-        // 時間のカスタム表示切り替え
-        document.querySelectorAll('input[name="notificationTime"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const container = document.getElementById('customTimeContainer');
-                if (e.target.value === 'custom') {
-                    container.classList.remove('hidden');
-                } else {
-                    container.classList.add('hidden');
-                }
-            });
-        });
-
         // スタイル選択のハイライト
         document.querySelectorAll('.style-option input').forEach(radio => {
             radio.addEventListener('change', () => {
@@ -585,80 +440,37 @@ const Notifications = {
                 radio.closest('.style-option').classList.add('selected');
             });
         });
-
-        // 通知方法の変更でメール情報の表示切り替え
-        document.querySelectorAll('input[name="notificationMethod"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const container = document.getElementById('emailInfoContainer');
-                if (container) {
-                    if (e.target.value === 'email' || e.target.value === 'both') {
-                        container.classList.remove('hidden');
-                    } else {
-                        container.classList.add('hidden');
-                    }
-                }
-            });
-        });
     },
 
     // フォームから設定を保存
     async saveFromForm() {
-        // 通知許可を確認
         const style = document.querySelector('input[name="notificationStyle"]:checked');
-        const frequency = document.querySelector('input[name="notificationFrequency"]:checked');
-        const timeSlot = document.querySelector('input[name="notificationTime"]:checked');
-        const method = document.querySelector('input[name="notificationMethod"]:checked');
+        const timeSelect = document.getElementById('customTimeSelect');
 
-        if (!style || !frequency || !timeSlot || !method) {
-            showToast('全ての項目を選択してください', 'error');
+        if (!style) {
+            showToast('通知スタイルを選択してください', 'error');
             return;
         }
 
-        // プッシュ通知の場合は許可を確認
-        if (method.value === 'push' || method.value === 'both') {
-            const permissionGranted = await this.requestNotificationPermission();
-            if (!permissionGranted) return;
+        // メールアドレスの確認
+        const user = Auth.getCurrentUser();
+        if (!user || !user.email) {
+            showToast('メール通知にはアカウント登録が必要です', 'error');
+            return;
         }
 
-        // カスタム曜日の取得
-        const customDays = [];
-        if (frequency.value === 'custom') {
-            document.querySelectorAll('input[name="customDay"]:checked').forEach(cb => {
-                customDays.push(parseInt(cb.value));
-            });
-            if (customDays.length === 0) {
-                showToast('少なくとも1日は選択してください', 'error');
-                return;
-            }
-        }
-
-        // カスタム時間の取得
-        let customTime = '20:00';
-        if (timeSlot.value === 'custom') {
-            const timeInput = document.getElementById('customTimeInput');
-            customTime = timeInput.value || '20:00';
-        }
-
-        // メールアドレスの取得（アカウントのメールを使用）
-        let email = null;
-        if (method.value === 'email' || method.value === 'both') {
-            const user = Auth.getCurrentUser();
-            if (!user || !user.email) {
-                showToast('メール通知にはアカウント登録が必要です', 'error');
-                return;
-            }
-            email = user.email;
-        }
+        // 時間の取得（selectから）
+        const customTime = timeSelect ? timeSelect.value : '20:00';
 
         const settings = {
             enabled: true,
             style: style.value,
-            frequency: frequency.value,
-            customDays: customDays,
-            timeSlot: timeSlot.value,
+            frequency: 'daily',
+            customDays: [],
+            timeSlot: 'custom',
             customTime: customTime,
-            method: method.value,
-            email: email
+            method: 'email',
+            email: user.email
         };
 
         const success = await this.saveSettings(settings);

@@ -1,9 +1,9 @@
 // ================================
-// 美点ノート Phase 1.5 - Firebase設定
+// 美点ノート - Firebase設定
 // ================================
 
-// 本番環境設定
-const firebaseConfigProduction = {
+// Firebase設定（本番環境: biten-note-app）
+const firebaseConfig = {
   apiKey: "AIzaSyCXTjvd__i_8MYDbjGVK9o6nyi5eFFmCyk",
   authDomain: "biten-note-app.firebaseapp.com",
   projectId: "biten-note-app",
@@ -12,30 +12,7 @@ const firebaseConfigProduction = {
   appId: "1:862949639595:web:b18a86e318b8ed8091feee"
 };
 
-// 開発環境設定
-const firebaseConfigDevelopment = {
-  apiKey: "AIzaSyCl5PBgm0b-qTbEZyK_4XUTpoYnatIRQK4",
-  authDomain: "biten-note-dev.firebaseapp.com",
-  projectId: "biten-note-dev",
-  storageBucket: "biten-note-dev.firebasestorage.app",
-  messagingSenderId: "396657834482",
-  appId: "1:396657834482:web:c34c824741deef8670536b"
-};
-
-// 環境判定: localhost または 127.0.0.1 なら開発環境
-const isDevelopment = window.location.hostname === 'localhost' ||
-                      window.location.hostname === '127.0.0.1' ||
-                      window.location.hostname.startsWith('192.168.');
-
-// 環境に応じた設定を選択
-const firebaseConfig = isDevelopment ? firebaseConfigDevelopment : firebaseConfigProduction;
-
-// 環境表示（開発時のみコンソールに表示）
-if (isDevelopment) {
-  console.log('🔧 開発環境モード（biten-note-dev）');
-} else {
-  console.log('🚀 本番環境モード（biten-note-app）');
-}
+console.log('🚀 Firebase: biten-note-app');
 
 // Firebase初期化
 firebase.initializeApp(firebaseConfig);

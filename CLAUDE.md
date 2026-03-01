@@ -92,14 +92,11 @@ firebase functions:log
 npm run serve
 ```
 
-**Firebase Projects**:
-- Development: `biten-note-dev` (testing Cloud Functions)
-- Production: `biten-note-app` (live users)
+**Firebase Project**: `biten-note-app`
 
 ```bash
-# Switch project
-firebase use biten-note-dev   # for testing
-firebase use biten-note-app   # for production
+# Ensure correct project
+firebase use biten-note-app
 ```
 
 ### Email Notification Setup (Firebase Extension)
@@ -235,9 +232,7 @@ git checkout production && git merge main && git push origin production && git c
 
 See `DEPLOY.md` for detailed instructions.
 
-**Firebase Projects**:
-- Production: `biten-note-app` (Blaze plan, live users)
-- Development: `biten-note-dev` (Blaze plan, testing)
+**Firebase Project**: `biten-note-app` (Blaze plan)
 
 ## Known Issues
 

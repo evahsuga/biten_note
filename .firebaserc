@@ -6,7 +6,7 @@
   "etags": {
     "biten-note-app": {
       "extensionInstances": {
-        "firestore-send-email": "95a8b1a791bfb157e78a1d88d38573720fdb576a4749352215800484a6cd6a90"
+        "firestore-send-email": "9869149cdd6f304533f1914fde00a771f8cec8ed1c3b8033c25e0fb8060e5d9a"
       }
     }
   }

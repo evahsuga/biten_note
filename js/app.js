@@ -2572,7 +2572,7 @@ const App = {
                 </div>
 
                 <!-- 安定版のお知らせ（固定） -->
-                <div class="card" style="background: linear-gradient(135deg, rgba(52, 199, 89, 0.15) 0%, rgba(0, 199, 190, 0.15) 100%); border: 2px solid #34C759; margin-bottom: 16px;">
+                <div class="card" style="background: white; border: 2px solid #34C759; margin-bottom: 16px;">
                     <div class="card-body" style="padding: 16px;">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                             <span style="background: #34C759; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">安定版</span>

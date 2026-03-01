@@ -2571,6 +2571,23 @@ const App = {
                     <p class="page-subtitle">お知らせとバージョン履歴</p>
                 </div>
 
+                <!-- 安定版のお知らせ（固定） -->
+                <div class="card" style="background: linear-gradient(135deg, rgba(52, 199, 89, 0.15) 0%, rgba(0, 199, 190, 0.15) 100%); border: 2px solid #34C759; margin-bottom: 16px;">
+                    <div class="card-body" style="padding: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="background: #34C759; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">安定版</span>
+                            <span style="font-size: 16px; font-weight: bold; color: var(--gray-800);">📌 ご利用はこちらをおすすめします</span>
+                        </div>
+                        <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                            安定版は以下のURLで公開しています。<br>
+                            開発版（GitHub Pages）は更新作業中に不安定になることがあります。
+                        </p>
+                        <a href="https://bitennote.netlify.app" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: #34C759; color: white; padding: 10px 20px; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 14px;">
+                            🚀 安定版を開く（Netlify）
+                        </a>
+                    </div>
+                </div>
+
                 <!-- News欄 -->
                 <div class="card" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%); border: 2px solid var(--primary);">
                     <div class="card-header" style="background: var(--primary); color: white; border-radius: 12px 12px 0 0; padding: 16px;">

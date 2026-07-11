@@ -1372,7 +1372,7 @@ const App = {
                 </div>
 
                 <!-- はじめに -->
-                <div class="card">
+                <div class="card" id="guide-mode-info">
                     <div class="card-header">
                         <h2 class="card-title">📱 はじめに</h2>
                     </div>
@@ -1380,9 +1380,13 @@ const App = {
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
                             「美点発見note」は、大切な人の良いところを記録するアプリです。
                         </p>
-                        <p style="line-height: 1.8; color: var(--gray-700);">
-                            複数のデバイスで使え、データは安全にクラウドに保存されます。
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 12px;">
+                            利用方法は2つあります。
                         </p>
+                        <ul style="line-height: 1.9; color: var(--gray-700); padding-left: 20px; margin: 0;">
+                            <li><strong>安心利用（登録不要）</strong>：データはこの端末の中だけに保存されます。運営者が内容を見ることはありません。</li>
+                            <li><strong>開発協力（登録）</strong>：メール／Googleで登録すると、データがクラウドに保存され、複数の端末で同期して使えます。</li>
+                        </ul>
                     </div>
                 </div>
 
@@ -1565,6 +1569,7 @@ const App = {
                         <h2 class="card-title">☁️ ステップ4: 複数デバイスで使う</h2>
                     </div>
                     <div class="card-body">
+                        <p style="margin: 0 0 12px; font-size: 13px;"><span onclick="App.scrollToSection('guide-mode-info')" style="cursor: pointer; color: var(--primary); text-decoration: underline;">（開発協力の場合 ※）</span></p>
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">自動同期</h3>
                         <ul style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">スマホで記録 → PCで確認</li>
@@ -1719,7 +1724,7 @@ const App = {
                         <div>
                             <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: スマホとPCで同じデータを見たい</h3>
                             <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
-                                A: 同じメールアドレスとパスワードでログインすれば、自動で同期されます。
+                                A: 同じメールアドレスとパスワードでログインすれば、自動で同期されます。<span onclick="App.scrollToSection('guide-mode-info')" style="cursor: pointer; color: var(--primary); text-decoration: underline; font-size: 0.9em;">（開発協力の場合 ※）</span>
                             </p>
                         </div>
                     </div>
@@ -1936,17 +1941,22 @@ const App = {
     async renderSettings() {
         try {
             const user = Auth.getCurrentUser();
+            const isGuest = Auth.isGuestMode();
 
-            if (!user) {
+            // 安心利用（ゲスト）も設定を開けるようにする。どちらでもない場合のみホームへ
+            if (!user && !isGuest) {
                 this.navigate('#/');
                 return;
             }
 
-            // ログイン方法の判定
-            const providerData = user.providerData[0];
-            const loginMethod = providerData.providerId === 'google.com'
-                ? 'Google ログイン'
-                : 'メールアドレス';
+            // ログイン方法の判定（開発協力＝ログイン時のみ）
+            let loginMethod = '';
+            if (user) {
+                const providerData = user.providerData[0];
+                loginMethod = providerData.providerId === 'google.com'
+                    ? 'Google ログイン'
+                    : 'メールアドレス';
+            }
 
             const html = `
                 <div class="page">
@@ -1964,6 +1974,7 @@ const App = {
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('background-image')">
                                 🖼️ 背景画像設定
                             </button>
+                            ${user ? `
                             <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/notification-settings')">
                                 🔔 リマインダー設定
                             </button>
@@ -1972,6 +1983,10 @@ const App = {
                             </button>
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('danger-zone')">
                                 ⚠️ 危険な操作（アカウント削除）
+                            </button>
+                            ` : ''}
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/pdf-select')">
+                                📄 PDFで保存
                             </button>
                             <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/privacy')">
                                 📄 プライバシーポリシー
@@ -2049,6 +2064,7 @@ const App = {
                         </div>
                     </div>
 
+                    ${user ? `
                     <!-- アカウント情報 -->
                     <div class="card" id="account-info">
                         <div class="card-header">
@@ -2099,6 +2115,7 @@ const App = {
                             </button>
                         </div>
                     </div>
+                    ` : ''}
 
                     <!-- 戻るボタン -->
                     <button class="btn btn-primary btn-block" onclick="App.navigate('#/')">

@@ -1415,11 +1415,13 @@ const App = {
                 </div>
 
                 <!-- ステップ0: ログイン -->
-                <div class="card" id="guide-step0">
-                    <div class="card-header">
-                        <h2 class="card-title">🔐 ステップ0: アカウント作成・ログイン</h2>
-                    </div>
-                    <div class="card-body">
+                <details class="card" id="guide-step0">
+                    <summary style="cursor: pointer; list-style: none; user-select: none; display: flex; align-items: center; gap: 8px;">
+                        <span class="card-title" style="flex: 1;">🔐 ステップ0: アカウント作成・ログイン</span>
+                        <span style="font-size: 13px; font-weight: normal; color: var(--gray-600); white-space: nowrap;">（開発協力の方のみ）</span>
+                        <span style="color: var(--gray-600);">▼</span>
+                    </summary>
+                    <div class="card-body" style="margin-top: 16px;">
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">初めての方</h3>
                         <ol style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">「新規登録」タブをクリック</li>
@@ -1463,7 +1465,7 @@ const App = {
                             </p>
                         </div>
                     </div>
-                </div>
+                </details>
 
                 <!-- ステップ1: 人物登録 -->
                 <div class="card" id="guide-step1">

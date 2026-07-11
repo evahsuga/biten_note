@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **美点発見note** (Biten Note) - A web application for recording virtues/good qualities about people, based on the 美点発見® (Virtue Discovery) methodology.
 
-**Current Version**: 2.0 (Email Reminder)
+**Current Version**: 3.0 (安心利用・ゲスト主体)
 **Repository**: https://github.com/evahsuga/biten_note.git
 
 ## Version Management

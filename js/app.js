@@ -2634,6 +2634,20 @@ const App = {
                     <div class="card-body" style="padding: 20px;">
                         <!-- News項目（日付順に新しい順） -->
 
+                        <!-- v3.0 安心利用リリース -->
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年7月</span>
+                            </div>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                🔒 登録不要で使える「安心利用」を追加しました！（v3.0）
+                            </p>
+                            <p style="margin: 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                登録なしで、この端末の中だけにデータを保存して使えます（運営者が内容を見ることはありません）。登録して使う「開発協力」は、クラウド保存・複数端末での同期に対応します。
+                            </p>
+                        </div>
+
                         <!-- リマインド機能（総合調整中） -->
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -2692,6 +2706,15 @@ const App = {
                             <span style="font-size: 14px; color: var(--gray-500);">▼ タップで開く</span>
                         </summary>
                         <div style="padding: 0 16px 16px 16px;">
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🔒 バージョン 3.0（2026年7月）</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 24px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">登録不要の「安心利用」を主導線に（この端末内に保存・運営者は内容を見られない）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">登録・クラウド同期を「開発協力」として同意ベースで提供</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ログイン画面を再構成（既存ログインはフッターに集約）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">安心利用でも設定・PDF保存を利用可能に</li>
+                            <li style="line-height: 1.8;">使い方・プライバシーポリシーを2つの利用方法に合わせて整理</li>
+                        </ul>
+
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🔔 バージョン 2.0（2026年2月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">リマインダー機能を追加</li>

@@ -1,9 +1,9 @@
 // ================================
 // 美点発見note Service Worker
-// v2.0 - リマインダー機能対応
+// v3.0 - 安心利用（ゲスト主体）対応
 // ================================
 
-const CACHE_NAME = 'biten-note-v2.1.0';
+const CACHE_NAME = 'biten-note-v3.0.0';
 
 // 相対パスで指定（GitHub Pagesサブディレクトリ対応）
 const STATIC_ASSETS = [

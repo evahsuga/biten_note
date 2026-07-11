@@ -290,14 +290,24 @@ const App = {
                 <div class="guest-banner">
                     <div class="guest-banner-icon">📱</div>
                     <div class="guest-banner-content">
-                        <div class="guest-banner-title">安心利用で使用中</div>
+                        <div class="guest-banner-title">安心利用中</div>
                         <div class="guest-banner-text">
-                            データはこの端末のブラウザ内に保存されます。<br>
-                            ブラウザの「履歴を削除」を行うとデータが消える場合があります。
+                            このデータは、この端末の中だけに保存されます。<br>
+                            （登録不要・運営者が内容を見ることはありません）
                         </div>
-                        <button class="guest-banner-btn" onclick="App.showGuestRegistration()">
-                            開発協力（登録）はこちら →
+                        <button id="guestDataInfoToggle" onclick="App.toggleGuestDataInfo()" style="background: none; border: none; color: #856404; text-decoration: underline; cursor: pointer; padding: 4px 0; font-size: var(--font-size-sm); font-weight: 600;">
+                            データの保存とバックアップについて ▼
                         </button>
+                        <div id="guestDataInfo" style="display: none; margin-top: 8px;">
+                            <ul style="margin: 0 0 12px 0; padding-left: 18px; font-size: var(--font-size-sm); color: #856404; line-height: 1.7;">
+                                <li>タブを閉じても、電源を切ってもデータは消えません</li>
+                                <li>ただし、ブラウザの「サイトデータ削除」や、別の端末・ブラウザで開いた場合、一部の端末で長期間開かなかった場合には消えることがあります</li>
+                                <li>大切な記録は、PDFで手元に保存しておくと安心です</li>
+                            </ul>
+                            <button class="guest-banner-btn" onclick="App.navigate('#/pdf-select')">
+                                📄 PDFで保存する
+                            </button>
+                        </div>
                     </div>
                 </div>
             ` : '';
@@ -3135,6 +3145,20 @@ const App = {
             hideLoading();
             Utils.error('ゲストモード開始エラー', error);
             showToast('エラーが発生しました', 'error');
+        }
+    },
+
+    // 安心利用バナーの「データの保存とバックアップについて」開閉
+    toggleGuestDataInfo() {
+        const el = document.getElementById('guestDataInfo');
+        const toggle = document.getElementById('guestDataInfoToggle');
+        if (!el) return;
+        const isHidden = (el.style.display === 'none' || el.style.display === '');
+        el.style.display = isHidden ? 'block' : 'none';
+        if (toggle) {
+            toggle.textContent = isHidden
+                ? 'データの保存とバックアップについて ▲'
+                : 'データの保存とバックアップについて ▼';
         }
     },
 

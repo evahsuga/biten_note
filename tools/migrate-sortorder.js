@@ -4,13 +4,14 @@
 // ================================
 //
 // 用途: 既存の全ユーザーデータにsortOrderフィールドを追加
-// 実行: node migrate-sortorder.js
+// 実行: node tools/migrate-sortorder.js （プロジェクトルートから実行）
 //
 
 const admin = require('firebase-admin');
 
-// サービスアカウントキーを読み込み
-const serviceAccount = require('./biten-note-app-firebase-adminsdk-fbsvc-8166a79bf5.json');
+// サービスアカウントキーを読み込み（キーはプロジェクトルートに配置する。MIGRATION.md参照）
+// 注意: キー名はダウンロード毎に変わる。実在するキー名に合わせて要調整（BACKLOG.md「キー指定の堅牢化」参照）
+const serviceAccount = require('../biten-note-app-firebase-adminsdk-fbsvc-8166a79bf5.json');
 
 // Firebase Admin SDK初期化
 admin.initializeApp({

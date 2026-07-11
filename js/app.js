@@ -2166,10 +2166,11 @@ const App = {
 
     // 利用規約・プライバシーポリシーから戻る
     goBackFromTermsOrPrivacy() {
-        // ログイン状態を確認
+        // ログイン状態を確認（安心利用＝ゲストも設定画面から遷移するため設定へ戻す）
         const user = Auth.getCurrentUser();
-        if (user) {
-            // ログイン済みの場合は設定画面へ戻る
+        const isGuest = Auth.isGuestMode();
+        if (user || isGuest) {
+            // ログイン済み or 安心利用の場合は設定画面へ戻る
             this.navigate('#/settings');
         } else {
             // 未ログインの場合はログイン画面へ戻る

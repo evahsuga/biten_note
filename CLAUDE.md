@@ -232,6 +232,22 @@ git checkout production && git merge main && git push origin production && git c
 
 See `DEPLOY.md` for detailed instructions.
 
+### Deployment Safety Model（重要：本番への波及を理解する）
+
+**ブランチ分離により、本番稼働への影響を段階的に隔離できる。** 開発作業（ファイル整理・機能追加・修正）はすべて `main` で行う。`main` への push は開発サイト（GitHub Pages）だけに反映され、**本番（Netlify）は `production` へ明示的にマージするまで一切変化しない。**
+
+推奨フロー（本番リスクをゼロにする手順）：
+1. `main` で作業・push → 開発サイトで動作確認
+2. 問題なければ `main` → `production` へマージ → 本番反映
+
+**なぜ静的ファイルの削除・移動が稼働に無影響か**：
+- デプロイはビルド無しの純粋な静的配信（`netlify.toml`・`.github/workflows` は存在しない）。ブランチ内のファイルをそのまま配信するだけなので、**どこからも参照されないファイルを消しても配信結果は変わらない**。
+- 削除・移動の前に、`index.html` の `<script>`/`<link>`、`sw.js` のキャッシュ配列（`urlsToCache`）、コード全体の参照（grep）に対象が含まれないことを確認すること。含まれなければ稼働への波及はゼロ。
+
+### ⚠️ 引き継ぎ最大リスク：Netlify設定はリポジトリ外にある
+
+本番デプロイの設定（公開ディレクトリ・対象ブランチ `production`・環境変数）は**リポジトリ内に無く、Netlify管理画面にのみ存在する**（`netlify.toml` を置いていないため）。管理画面にアクセスできない担当者には本番構成が見えない。複数管理体制では、この設定内容を別途文書化・共有すること。
+
 **Firebase Project**: `biten-note-app` (Blaze plan)
 
 ## Known Issues

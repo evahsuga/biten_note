@@ -23,6 +23,9 @@ node_modules/
 dist/
 build/
 
+# 生成物（構成図PDF等・HTMLから再生成できるため追跡しない）
+*.pdf
+
 # IDE設定
 .vscode/settings.json
 .idea/

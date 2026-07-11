@@ -290,13 +290,13 @@ const App = {
                 <div class="guest-banner">
                     <div class="guest-banner-icon">📱</div>
                     <div class="guest-banner-content">
-                        <div class="guest-banner-title">ゲストモードで使用中</div>
+                        <div class="guest-banner-title">安心利用で使用中</div>
                         <div class="guest-banner-text">
                             データはこの端末のブラウザ内に保存されます。<br>
                             ブラウザの「履歴を削除」を行うとデータが消える場合があります。
                         </div>
                         <button class="guest-banner-btn" onclick="App.showGuestRegistration()">
-                            アカウント登録する（無料）→
+                            開発協力（登録）はこちら →
                         </button>
                     </div>
                 </div>
@@ -392,7 +392,7 @@ const App = {
                                 ⚙️ 設定
                             </button>
                             <button class="btn btn-outline btn-block" onclick="App.handleLogout()" style="color: var(--error);">
-                                ${isGuestMode ? '🚪 ゲストモード終了' : '🚪 ログアウト'}
+                                ${isGuestMode ? '🚪 安心利用を終了' : '🚪 ログアウト'}
                             </button>
                         </div>
                     </div>
@@ -2373,8 +2373,12 @@ const App = {
                             あなたと一緒に「美点発見」！（以下「当委員会」）は、本アプリケーション「美点発見note」（以下「本サービス」）におけるプライバシー情報の取り扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」）を定めます。
                         </p>
 
+                        <p style="margin-bottom: 20px;">
+                            本サービスには「安心利用（登録不要）」と「開発協力（登録）」の2つの利用方法があります。<strong>安心利用</strong>では、入力されたデータはご利用の端末内（ブラウザ内）にのみ保存され、当委員会がその内容を取得・保存することはありません。本ポリシーは、主に<strong>開発協力（登録）</strong>によりクラウドへデータを保存する場合の取り扱いを定めるものです。
+                        </p>
+
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">1. 取得する情報</h2>
-                        <p style="margin-bottom: 16px;">当委員会は、本サービスの提供にあたり、以下の情報を取得します。</p>
+                        <p style="margin-bottom: 16px;">開発協力（登録）によるご利用にあたり、当委員会は以下の情報を取得します。安心利用（登録不要）では、これらの情報は端末内にのみ保存され、当委員会は取得しません。</p>
                         <ul style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px;">メールアドレス（アカウント登録時）</li>
                             <li style="margin-bottom: 8px;">パスワード（暗号化して保存）</li>
@@ -2404,13 +2408,12 @@ const App = {
                         <ul style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px;">Firebase Authentication による安全な認証</li>
                             <li style="margin-bottom: 8px;">データの暗号化保存</li>
-                            <li style="margin-bottom: 8px;">Firebase App Check によるボット攻撃の防止</li>
                             <li>アクセス制限による不正アクセスの防止</li>
                         </ul>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">5. データの保存場所</h2>
                         <p style="margin-bottom: 20px;">
-                            本サービスは、Google Firebase（Google Cloud Platform）を利用してデータを保存します。データは米国または日本のデータセンターに保存される場合があります。
+                            開発協力（登録）の場合、本サービスは Google Firebase（Google Cloud Platform）を利用してデータを保存します。データは米国または日本のデータセンターに保存される場合があります。安心利用（登録不要）の場合、データはご利用の端末内にのみ保存され、外部のサーバーには送信されません。
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">6. ユーザーの権利</h2>
@@ -2442,8 +2445,8 @@ const App = {
                         </p>
 
                         <p style="text-align: right; color: var(--gray-600); margin-top: 32px;">
-                            制定日: 2026年10月18日<br>
-                            最終更新日: 2026年10月18日
+                            制定日: 2025年10月18日<br>
+                            最終更新日: 2026年7月11日
                         </p>
                     </div>
                 </div>
@@ -2750,6 +2753,23 @@ const App = {
                         <p class="auth-subtitle">大切な人の美点を記録しよう</p>
                     </div>
 
+                    <!-- 安心利用（主導線） -->
+                    <button class="btn btn-primary btn-block" onclick="App.enterGuestMode()" style="padding: 16px; font-size: 17px; font-weight: 600;">
+                        安心利用（登録不要）ではじめる
+                    </button>
+                    <p style="text-align: center; font-size: 13px; color: var(--gray-600); margin-top: 10px;">
+                        入力データはこの端末だけに保存されます。
+                    </p>
+
+                    <!-- フッター：既存ユーザー・開発協力の入口 -->
+                    <div style="margin-top: 32px; text-align: center;">
+                        <button type="button" class="btn btn-link" id="legacyAuthToggle" onclick="App.toggleLegacyAuth()" style="font-size: 13px; color: var(--gray-600);">
+                            以前からご利用の方・開発にご協力の方はこちら
+                        </button>
+                    </div>
+
+                    <!-- 折りたたみ：既存ログイン／新規登録（開発協力）／Google -->
+                    <div id="legacyAuth" class="hidden" style="margin-top: 8px;">
                     <!-- タブ切り替え -->
                     <div class="auth-tabs">
                         <button class="auth-tab active" id="loginTab" onclick="App.switchAuthTab('login')">
@@ -2793,6 +2813,17 @@ const App = {
 
                     <!-- サインアップフォーム -->
                     <form id="signupForm" class="auth-form hidden" onsubmit="App.handleSignup(event)">
+                        <!-- 開発協力について -->
+                        <div style="background: var(--gray-100); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.7; color: var(--gray-700);">
+                            <div style="font-weight: 600; margin-bottom: 6px;">開発協力について</div>
+                            <p style="margin: 0 0 8px 0;">
+                                美点発見noteは、将来的に学校などの現場で使えるシステムづくりを目指して開発しています。「開発協力」は、その改善・開発に役立てるための登録方法です。
+                            </p>
+                            <ul style="margin: 0; padding-left: 18px;">
+                                <li style="margin-bottom: 4px;">お名前・美点の内容・お写真は、サービス改善のための分析に利用できる状態でクラウドに保存されます</li>
+                                <li>登録すると、複数の端末で同じデータを同期して使えます</li>
+                            </ul>
+                        </div>
                         <div class="form-group">
                             <label class="form-label">メールアドレス</label>
                             <input
@@ -2884,25 +2915,24 @@ const App = {
                         Googleでログイン
                     </button>
 
-                    <!-- 区切り線 -->
-                    <div style="display: flex; align-items: center; margin: 24px 0 16px 0;">
-                        <div style="flex: 1; height: 1px; background-color: var(--gray-300);"></div>
-                        <span style="padding: 0 16px; color: var(--gray-500); font-size: 14px;">または</span>
-                        <div style="flex: 1; height: 1px; background-color: var(--gray-300);"></div>
                     </div>
-
-                    <!-- ゲストモードボタン -->
-                    <button class="btn btn-outline btn-block" onclick="App.enterGuestMode()" style="border-color: var(--gray-400); color: var(--gray-700);">
-                        まず試してみる（登録不要）
-                    </button>
-                    <p style="text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 8px;">
-                        データはこの端末のブラウザ内に保存されます
-                    </p>
+                    <!-- #legacyAuth 終わり -->
                 </div>
             </div>
         `;
 
         document.getElementById('app').innerHTML = html;
+    },
+
+    // フッターの既存ログイン／新規登録（開発協力）エリアの開閉
+    toggleLegacyAuth() {
+        const el = document.getElementById('legacyAuth');
+        if (!el) return;
+        el.classList.toggle('hidden');
+        // 開いたときは見えるようスクロール
+        if (!el.classList.contains('hidden')) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     },
 
     // タブ切り替え
@@ -3099,7 +3129,7 @@ const App = {
             window.location.hash = '#/';
             this.handleRoute();
 
-            showToast('ゲストモードで開始しました', 'success');
+            showToast('安心利用を開始しました', 'success');
         } catch (error) {
             hideLoading();
             Utils.error('ゲストモード開始エラー', error);
@@ -3109,11 +3139,16 @@ const App = {
 
     // ゲストモードからアカウント登録画面を表示
     showGuestRegistration() {
-        // ゲストモードを終了せずに新規登録画面を表示
+        // 安心利用を終了せずに新規登録（開発協力）画面を表示
         // 登録完了時にauth.jsのサインアップ処理でデータ移行が行われる
         this.renderLogin();
-        // ログイン画面表示後、新規登録タブに切り替え
-        setTimeout(() => this.switchAuthTab('signup'), 0);
+        // ログイン画面表示後、フッターの折りたたみを開いて新規登録タブに切り替え
+        setTimeout(() => {
+            const legacy = document.getElementById('legacyAuth');
+            if (legacy) legacy.classList.remove('hidden');
+            this.switchAuthTab('signup');
+            if (legacy) legacy.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 0);
     },
 
     // パスワードリセット表示
@@ -3183,12 +3218,12 @@ const App = {
     async handleLogout() {
         // ゲストモードの場合
         if (Auth.isGuestMode()) {
-            if (!confirm('ゲストモードを終了しますか？\n\n※ データはこの端末に残ります。\n次回「まず試してみる」ボタンで再開できます。')) {
+            if (!confirm('安心利用を終了しますか？\n\n※ データはこの端末に残ります。\n次回「安心利用（登録不要）ではじめる」で再開できます。')) {
                 return;
             }
 
             Auth.exitGuestMode();
-            showToast('ゲストモードを終了しました', 'success');
+            showToast('安心利用を終了しました', 'success');
             this.renderLogin();
             return;
         }

@@ -3,7 +3,7 @@
 // v2.0 - リマインダー機能対応
 // ================================
 
-const CACHE_NAME = 'biten-note-v2.0.1';
+const CACHE_NAME = 'biten-note-v2.1.0';
 
 // 相対パスで指定（GitHub Pagesサブディレクトリ対応）
 const STATIC_ASSETS = [

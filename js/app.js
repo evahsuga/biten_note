@@ -1696,7 +1696,9 @@ const App = {
                         <div style="margin-bottom: 20px;">
                             <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: データは安全ですか？</h3>
                             <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
-                                A: はい。データは暗号化されてGoogle Firebase（世界最大級のクラウド）に保存されます。本人以外はアクセスできません。
+                                A: 利用方法によって異なります。<br>
+                                ・<strong>安心利用</strong>：データはこの端末の中だけに保存され、運営者を含め誰も見られません。<br>
+                                ・<strong>開発協力（登録）</strong>：データは Google Firebase のクラウドに保存されます（通信・保管は暗号化）。サービス改善のため、運営側が内容を確認できる状態です。
                             </p>
                         </div>
 

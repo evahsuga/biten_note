@@ -2577,8 +2577,7 @@ const App = {
                         </ol>
 
                         <p style="text-align: right; color: var(--gray-600); margin-top: 32px;">
-                            制定日: 2026年10月18日<br>
-                            最終更新日: 2026年10月18日
+                            制定日: 2025年10月18日
                         </p>
                     </div>
                 </div>

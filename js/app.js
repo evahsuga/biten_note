@@ -1396,7 +1396,7 @@ const App = {
                         <h2 class="card-title">📋 目次</h2>
                     </div>
                     <div class="card-body">
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step0')">
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step1')">
                             📝 使い方
                         </button>
                         <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-about')">

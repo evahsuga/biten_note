@@ -2763,13 +2763,13 @@ const App = {
 
                     <!-- フッター：既存ユーザー・開発協力の入口 -->
                     <div style="margin-top: 32px; text-align: center;">
-                        <button type="button" class="btn btn-link" id="legacyAuthToggle" onclick="App.toggleLegacyAuth()" style="font-size: 13px; color: var(--gray-600);">
+                        <button type="button" id="legacyAuthToggle" onclick="App.toggleLegacyAuth()" style="background: none; border: none; cursor: pointer; font-size: 13px; color: var(--gray-600); text-decoration: underline; padding: 8px; line-height: 1.6; white-space: normal; max-width: 100%;">
                             以前からご利用の方・開発にご協力の方はこちら
                         </button>
                     </div>
 
                     <!-- 折りたたみ：既存ログイン／新規登録（開発協力）／Google -->
-                    <div id="legacyAuth" class="hidden" style="margin-top: 8px;">
+                    <div id="legacyAuth" style="margin-top: 8px; display: none;">
                     <!-- タブ切り替え -->
                     <div class="auth-tabs">
                         <button class="auth-tab active" id="loginTab" onclick="App.switchAuthTab('login')">
@@ -2928,9 +2928,10 @@ const App = {
     toggleLegacyAuth() {
         const el = document.getElementById('legacyAuth');
         if (!el) return;
-        el.classList.toggle('hidden');
+        const isHidden = (el.style.display === 'none' || el.style.display === '');
+        el.style.display = isHidden ? 'block' : 'none';
         // 開いたときは見えるようスクロール
-        if (!el.classList.contains('hidden')) {
+        if (isHidden) {
             el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     },
@@ -3145,7 +3146,7 @@ const App = {
         // ログイン画面表示後、フッターの折りたたみを開いて新規登録タブに切り替え
         setTimeout(() => {
             const legacy = document.getElementById('legacyAuth');
-            if (legacy) legacy.classList.remove('hidden');
+            if (legacy) legacy.style.display = 'block';
             this.switchAuthTab('signup');
             if (legacy) legacy.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 0);

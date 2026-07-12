@@ -245,6 +245,11 @@ const App = {
         } else if (hash === '#/settings') {
             await this.renderSettings();
         } else if (hash === '#/notification-settings') {
+            // 本番(Netlify)では通知設定を無効化。URL直打ちも設定画面へリダイレクト
+            if (!Utils.isDevHost()) {
+                this.navigate('#/settings');
+                return;
+            }
             await Notifications.init();
             Notifications.renderSettingsPage();
         } else if (hash === '#/pdf-select') {
@@ -1979,9 +1984,11 @@ const App = {
                                 🖼️ 背景画像設定
                             </button>
                             ${user ? `
+                            ${Utils.isDevHost() ? `
                             <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/notification-settings')">
                                 🔔 リマインダー設定
                             </button>
+                            ` : ''}
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('account-info')">
                                 👤 アカウント情報
                             </button>
@@ -2648,7 +2655,8 @@ const App = {
                             </p>
                         </div>
 
-                        <!-- リマインド機能（総合調整中） -->
+                        <!-- リマインド機能（総合調整中）: 本番(Netlify)では非表示。開発ホストのみ表示 -->
+                        ${Utils.isDevHost() ? `
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
@@ -2664,6 +2672,7 @@ const App = {
                                 🔔 リマインダー設定へ →
                             </a>
                         </div>
+                        ` : ''}
 
                         <!-- 美点+100件拡張機能リリース -->
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">

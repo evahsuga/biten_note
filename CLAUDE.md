@@ -184,6 +184,22 @@ Note: `app.js` is ~190KB and holds the entire SPA (router + all page renderers l
 - **Exception**: localStorage IS acceptable for performance flags (e.g., migration status)
 - Use Firestore for authenticated users, IndexedDB for anonymous users
 
+### ⚠️ Critical Invariant: 安心利用（ゲスト）は Firestore へ書き込まない
+
+**不変条件**: `Auth.isGuestMode()`（localStorage `bitenNote_guestMode`）が真の間、ユーザーデータ（人物・美点・設定）を Firestore へ書いてはならない。これは公開時の「安心利用＝本人以外は運営者を含め誰も内容を見られない」という説明の**土台**であり、`docs/BACKLOG.md` #8 の正しさ保証そのもの。
+
+**現状これを担保している3層**（2026-07-12 静的監査で漏れ経路なしを確認済み）:
+1. **ルーティング層**: 全データ操作は `App.getDB()`（`js/app.js:46`）を通り、ゲスト中は必ず `LocalDB`(IndexedDB) を返す。`DB`(Firestore) 直書き経路は無い。
+2. **DB層**: `DB` の全メソッドは冒頭で `DB.getCurrentUserId()`（`js/db.js:140`）を呼び、未ログイン時に `throw`。
+3. **サーバ規則層**: `firestore.rules` が `request.auth != null` を要求。ゲストは未認証のため全書込拒否。匿名認証は未使用。
+
+**コードを変更する人への注意（この不変条件を壊さないために）**:
+- ユーザーデータ操作は必ず `App.getDB()` 経由にする。`DB.*`（Firestore）を直接呼ばない。
+- ゲスト→Firestore の唯一の正規経路は、ログイン確定＋`confirm()` 同意後の移行（`Auth.handleGuestDataOnLogin` → `LocalDB.migrateToFirestore`）のみ。
+- 新しい認証経路を足す場合（例: Google を `signInWithRedirect` 方式へ変更）は、ゲストフラグ解除／移行ハンドラ呼び出しを忘れないこと。**現状の `Auth.handleRedirectResult()`（`js/auth.js:68`）は `exitGuestMode`/`handleGuestDataOnLogin` を呼んでいない**（現状 `signInWithRedirect` 未使用のため無害だが、有効化時は要対応）。
+
+**引き継ぎ時の注意**: 現在この不変条件は「規約＋コードレビュー」で担保しており、実行時の強制ガードは**あえて入れていない**（現行コードでは決して発火せず、移行フローへの不要な結合を避けるため。2026-07-12 判断）。**このコードベースが原作者の管理を離れて第三者に保守される段階になったら、強制ガードの導入を検討する**（案: `DB.getCurrentUserId()` に `if (Auth.isGuestMode()) throw` を追加し、移行処理は書き込み前に `exitGuestMode()` するよう並べ替える）。経緯は `docs/notes/検証記録_安心利用Firestore非書込_20260712.md`。
+
 ### Database Schema
 
 **Firestore** (per user):

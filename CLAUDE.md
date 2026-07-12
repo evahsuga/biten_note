@@ -148,9 +148,15 @@ js/
 functions/
 └── index.js                # Cloud Functions (scheduled notifications, FCM)
 
+tools/
+├── migrate-sortorder.js    # Node script: backfill sortOrder (npm run migrate, needs admin SDK key)
+└── test-data-generator.js  # Browser-console script: seed test persons/bitens for the logged-in user
+
 sw.js                       # Service Worker (PWA, push notifications)
 manifest.json               # PWA manifest
 ```
+
+Note: `app.js` is ~190KB and holds the entire SPA (router + all page renderers like `renderReleaseNotesPage()`). There is no automated test suite — verification is manual (browser + the console tools above); see the Testing Checklist in the workspace-root `../CLAUDE.md`.
 
 **CRITICAL - Script Load Order** in `index.html`:
 1. External libraries (Cropper.js, jsPDF, Firebase SDK v8)
@@ -196,6 +202,17 @@ users/{userId}/settings/notifications
 ```
 
 **IndexedDB** (BitenNoteDB v1): `persons`, `bitens`, `appSettings` ObjectStores
+
+## Documentation & Handoff Map
+
+This project is maintained under a multi-manager handoff model, so the intent behind decisions lives in `docs/` rather than in code. Consult these before changing related behavior:
+
+- `docs/BACKLOG.md` — ledger of open issues / future work (what, why, planned response)
+- `docs/DEPLOYMENT_NOTES.md` — deployment reality & history; **critical**: production (Netlify) config lives only in the Netlify dashboard, not in the repo
+- `docs/PUSH_NOTIFICATION_INVESTIGATION.md` — why push was dropped in favor of email
+- `docs/specs/` — design specs (phase1, reminders v2.0, guest mode, 安心利用/協力利用 login)
+- `docs/notes/`, `docs/archive/` —壁打ち records and superseded docs
+- `MIGRATION.md` — sortOrder migration runbook (`npm run migrate`)
 
 ## Debugging
 

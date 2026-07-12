@@ -2860,6 +2860,67 @@ const App = {
     // ログイン・認証画面
     // ===========================
 
+    // 協力利用の同意ボディ（メール登録フォームとGoogle同意モーダルで共通利用＝文言が絶対にズレない）
+    consentBodyHtml(checkboxId) {
+        return `
+            <div style="background: var(--gray-100); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.7; color: var(--gray-700);">
+                <div style="font-weight: 600; margin-bottom: 6px;">協力利用について</div>
+                <p style="margin: 0 0 8px 0;">
+                    美点発見noteの改善にご協力いただける方向けの登録方法です。
+                </p>
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li style="margin-bottom: 4px;">お名前・美点の内容・お写真は、開発改善のため運営者が確認できる状態で保存されます</li>
+                    <li>データは複数の端末で同期してご利用いただけます</li>
+                </ul>
+            </div>
+            <div class="form-group" style="margin-top: 16px;">
+                <label style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.6;">
+                    <input type="checkbox" id="${checkboxId}" required style="margin-right: 8px; margin-top: 4px; cursor: pointer;">
+                    <span style="font-size: 14px; color: var(--gray-700);">上記に同意して登録する</span>
+                </label>
+                <div style="font-size: 12px; margin-top: 6px; padding-left: 26px;">
+                    <a href="#/privacy" target="_blank" style="color: var(--primary); text-decoration: underline;">プライバシーポリシー</a>
+                    ・
+                    <a href="#/terms" target="_blank" style="color: var(--primary); text-decoration: underline;">利用規約</a>
+                </div>
+            </div>
+        `;
+    },
+
+    // Google新規登録時の同意モーダル（awaitできる。同意=true / キャンセル=false を resolve）
+    showConsentModal() {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('consentModal');
+            const body = document.getElementById('consentModalBody');
+            if (!modal || !body) { resolve(false); return; }
+            body.innerHTML = this.consentBodyHtml('consentModalAgree');
+            hideLoading();
+            modal.classList.remove('hidden');
+
+            const agreeBtn = document.getElementById('consentAgreeBtn');
+            const cancelBtn = document.getElementById('consentCancelBtn');
+            const closeBtn = document.getElementById('consentCloseBtn');
+
+            const cleanup = () => {
+                modal.classList.add('hidden');
+                agreeBtn.onclick = null;
+                cancelBtn.onclick = null;
+                if (closeBtn) closeBtn.onclick = null;
+            };
+            agreeBtn.onclick = () => {
+                const checkbox = document.getElementById('consentModalAgree');
+                if (!checkbox || !checkbox.checked) {
+                    showToast('「上記に同意して登録する」にチェックしてください', 'error');
+                    return;
+                }
+                cleanup();
+                resolve(true);
+            };
+            cancelBtn.onclick = () => { cleanup(); resolve(false); };
+            if (closeBtn) closeBtn.onclick = () => { cleanup(); resolve(false); };
+        });
+    },
+
     // ログイン画面
     renderLogin() {
         const html = `
@@ -2930,17 +2991,6 @@ const App = {
 
                     <!-- サインアップフォーム -->
                     <form id="signupForm" class="auth-form hidden" onsubmit="App.handleSignup(event)">
-                        <!-- 開発協力について -->
-                        <div style="background: var(--gray-100); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.7; color: var(--gray-700);">
-                            <div style="font-weight: 600; margin-bottom: 6px;">開発協力について</div>
-                            <p style="margin: 0 0 8px 0;">
-                                美点発見noteは、将来的に学校などの現場で使えるシステムづくりを目指して開発しています。「開発協力」は、その改善・開発に役立てるための登録方法です。
-                            </p>
-                            <ul style="margin: 0; padding-left: 18px;">
-                                <li style="margin-bottom: 4px;">お名前・美点の内容・お写真は、サービス改善のための分析に利用できる状態でクラウドに保存されます</li>
-                                <li>登録すると、複数の端末で同じデータを同期して使えます</li>
-                            </ul>
-                        </div>
                         <div class="form-group">
                             <label class="form-label">メールアドレス</label>
                             <input
@@ -2974,18 +3024,8 @@ const App = {
                             >
                         </div>
 
-                        <!-- 同意チェックボックス -->
-                        <div class="form-group" style="margin-top: 20px;">
-                            <label style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.6;">
-                                <input type="checkbox" id="agreeTerms" required style="margin-right: 8px; margin-top: 4px; cursor: pointer;">
-                                <span style="font-size: 14px; color: var(--gray-700);">
-                                    <a href="#/privacy" target="_blank" style="color: var(--primary); text-decoration: underline;">プライバシーポリシー</a>
-                                    および
-                                    <a href="#/terms" target="_blank" style="color: var(--primary); text-decoration: underline;">利用規約</a>
-                                    に同意します
-                                </span>
-                            </label>
-                        </div>
+                        <!-- 同意（協力利用について＋チェック＋PP/規約リンク）: Google同意モーダルと共通 -->
+                        ${this.consentBodyHtml('agreeTerms')}
 
                         <button type="submit" class="btn btn-primary btn-block">
                             新規登録
@@ -3184,7 +3224,7 @@ const App = {
             // 同意チェックの確認
             if (!agreeTerms) {
                 hideLoading();
-                showToast('プライバシーポリシーと利用規約に同意してください', 'error');
+                showToast('「上記に同意して登録する」にチェックしてください', 'error');
                 return;
             }
 

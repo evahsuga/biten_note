@@ -263,6 +263,25 @@ const Auth = {
 
             Utils.log('Googleログイン成功', user.email);
 
+            // 新規ユーザーには協力利用の同意ゲートを挟む（メール登録と同じ同意）
+            const isNewUser = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
+            if (isNewUser) {
+                const agreed = await App.showConsentModal();
+                if (!agreed) {
+                    // 未同意の新規ユーザーは、直後に作られた認証ユーザーを削除して離脱
+                    // （createUserDocument 前なので Firestore は未作成＝クリーン）
+                    try {
+                        await user.delete();
+                    } catch (delErr) {
+                        Utils.error('未同意ユーザーの削除失敗、サインアウトにフォールバック', delErr);
+                        await auth.signOut();
+                    }
+                    hideLoading();
+                    Utils.log('Google新規登録: 同意されなかったため中止');
+                    return null;
+                }
+            }
+
             // Firestoreにユーザードキュメントを作成（存在しない場合）
             await this.createUserDocument(user.uid, {
                 email: user.email,

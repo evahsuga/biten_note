@@ -203,6 +203,23 @@
         </div>
     </div>
 
+    <!-- 協力利用 同意モーダル（Google新規登録時に表示） -->
+    <div id="consentModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>協力利用について</h2>
+                <button class="modal-close" id="consentCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body" id="consentModalBody">
+                <!-- App.consentBodyHtml('consentModalAgree') をJSで注入 -->
+            </div>
+            <div class="modal-footer" style="flex-direction: column; gap: 8px;">
+                <button class="btn btn-primary btn-block" id="consentAgreeBtn">同意して登録する</button>
+                <button class="btn btn-outline btn-block" id="consentCancelBtn">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 50個達成モーダル -->
     <div id="halfwayModal" class="modal hidden">
         <div class="modal-content">

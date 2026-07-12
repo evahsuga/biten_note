@@ -50,3 +50,22 @@ git checkout main && git push origin main    # GitHub Pages（開発）で実機
 git checkout production && git merge main && git push origin production && git checkout main
 # Netlify（本番 bitennote.netlify.app）が自動デプロイ
 ```
+
+---
+
+## ⚠️ リポジトリ構成の地雷：親ディレクトリ `cc/` の誤配線（2026-07-12 調査で判明）
+
+ワークスペース親ディレクトリ `.../workspace/cc/` **自体が独立した `.git` を持つレガシーリポジトリ**で、その origin が**誤って `biten_note.git` を指している**（本来このURLは `cc/biten_note` サブフォルダ専用）。GitHub開発初期に成り行きで配線が固まったもので、放置されている。
+
+**経緯**: `cc/` は元々 bitoku_pilot の開発リポジトリ（最古コミット `cba81a0` は bitoku_pilot repo と同一 root）。後に biten_note を実ファイルで抱え込み、一度 biten_note.git へ push した（reflog に `6cab527 update by push` の痕跡）。その後、別履歴の本物 biten_note リポジトリ（root `a10c08c`）が同URLへ force push で上書きし、`cc/` の `origin/main=6cab527` は GitHub 上に存在しない亡霊（stale）になった。`cc/` 内では biten_note/ は古い実ファイルのスナップショット、bitoku_pilot/ と lp01/ は `.gitmodules` 無しの半壊 gitlink。
+
+**危険性**: 通常の `git push` は履歴が無関係なため non-fast-forward で**拒否され安全**。事故が起きるのは **`git push --force` や別名ブランチの push** のみ。これをやると**本物の biten_note.git（＝この本番）をワークスペースのゴミで上書き破壊**しうる。
+
+**守るべき運用ルール**:
+- ✅ git 操作は必ず**各サブフォルダの中**で行う（`cd cc/biten_note` してから）
+- ❌ `cc/`（親ディレクトリ）ルートでは git コマンドを叩かない
+- ❌ どこであれ `push --force` は原則使わない（唯一これが本番破壊につながる操作）
+
+**正常な配線（ここで作業する）**: `cc/biten_note` → `biten_note.git` ／ `cc/bitoku_pilot` → `biten_ap_demo.git`(master) ／ `cc/lp01` → `lp01.git`(main)。
+
+**将来の恒久対策（未実施・可逆）**: 落ち着いた時に `git -C .../workspace/cc remote remove origin` を実行すれば、force push の footgun 自体を物理的に無効化できる（ローカル履歴は全保持）。2026-07-12 時点では「調査のみ・親 `cc/` の設定は変更しない」を選択済み。

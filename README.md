@@ -10,7 +10,7 @@
 
 ### 環境構成
 
-- **本番環境**: Netlify（https://biten-note.netlify.app）
+- **本番環境**: Netlify（https://bitennote.netlify.app）
   - ブランチ: `production`
   - 自動デプロイ: productionブランチへのpush
 

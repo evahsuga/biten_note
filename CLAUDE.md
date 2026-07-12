@@ -220,7 +220,7 @@ indexedDB.deleteDatabase('BitenNoteDB');
 | Environment | Branch | URL | Purpose |
 |-------------|--------|-----|---------|
 | Development | main | https://evahsuga.github.io/biten_note/ | Testing |
-| Production | production | https://biten-note.netlify.app | Public |
+| Production | production | https://bitennote.netlify.app | Public |
 
 ```bash
 # Development: push to main → auto-deploy to GitHub Pages

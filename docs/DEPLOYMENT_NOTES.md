@@ -68,4 +68,4 @@ git checkout production && git merge main && git push origin production && git c
 
 **正常な配線（ここで作業する）**: `cc/biten_note` → `biten_note.git` ／ `cc/bitoku_pilot` → `biten_ap_demo.git`(master) ／ `cc/lp01` → `lp01.git`(main)。
 
-**将来の恒久対策（未実施・可逆）**: 落ち着いた時に `git -C .../workspace/cc remote remove origin` を実行すれば、force push の footgun 自体を物理的に無効化できる（ローカル履歴は全保持）。2026-07-12 時点では「調査のみ・親 `cc/` の設定は変更しない」を選択済み。
+**恒久対策（2026-07-12 実施済み）**: `git -C .../workspace/cc remote remove origin` を実行し、親 `cc/` の誤 origin を削除。これにより `cc/` からの push は `fatal: No configured push destination.` で**物理的に不可能**になり、force push の footgun 自体を無効化した（ローカルのコミット・履歴は全保持＝可逆）。元の誤 origin URL は `https://github.com/evahsuga/biten_note.git` だった。サブ3リポジトリの配線は無傷。

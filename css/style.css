@@ -476,6 +476,24 @@ body.has-background-image::before {
     font-weight: 600;
 }
 
+/* お知らせ未読バッジ（丸数字）: 「使い方」ボタン等に付ける */
+.notice-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 6px;
+    background: var(--gradient-primary);
+    color: var(--white);
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: middle;
+}
+
 /* ===========================
    ドラッグ&ドロップ
    =========================== */

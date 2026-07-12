@@ -3,7 +3,7 @@
 // v3.0 - 安心利用（ゲスト主体）対応
 // ================================
 
-const CACHE_NAME = 'biten-note-v3.0.0';
+const CACHE_NAME = 'biten-note-v3.0.1';
 
 // 相対パスで指定（GitHub Pagesサブディレクトリ対応）
 const STATIC_ASSETS = [
@@ -13,6 +13,7 @@ const STATIC_ASSETS = [
     './css/responsive.css',
     './css/notifications.css',
     './js/config.js',
+    './js/announcements.js',
     './js/firebase-config.js',
     './js/auth.js',
     './js/db.js',

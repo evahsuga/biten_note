@@ -256,6 +256,8 @@ const App = {
             await this.renderPdfSelect();
         } else if (hash === '#/release-notes') {
             await this.renderReleaseNotes();
+            // お知らせ一覧を開いたので全件既読にする（戻るとバッジが消える）
+            await this.markAllAnnouncementsRead();
             // 最新情報ページは確実に最上部へスクロール
             setTimeout(() => {
                 window.scrollTo(0, 0);
@@ -353,7 +355,7 @@ const App = {
                                 </button>
                             ` : ''}
                             <button class="btn btn-outline btn-block" onclick="App.navigate('#/guide')">
-                                📖 使い方
+                                📖 使い方 <span id="guide-notice-badge"></span>
                             </button>
                         </div>
                     </div>
@@ -422,9 +424,44 @@ const App = {
 
             // 統計情報を非同期で読み込み
             this.loadStatsAsync(persons);
+
+            // お知らせ未読バッジを非同期で読み込み（描画をブロックしない）
+            this.loadAnnouncementBadgeAsync();
         } catch (error) {
             Utils.error('ホーム画面レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
+    },
+
+    // お知らせ未読バッジを非同期で読み込み（「📖 使い方」ボタンに後入れ）
+    async loadAnnouncementBadgeAsync() {
+        try {
+            const database = this.getDB();
+            const readIds = await database.getReadAnnouncementIds();
+            const unread = (window.ANNOUNCEMENTS || []).filter(a => !readIds.includes(a.id)).length;
+            const slot = document.getElementById('guide-notice-badge');
+            if (slot) {
+                slot.innerHTML = unread > 0 ? `<span class="notice-badge">${unread}</span>` : '';
+            }
+        } catch (e) {
+            // 未ログイン等の端境でもホームは壊さない
+        }
+    },
+
+    // お知らせを全件既読にする（最新情報画面を開いた時に呼ぶ）
+    async markAllAnnouncementsRead() {
+        const database = this.getDB();
+        const allIds = (window.ANNOUNCEMENTS || []).map(a => a.id);
+        if (!allIds.length) return;
+        try {
+            const readIds = await database.getReadAnnouncementIds();
+            const merged = Array.from(new Set([...readIds, ...allIds]));
+            // 新規既読が無ければ書き込まない（協力利用の無駄なFirestore書込を回避）
+            if (merged.length !== readIds.length) {
+                await database.saveReadAnnouncementIds(merged);
+            }
+        } catch (e) {
+            Utils.error('お知らせ既読化エラー', e);
         }
     },
 
@@ -2640,6 +2677,23 @@ const App = {
                     </div>
                     <div class="card-body" style="padding: 20px;">
                         <!-- News項目（日付順に新しい順） -->
+
+                        <!-- お知らせ（announcements.js データ駆動） -->
+                        ${(window.ANNOUNCEMENTS || []).map(a => `
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">${a.date}</span>
+                            </div>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                ${a.title}
+                            </p>
+                            <p style="margin: 0 0 ${a.linkUrl ? '12px' : '0'} 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                ${a.body}
+                            </p>
+                            ${a.linkUrl ? `<a href="${a.linkUrl}" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">${a.linkLabel || 'くわしく'} →</a>` : ''}
+                        </div>
+                        `).join('')}
 
                         <!-- v3.0 安心利用リリース -->
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">

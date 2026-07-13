@@ -397,7 +397,7 @@ const App = {
                             </a>
                             <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')" style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
                                 <span>🔔 最新情報！</span>
-                                <span style="font-size: 11px; color: var(--gray-500);">（2026/3/1更新）</span>
+                                <span style="font-size: 11px; color: var(--gray-500);">（2026/7/11更新）</span>
                             </button>
                         </div>
                     </div>
@@ -2654,7 +2654,10 @@ const App = {
                     <p class="page-subtitle">お知らせとバージョン履歴</p>
                 </div>
 
-                <!-- 安定版のお知らせ（固定） -->
+                <!-- 安定版のお知らせ（固定）: データ移行の準備が整うまで一時非表示。
+                     GitHub利用者を Netlify へ誘導するとデータが引き継げないため。
+                     移行準備完了後に再表示（false→true）＋お知らせ機能で移行を案内する。 -->
+                ${false ? `
                 <div class="card" style="background: white; border: 2px solid #34C759; margin-bottom: 16px;">
                     <div class="card-body" style="padding: 16px;">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -2670,6 +2673,7 @@ const App = {
                         </a>
                     </div>
                 </div>
+                ` : ''}
 
                 <!-- News欄 -->
                 <div class="card" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%); border: 2px solid var(--primary);">

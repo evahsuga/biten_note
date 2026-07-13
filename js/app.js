@@ -1615,7 +1615,7 @@ const App = {
                     </div>
                     <div class="card-body">
                         <p style="line-height: 1.8; color: var(--gray-600); margin-bottom: 16px; font-size: 14px;">
-                            ここからは必須ではありません。お好みで、自由にお楽しみください 🌱
+                            お好みで、自由にお楽しみください 🌱
                         </p>
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">🖼️ 背景画像のカスタマイズ</h3>
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">

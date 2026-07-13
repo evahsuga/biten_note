@@ -12,7 +12,7 @@
 
 ### 本番環境（Netlify）
 - **ブランチ**: `production`
-- **URL**: https://biten-note.netlify.app
+- **URL**: https://bitennote.netlify.app
 - **用途**: 本番環境
 - **自動デプロイ**: productionブランチへのpushで自動デプロイ
 
@@ -55,7 +55,7 @@ git checkout main
 ```
 
 → **Netlifyで自動デプロイ**
-→ https://biten-note.netlify.app で本番公開
+→ https://bitennote.netlify.app で本番公開
 
 ## Netlify設定
 
@@ -179,6 +179,6 @@ git push origin production --force  # 強制プッシュ
 | 環境 | ブランチ | URL | 用途 |
 |------|----------|-----|------|
 | 開発 | main | https://evahpro.github.io/biten_note/ | テスト |
-| 本番 | production | https://biten-note.netlify.app | 公開 |
+| 本番 | production | https://bitennote.netlify.app | 公開 |
 
 **推奨フロー**: VSCode → main → GitHub Pages (テスト) → production → Netlify (本番)

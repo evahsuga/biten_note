@@ -244,10 +244,20 @@ const App = {
             return;
         } else if (hash === '#/settings') {
             await this.renderSettings();
+        } else if (hash === '#/notification-settings') {
+            // 本番(Netlify)では通知設定を無効化。URL直打ちも設定画面へリダイレクト
+            if (!Utils.isDevHost()) {
+                this.navigate('#/settings');
+                return;
+            }
+            await Notifications.init();
+            Notifications.renderSettingsPage();
         } else if (hash === '#/pdf-select') {
             await this.renderPdfSelect();
         } else if (hash === '#/release-notes') {
             await this.renderReleaseNotes();
+            // お知らせ一覧を開いたので全件既読にする（戻るとバッジが消える）
+            await this.markAllAnnouncementsRead();
             // 最新情報ページは確実に最上部へスクロール
             setTimeout(() => {
                 window.scrollTo(0, 0);
@@ -287,14 +297,24 @@ const App = {
                 <div class="guest-banner">
                     <div class="guest-banner-icon">📱</div>
                     <div class="guest-banner-content">
-                        <div class="guest-banner-title">ゲストモードで使用中</div>
+                        <div class="guest-banner-title">安心利用中</div>
                         <div class="guest-banner-text">
-                            データはこの端末のブラウザ内に保存されます。<br>
-                            ブラウザの「履歴を削除」を行うとデータが消える場合があります。
+                            このデータは、この端末の中だけに保存されます。<br>
+                            （登録不要・運営者が内容を見ることはありません）
                         </div>
-                        <button class="guest-banner-btn" onclick="App.showGuestRegistration()">
-                            アカウント登録する（無料）→
+                        <button id="guestDataInfoToggle" onclick="App.toggleGuestDataInfo()" style="background: none; border: none; color: #856404; text-decoration: underline; cursor: pointer; padding: 4px 0; font-size: var(--font-size-sm); font-weight: 600;">
+                            データの保存とバックアップについて ▼
                         </button>
+                        <div id="guestDataInfo" style="display: none; margin-top: 8px;">
+                            <ul style="margin: 0 0 12px 0; padding-left: 18px; font-size: var(--font-size-sm); color: #856404; line-height: 1.7;">
+                                <li>タブを閉じても、電源を切ってもデータは消えません</li>
+                                <li>ただし、ブラウザの「サイトデータ削除」や、別の端末・ブラウザで開いた場合、一部の端末で長期間開かなかった場合には消えることがあります</li>
+                                <li>大切な記録は、PDFで手元に保存しておくと安心です</li>
+                            </ul>
+                            <button class="guest-banner-btn" onclick="App.navigate('#/pdf-select')">
+                                📄 PDFで保存する
+                            </button>
+                        </div>
                     </div>
                 </div>
             ` : '';
@@ -335,7 +355,7 @@ const App = {
                                 </button>
                             ` : ''}
                             <button class="btn btn-outline btn-block" onclick="App.navigate('#/guide')">
-                                📖 使い方
+                                📖 使い方 <span id="guide-notice-badge"></span>
                             </button>
                         </div>
                     </div>
@@ -375,8 +395,9 @@ const App = {
                                style="text-decoration: none;">
                                 💬 ご意見・ご感想をお聞かせください
                             </a>
-                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')">
-                                🔔 最新情報！
+                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')" style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                <span>🔔 最新情報！</span>
+                                <span style="font-size: 11px; color: var(--gray-500);">（2026/7/11更新）</span>
                             </button>
                         </div>
                     </div>
@@ -388,7 +409,7 @@ const App = {
                                 ⚙️ 設定
                             </button>
                             <button class="btn btn-outline btn-block" onclick="App.handleLogout()" style="color: var(--error);">
-                                ${isGuestMode ? '🚪 ゲストモード終了' : '🚪 ログアウト'}
+                                ${isGuestMode ? '🚪 安心利用を終了' : '🚪 ログアウト'}
                             </button>
                         </div>
                     </div>
@@ -403,9 +424,44 @@ const App = {
 
             // 統計情報を非同期で読み込み
             this.loadStatsAsync(persons);
+
+            // お知らせ未読バッジを非同期で読み込み（描画をブロックしない）
+            this.loadAnnouncementBadgeAsync();
         } catch (error) {
             Utils.error('ホーム画面レンダリングエラー', error);
             showToast(CONFIG.MESSAGES.ERROR.DB_ERROR, 'error');
+        }
+    },
+
+    // お知らせ未読バッジを非同期で読み込み（「📖 使い方」ボタンに後入れ）
+    async loadAnnouncementBadgeAsync() {
+        try {
+            const database = this.getDB();
+            const readIds = await database.getReadAnnouncementIds();
+            const unread = (window.ANNOUNCEMENTS || []).filter(a => !readIds.includes(a.id)).length;
+            const slot = document.getElementById('guide-notice-badge');
+            if (slot) {
+                slot.innerHTML = unread > 0 ? `<span class="notice-badge">${unread}</span>` : '';
+            }
+        } catch (e) {
+            // 未ログイン等の端境でもホームは壊さない
+        }
+    },
+
+    // お知らせを全件既読にする（最新情報画面を開いた時に呼ぶ）
+    async markAllAnnouncementsRead() {
+        const database = this.getDB();
+        const allIds = (window.ANNOUNCEMENTS || []).map(a => a.id);
+        if (!allIds.length) return;
+        try {
+            const readIds = await database.getReadAnnouncementIds();
+            const merged = Array.from(new Set([...readIds, ...allIds]));
+            // 新規既読が無ければ書き込まない（協力利用の無駄なFirestore書込を回避）
+            if (merged.length !== readIds.length) {
+                await database.saveReadAnnouncementIds(merged);
+            }
+        } catch (e) {
+            Utils.error('お知らせ既読化エラー', e);
         }
     },
 
@@ -1358,7 +1414,7 @@ const App = {
                 </div>
 
                 <!-- はじめに -->
-                <div class="card">
+                <div class="card" id="guide-mode-info">
                     <div class="card-header">
                         <h2 class="card-title">📱 はじめに</h2>
                     </div>
@@ -1366,9 +1422,13 @@ const App = {
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
                             「美点発見note」は、大切な人の良いところを記録するアプリです。
                         </p>
-                        <p style="line-height: 1.8; color: var(--gray-700);">
-                            複数のデバイスで使え、データは安全にクラウドに保存されます。
+                        <p style="line-height: 1.9; color: var(--gray-700); margin: 0 0 16px;">
+                            <strong>安心利用（登録不要）</strong>で、どなたでもすぐにお使いいただけます。入力したデータはこの端末の中だけに保存され、運営者が内容を見ることはありません。
                         </p>
+                        <div style="border: 1px solid var(--gray-300); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--gray-500); line-height: 1.7;">
+                            <strong>登録済みの方・開発にご協力の方へ（開発協力）</strong><br>
+                            メール／Googleで登録すると、データがクラウドに保存され、複数の端末で同期して使えます。開発・改善にご協力いただく方向けの利用方法です。
+                        </div>
                     </div>
                 </div>
 
@@ -1378,7 +1438,7 @@ const App = {
                         <h2 class="card-title">📋 目次</h2>
                     </div>
                     <div class="card-body">
-                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step0')">
+                        <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-step1')">
                             📝 使い方
                         </button>
                         <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('guide-about')">
@@ -1397,11 +1457,14 @@ const App = {
                 </div>
 
                 <!-- ステップ0: ログイン -->
-                <div class="card" id="guide-step0">
-                    <div class="card-header">
-                        <h2 class="card-title">🔐 ステップ0: アカウント作成・ログイン</h2>
-                    </div>
-                    <div class="card-body">
+                <details class="card" id="guide-step0">
+                    <summary style="cursor: pointer; list-style: none; user-select: none; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
+                        <span class="card-title" style="margin: 0;">🔐 ステップ0: アカウント作成・ログイン
+                            <span style="font-size: 13px; font-weight: normal; color: var(--gray-600);">（開発協力の方のみ）</span>
+                        </span>
+                        <span style="color: var(--gray-600); font-size: 14px;">▼ タップで開く</span>
+                    </summary>
+                    <div class="card-body" style="margin-top: 16px;">
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">初めての方</h3>
                         <ol style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">「新規登録」タブをクリック</li>
@@ -1445,7 +1508,7 @@ const App = {
                             </p>
                         </div>
                     </div>
-                </div>
+                </details>
 
                 <!-- ステップ1: 人物登録 -->
                 <div class="card" id="guide-step1">
@@ -1545,39 +1608,15 @@ const App = {
                     </div>
                 </div>
 
-                <!-- ステップ4: クラウド同期 -->
-                <div class="card" id="guide-step4">
+                <!-- ステップα（原ステップ5・その他の機能）: 任意で楽しむ内容。上へ移動 -->
+                <div class="card" id="guide-stepalpha">
                     <div class="card-header">
-                        <h2 class="card-title">☁️ ステップ4: 複数デバイスで使う</h2>
+                        <h2 class="card-title">🎨 ステップα: お好みで楽しむ（任意）</h2>
                     </div>
                     <div class="card-body">
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">自動同期</h3>
-                        <ul style="padding-left: 20px; margin-bottom: 20px;">
-                            <li style="margin-bottom: 8px; line-height: 1.8;">スマホで記録 → PCで確認</li>
-                            <li style="margin-bottom: 8px; line-height: 1.8;">PCで記録 → スマホで確認</li>
-                            <li style="line-height: 1.8;">自動で同期されます</li>
-                        </ul>
-
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">オフラインでも使える</h3>
-                        <ul style="padding-left: 20px; margin-bottom: 20px;">
-                            <li style="margin-bottom: 8px; line-height: 1.8;">圏外でも記録可能</li>
-                            <li style="line-height: 1.8;">オンラインに戻ると自動同期</li>
-                        </ul>
-
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">複数端末でログイン</h3>
-                        <p style="line-height: 1.8; color: var(--gray-700);">
-                            同じアカウントでログインすれば、<br>
-                            どの端末でも同じデータにアクセスできます。
+                        <p style="line-height: 1.8; color: var(--gray-600); margin-bottom: 16px; font-size: 14px;">
+                            お好みで、自由にお楽しみください 🌱
                         </p>
-                    </div>
-                </div>
-
-                <!-- ステップ5: その他の機能 -->
-                <div class="card" id="guide-step5">
-                    <div class="card-header">
-                        <h2 class="card-title">🎨 ステップ5: その他の機能</h2>
-                    </div>
-                    <div class="card-body">
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">🖼️ 背景画像のカスタマイズ</h3>
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
                             アプリの背景を自分好みの画像に変更できます。
@@ -1599,6 +1638,39 @@ const App = {
                         </button>
                     </div>
                 </div>
+
+                <!-- 原ステップ4: クラウド同期（開発利用向けのため一時非表示。必要になれば false→true で復帰） -->
+                ${false ? `
+                <details class="card" id="guide-step4">
+                    <summary style="cursor: pointer; list-style: none; user-select: none; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
+                        <span class="card-title" style="margin: 0;">☁️ ステップ4: 複数デバイスで使う
+                            <span style="font-size: 13px; font-weight: normal; color: var(--gray-600);">（開発協力の方のみ）</span>
+                        </span>
+                        <span style="color: var(--gray-600); font-size: 14px;">▼ タップで開く</span>
+                    </summary>
+                    <div class="card-body" style="margin-top: 16px;">
+                        <p style="margin: 0 0 12px; font-size: 13px;"><span onclick="App.scrollToSection('guide-mode-info')" style="cursor: pointer; color: var(--primary); text-decoration: underline;">（開発協力の場合 ※）</span></p>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">自動同期</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">スマホで記録 → PCで確認</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">PCで記録 → スマホで確認</li>
+                            <li style="line-height: 1.8;">自動で同期されます</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">オフラインでも使える</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">圏外でも記録可能</li>
+                            <li style="line-height: 1.8;">オンラインに戻ると自動同期</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">複数端末でログイン</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700);">
+                            同じアカウントでログインすれば、<br>
+                            どの端末でも同じデータにアクセスできます。
+                        </p>
+                    </div>
+                </details>
+                ` : ''}
 
                 <!-- 美点発見とは -->
                 <div class="card" id="guide-about">
@@ -1677,7 +1749,9 @@ const App = {
                         <div style="margin-bottom: 20px;">
                             <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: データは安全ですか？</h3>
                             <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
-                                A: はい。データは暗号化されてGoogle Firebase（世界最大級のクラウド）に保存されます。本人以外はアクセスできません。
+                                A: 利用方法によって異なります。<br>
+                                ・<strong>安心利用</strong>：データはこの端末の中だけに保存され、運営者を含め誰も見られません。<br>
+                                ・<strong>開発協力（登録）</strong>：データは Google Firebase のクラウドに保存されます（通信・保管は暗号化）。サービス改善のため、運営側が内容を確認できる状態です。
                             </p>
                         </div>
 
@@ -1705,7 +1779,7 @@ const App = {
                         <div>
                             <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 8px;">Q: スマホとPCで同じデータを見たい</h3>
                             <p style="line-height: 1.8; color: var(--gray-700); padding-left: 20px;">
-                                A: 同じメールアドレスとパスワードでログインすれば、自動で同期されます。
+                                A: 同じメールアドレスとパスワードでログインすれば、自動で同期されます。<span onclick="App.scrollToSection('guide-mode-info')" style="cursor: pointer; color: var(--primary); text-decoration: underline; font-size: 0.9em;">（開発協力の場合 ※）</span>
                             </p>
                         </div>
                     </div>
@@ -1899,7 +1973,7 @@ const App = {
                                 ※本アプリは継続開発中です。今後、小中学校向けへ応用開発を予定しております。
                             </p>
                             <p style="line-height: 1.8; color: var(--gray-600); font-size: 14px;">
-                                © 2025 あなたと一緒に「美点発見」！
+                                © 2026 あなたと一緒に「美点発見」！
                             </p>
                         </div>
                         <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px; margin-top: 16px;">
@@ -1922,17 +1996,22 @@ const App = {
     async renderSettings() {
         try {
             const user = Auth.getCurrentUser();
+            const isGuest = Auth.isGuestMode();
 
-            if (!user) {
+            // 安心利用（ゲスト）も設定を開けるようにする。どちらでもない場合のみホームへ
+            if (!user && !isGuest) {
                 this.navigate('#/');
                 return;
             }
 
-            // ログイン方法の判定
-            const providerData = user.providerData[0];
-            const loginMethod = providerData.providerId === 'google.com'
-                ? 'Google ログイン'
-                : 'メールアドレス';
+            // ログイン方法の判定（開発協力＝ログイン時のみ）
+            let loginMethod = '';
+            if (user) {
+                const providerData = user.providerData[0];
+                loginMethod = providerData.providerId === 'google.com'
+                    ? 'Google ログイン'
+                    : 'メールアドレス';
+            }
 
             const html = `
                 <div class="page">
@@ -1950,11 +2029,21 @@ const App = {
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('background-image')">
                                 🖼️ 背景画像設定
                             </button>
+                            ${user ? `
+                            ${Utils.isDevHost() ? `
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/notification-settings')">
+                                🔔 リマインダー設定
+                            </button>
+                            ` : ''}
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('account-info')">
                                 👤 アカウント情報
                             </button>
                             <button class="btn btn-outline btn-block mb-md" onclick="App.scrollToSection('danger-zone')">
                                 ⚠️ 危険な操作（アカウント削除）
+                            </button>
+                            ` : ''}
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/pdf-select')">
+                                📄 PDFで保存
                             </button>
                             <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/privacy')">
                                 📄 プライバシーポリシー
@@ -2014,9 +2103,8 @@ const App = {
 
                             <button class="btn btn-outline btn-block"
                                     onclick="App.removeBackgroundImage()"
-                                    id="removeBackgroundBtn"
-                                    style="display: none;">
-                                🗑️ 背景画像を削除
+                                    id="removeBackgroundBtn">
+                                🔄 デフォルトの背景に戻す
                             </button>
 
                             <div style="margin-top: 12px; padding: 12px; background-color: var(--gray-100); border-radius: 8px;">
@@ -2032,6 +2120,7 @@ const App = {
                         </div>
                     </div>
 
+                    ${user ? `
                     <!-- アカウント情報 -->
                     <div class="card" id="account-info">
                         <div class="card-header">
@@ -2082,6 +2171,7 @@ const App = {
                             </button>
                         </div>
                     </div>
+                    ` : ''}
 
                     <!-- 戻るボタン -->
                     <button class="btn btn-primary btn-block" onclick="App.navigate('#/')">
@@ -2130,10 +2220,11 @@ const App = {
 
     // 利用規約・プライバシーポリシーから戻る
     goBackFromTermsOrPrivacy() {
-        // ログイン状態を確認
+        // ログイン状態を確認（安心利用＝ゲストも設定画面から遷移するため設定へ戻す）
         const user = Auth.getCurrentUser();
-        if (user) {
-            // ログイン済みの場合は設定画面へ戻る
+        const isGuest = Auth.isGuestMode();
+        if (user || isGuest) {
+            // ログイン済み or 安心利用の場合は設定画面へ戻る
             this.navigate('#/settings');
         } else {
             // 未ログインの場合はログイン画面へ戻る
@@ -2169,7 +2260,7 @@ const App = {
     // 背景画像を削除
     async removeBackgroundImage() {
         try {
-            const confirmed = confirm('背景画像を削除しますか？');
+            const confirmed = confirm('背景をデフォルト（標準）に戻しますか？');
             if (!confirmed) return;
 
             showLoading();
@@ -2189,13 +2280,13 @@ const App = {
             const previewDiv = document.getElementById('backgroundPreview');
             const removeBtn = document.getElementById('removeBackgroundBtn');
 
-            if (previewDiv && removeBtn) {
+            // プレビューは隠すが、「デフォルトに戻す」ボタンは常時表示のままにする
+            if (previewDiv) {
                 previewDiv.style.display = 'none';
-                removeBtn.style.display = 'none';
             }
 
             hideLoading();
-            showToast('背景画像を削除しました', 'success');
+            showToast('デフォルトの背景に戻しました', 'success');
         } catch (error) {
             hideLoading();
             Utils.error('背景画像削除エラー', error);
@@ -2210,7 +2301,8 @@ const App = {
             document.body.style.backgroundImage = `url(${imageDataUrl})`;
             document.body.classList.add('has-background-image');
         } else {
-            document.body.style.backgroundImage = 'none';
+            // 空文字にするとインライン上書きが解除され、CSSのデフォルト背景(var(--gradient-primary))が復活する
+            document.body.style.backgroundImage = '';
             document.body.classList.remove('has-background-image');
         }
     },
@@ -2366,8 +2458,12 @@ const App = {
                             あなたと一緒に「美点発見」！（以下「当委員会」）は、本アプリケーション「美点発見note」（以下「本サービス」）におけるプライバシー情報の取り扱いについて、以下のとおりプライバシーポリシー（以下「本ポリシー」）を定めます。
                         </p>
 
+                        <p style="margin-bottom: 20px;">
+                            本サービスには「安心利用（登録不要）」と「開発協力（登録）」の2つの利用方法があります。<strong>安心利用</strong>では、入力されたデータはご利用の端末内（ブラウザ内）にのみ保存され、当委員会がその内容を取得・保存することはありません。本ポリシーは、主に<strong>開発協力（登録）</strong>によりクラウドへデータを保存する場合の取り扱いを定めるものです。
+                        </p>
+
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">1. 取得する情報</h2>
-                        <p style="margin-bottom: 16px;">当委員会は、本サービスの提供にあたり、以下の情報を取得します。</p>
+                        <p style="margin-bottom: 16px;">開発協力（登録）によるご利用にあたり、当委員会は以下の情報を取得します。安心利用（登録不要）では、これらの情報は端末内にのみ保存され、当委員会は取得しません。</p>
                         <ul style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px;">メールアドレス（アカウント登録時）</li>
                             <li style="margin-bottom: 8px;">パスワード（暗号化して保存）</li>
@@ -2397,13 +2493,12 @@ const App = {
                         <ul style="padding-left: 20px; margin-bottom: 20px;">
                             <li style="margin-bottom: 8px;">Firebase Authentication による安全な認証</li>
                             <li style="margin-bottom: 8px;">データの暗号化保存</li>
-                            <li style="margin-bottom: 8px;">Firebase App Check によるボット攻撃の防止</li>
                             <li>アクセス制限による不正アクセスの防止</li>
                         </ul>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">5. データの保存場所</h2>
                         <p style="margin-bottom: 20px;">
-                            本サービスは、Google Firebase（Google Cloud Platform）を利用してデータを保存します。データは米国または日本のデータセンターに保存される場合があります。
+                            開発協力（登録）の場合、本サービスは Google Firebase（Google Cloud Platform）を利用してデータを保存します。データは米国または日本のデータセンターに保存される場合があります。安心利用（登録不要）の場合、データはご利用の端末内にのみ保存され、外部のサーバーには送信されません。
                         </p>
 
                         <h2 style="font-size: 18px; font-weight: bold; margin: 24px 0 12px 0; color: var(--gray-800);">6. ユーザーの権利</h2>
@@ -2436,7 +2531,7 @@ const App = {
 
                         <p style="text-align: right; color: var(--gray-600); margin-top: 32px;">
                             制定日: 2025年10月18日<br>
-                            最終更新日: 2025年10月18日
+                            最終更新日: 2026年7月11日
                         </p>
                     </div>
                 </div>
@@ -2537,8 +2632,7 @@ const App = {
                         </ol>
 
                         <p style="text-align: right; color: var(--gray-600); margin-top: 32px;">
-                            制定日: 2025年10月18日<br>
-                            最終更新日: 2025年10月18日
+                            制定日: 2025年10月18日
                         </p>
                     </div>
                 </div>
@@ -2565,6 +2659,27 @@ const App = {
                     <p class="page-subtitle">お知らせとバージョン履歴</p>
                 </div>
 
+                <!-- 安定版のお知らせ（固定）: データ移行の準備が整うまで一時非表示。
+                     GitHub利用者を Netlify へ誘導するとデータが引き継げないため。
+                     移行準備完了後に再表示（false→true）＋お知らせ機能で移行を案内する。 -->
+                ${false ? `
+                <div class="card" style="background: white; border: 2px solid #34C759; margin-bottom: 16px;">
+                    <div class="card-body" style="padding: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="background: #34C759; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">安定版</span>
+                            <span style="font-size: 16px; font-weight: bold; color: var(--gray-800);">📌 ご利用はこちらをおすすめします</span>
+                        </div>
+                        <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                            安定版は以下のURLで公開しています。<br>
+                            開発版（GitHub Pages）は更新作業中に不安定になることがあります。
+                        </p>
+                        <a href="https://bitennote.netlify.app" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: #34C759; color: white; padding: 10px 20px; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 14px;">
+                            🚀 安定版を開く（Netlify）
+                        </a>
+                    </div>
+                </div>
+                ` : ''}
+
                 <!-- News欄 -->
                 <div class="card" style="background: linear-gradient(135deg, rgba(103, 126, 234, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%); border: 2px solid var(--primary);">
                     <div class="card-header" style="background: var(--primary); color: white; border-radius: 12px 12px 0 0; padding: 16px;">
@@ -2576,11 +2691,61 @@ const App = {
                     <div class="card-body" style="padding: 20px;">
                         <!-- News項目（日付順に新しい順） -->
 
+                        <!-- お知らせ（announcements.js データ駆動） -->
+                        ${(window.ANNOUNCEMENTS || []).map(a => `
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">${a.date}</span>
+                            </div>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                ${a.title}
+                            </p>
+                            <p style="margin: 0 0 ${a.linkUrl ? '12px' : '0'} 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                ${a.body}
+                            </p>
+                            ${a.linkUrl ? `<a href="${a.linkUrl}" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">${a.linkLabel || 'くわしく'} →</a>` : ''}
+                        </div>
+                        `).join('')}
+
+                        <!-- v3.0 安心利用リリース -->
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年7月</span>
+                            </div>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                🔒 登録不要で使える「安心利用」を追加しました！（v3.0）
+                            </p>
+                            <p style="margin: 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                登録なしで、この端末の中だけにデータを保存して使えます（運営者が内容を見ることはありません）。登録して使う「開発協力」は、クラウド保存・複数端末での同期に対応します。
+                            </p>
+                        </div>
+
+                        <!-- リマインド機能（総合調整中）: 本番(Netlify)では非表示。開発ホストのみ表示 -->
+                        ${Utils.isDevHost() ? `
+                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年3月</span>
+                            </div>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
+                                🔔 リマインダー機能が総合調整に入りました！
+                            </p>
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
+                                美点発見を習慣化するためのリマインド通知機能です。お好みのスタイル・頻度・時間帯を設定して、毎日の美点発見をサポートします。
+                            </p>
+                            <a href="#/notification-settings" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
+                                🔔 リマインダー設定へ →
+                            </a>
+                        </div>
+                        ` : ''}
+
                         <!-- 美点+100件拡張機能リリース -->
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
-                                <span style="color: var(--gray-600); font-size: 14px;">2025年2月</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年2月</span>
                             </div>
                             <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
                                 📄 美点100個を超えて記録できるようになりました！
@@ -2594,7 +2759,7 @@ const App = {
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>
-                                <span style="color: var(--gray-600); font-size: 14px;">2025年1月</span>
+                                <span style="color: var(--gray-600); font-size: 14px;">2026年1月</span>
                             </div>
                             <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
                                 🎨 背景画像のカスタマイズ機能をリリースしました！
@@ -2605,17 +2770,6 @@ const App = {
                             <a href="#/settings" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px;">
                                 ⚙️ 設定ページで背景を変更 →
                             </a>
-                        </div>
-
-                        <!-- リマインド機能開発スタート -->
-                        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                <span style="background: var(--success); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">開発中</span>
-                                <span style="color: var(--gray-600); font-size: 14px;">2025年1月</span>
-                            </div>
-                            <p style="margin: 0; font-size: 16px; font-weight: bold; color: var(--gray-900); line-height: 1.8;">
-                                🚀 リマインド機能開発スタート！
-                            </p>
                         </div>
                     </div>
                 </div>
@@ -2628,15 +2782,35 @@ const App = {
                             <span style="font-size: 14px; color: var(--gray-500);">▼ タップで開く</span>
                         </summary>
                         <div style="padding: 0 16px 16px 16px;">
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">📄 バージョン 1.9（2025年2月）</h3>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🔒 バージョン 3.0（2026年7月）</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 24px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">登録不要の「安心利用」を主導線に（この端末内に保存・運営者は内容を見られない）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">登録・クラウド同期を「開発協力」として同意ベースで提供</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ログイン画面を再構成（既存ログインはフッターに集約）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">安心利用でも設定・PDF保存を利用可能に</li>
+                            <li style="line-height: 1.8;">使い方・プライバシーポリシーを2つの利用方法に合わせて整理</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🔔 バージョン 2.0（2026年2月）</h3>
+                        <ul style="padding-left: 20px; margin-bottom: 24px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">リマインダー機能を追加</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">3種類の通知スタイル（友人、コーチング、お祭り）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">通知頻度の選択（毎日、週3回、カスタム）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">通知時間帯の設定（朝・昼・夜・カスタム）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">PWA対応（ホーム画面に追加可能）</li>
+                            <li style="line-height: 1.8;">プッシュ通知対応</li>
+                        </ul>
+
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">📄 バージョン 1.9（2026年2月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">美点100個以上の拡張機能を追加</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">100個達成後に+100枠を追加可能に</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">ページネーション機能（1-100、101-200...）</li>
-                            <li style="line-height: 1.8;">PDF出力も拡張枠に対応</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">PDF出力も拡張枠に対応</li>
+                            <li style="line-height: 1.8;">ゲストモード機能の追加</li>
                         </ul>
 
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎨 バージョン 1.8（2025年1月）</h3>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎨 バージョン 1.8（2026年1月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">背景画像のカスタマイズ機能を追加</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">背景画像のトリミング機能（Cropper.js使用）</li>
@@ -2646,7 +2820,7 @@ const App = {
                             <li style="line-height: 1.8;">Netlifyでの公開開始</li>
                         </ul>
 
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎉 バージョン 1.7（2025年1月）</h3>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 16px;">🎉 バージョン 1.7（2026年1月）</h3>
                         <ul style="padding-left: 20px; margin-bottom: 24px;">
                             <li style="margin-bottom: 8px; line-height: 1.8;">人物一覧に写真表示機能を追加</li>
                             <li style="margin-bottom: 8px; line-height: 1.8;">チェックボックスによる表示オプション選択を実装</li>
@@ -2699,6 +2873,67 @@ const App = {
     // ログイン・認証画面
     // ===========================
 
+    // 協力利用の同意ボディ（メール登録フォームとGoogle同意モーダルで共通利用＝文言が絶対にズレない）
+    consentBodyHtml(checkboxId) {
+        return `
+            <div style="background: var(--gray-100); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.7; color: var(--gray-700);">
+                <div style="font-weight: 600; margin-bottom: 6px;">協力利用について</div>
+                <p style="margin: 0 0 8px 0;">
+                    美点発見noteの改善にご協力いただける方向けの登録方法です。
+                </p>
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li style="margin-bottom: 4px;">お名前・美点の内容・お写真は、開発改善のため運営者が確認できる状態で保存されます</li>
+                    <li>データは複数の端末で同期してご利用いただけます</li>
+                </ul>
+            </div>
+            <div class="form-group" style="margin-top: 16px;">
+                <label style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.6;">
+                    <input type="checkbox" id="${checkboxId}" required style="margin-right: 8px; margin-top: 4px; cursor: pointer;">
+                    <span style="font-size: 14px; color: var(--gray-700);">上記に同意して登録する</span>
+                </label>
+                <div style="font-size: 12px; margin-top: 6px; padding-left: 26px;">
+                    <a href="#/privacy" target="_blank" style="color: var(--primary); text-decoration: underline;">プライバシーポリシー</a>
+                    ・
+                    <a href="#/terms" target="_blank" style="color: var(--primary); text-decoration: underline;">利用規約</a>
+                </div>
+            </div>
+        `;
+    },
+
+    // Google新規登録時の同意モーダル（awaitできる。同意=true / キャンセル=false を resolve）
+    showConsentModal() {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('consentModal');
+            const body = document.getElementById('consentModalBody');
+            if (!modal || !body) { resolve(false); return; }
+            body.innerHTML = this.consentBodyHtml('consentModalAgree');
+            hideLoading();
+            modal.classList.remove('hidden');
+
+            const agreeBtn = document.getElementById('consentAgreeBtn');
+            const cancelBtn = document.getElementById('consentCancelBtn');
+            const closeBtn = document.getElementById('consentCloseBtn');
+
+            const cleanup = () => {
+                modal.classList.add('hidden');
+                agreeBtn.onclick = null;
+                cancelBtn.onclick = null;
+                if (closeBtn) closeBtn.onclick = null;
+            };
+            agreeBtn.onclick = () => {
+                const checkbox = document.getElementById('consentModalAgree');
+                if (!checkbox || !checkbox.checked) {
+                    showToast('「上記に同意して登録する」にチェックしてください', 'error');
+                    return;
+                }
+                cleanup();
+                resolve(true);
+            };
+            cancelBtn.onclick = () => { cleanup(); resolve(false); };
+            if (closeBtn) closeBtn.onclick = () => { cleanup(); resolve(false); };
+        });
+    },
+
     // ログイン画面
     renderLogin() {
         const html = `
@@ -2709,6 +2944,26 @@ const App = {
                         <p class="auth-subtitle">大切な人の美点を記録しよう</p>
                     </div>
 
+                    <!-- 安心利用（主導線）: 三段表示できれいに収める（自動折返しは止め<br>のみで改行） -->
+                    <button class="btn btn-primary btn-block" onclick="App.enterGuestMode()" style="white-space: nowrap; text-align: center; line-height: 1.5; padding: 16px; font-size: 18px; font-weight: 600;">
+                        安心利用<br>（登録不要）で<br>はじめる
+                    </button>
+                    <p style="text-align: center; font-size: 13px; color: var(--gray-600); margin-top: 12px; white-space: nowrap;">
+                        入力データはこの端末だけに保存
+                    </p>
+                    <p style="text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 6px; line-height: 1.6;">
+                        以前お試し利用された方も、こちらから続けられます。
+                    </p>
+
+                    <!-- フッター：既存ユーザー・開発協力の入口（意図的に大きく下へ離し、注意して見る人だけが気づくように） -->
+                    <div style="margin-top: 96px; text-align: center;">
+                        <button type="button" id="legacyAuthToggle" onclick="App.toggleLegacyAuth()" style="background: none; border: none; cursor: pointer; font-size: 13px; color: var(--gray-600); text-decoration: underline; padding: 8px; line-height: 1.6; white-space: normal; max-width: 100%;">
+                            登録済みの方・開発にご協力の方はこちら
+                        </button>
+                    </div>
+
+                    <!-- 折りたたみ：既存ログイン／新規登録（開発協力）／Google -->
+                    <div id="legacyAuth" style="margin-top: 8px; display: none;">
                     <!-- タブ切り替え -->
                     <div class="auth-tabs">
                         <button class="auth-tab active" id="loginTab" onclick="App.switchAuthTab('login')">
@@ -2785,18 +3040,8 @@ const App = {
                             >
                         </div>
 
-                        <!-- 同意チェックボックス -->
-                        <div class="form-group" style="margin-top: 20px;">
-                            <label style="display: flex; align-items: flex-start; cursor: pointer; line-height: 1.6;">
-                                <input type="checkbox" id="agreeTerms" required style="margin-right: 8px; margin-top: 4px; cursor: pointer;">
-                                <span style="font-size: 14px; color: var(--gray-700);">
-                                    <a href="#/privacy" target="_blank" style="color: var(--primary); text-decoration: underline;">プライバシーポリシー</a>
-                                    および
-                                    <a href="#/terms" target="_blank" style="color: var(--primary); text-decoration: underline;">利用規約</a>
-                                    に同意します
-                                </span>
-                            </label>
-                        </div>
+                        <!-- 同意（協力利用について＋チェック＋PP/規約リンク）: Google同意モーダルと共通 -->
+                        ${this.consentBodyHtml('agreeTerms')}
 
                         <button type="submit" class="btn btn-primary btn-block">
                             新規登録
@@ -2843,25 +3088,25 @@ const App = {
                         Googleでログイン
                     </button>
 
-                    <!-- 区切り線 -->
-                    <div style="display: flex; align-items: center; margin: 24px 0 16px 0;">
-                        <div style="flex: 1; height: 1px; background-color: var(--gray-300);"></div>
-                        <span style="padding: 0 16px; color: var(--gray-500); font-size: 14px;">または</span>
-                        <div style="flex: 1; height: 1px; background-color: var(--gray-300);"></div>
                     </div>
-
-                    <!-- ゲストモードボタン -->
-                    <button class="btn btn-outline btn-block" onclick="App.enterGuestMode()" style="border-color: var(--gray-400); color: var(--gray-700);">
-                        まず試してみる（登録不要）
-                    </button>
-                    <p style="text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 8px;">
-                        データはこの端末のブラウザ内に保存されます
-                    </p>
+                    <!-- #legacyAuth 終わり -->
                 </div>
             </div>
         `;
 
         document.getElementById('app').innerHTML = html;
+    },
+
+    // フッターの既存ログイン／新規登録（開発協力）エリアの開閉
+    toggleLegacyAuth() {
+        const el = document.getElementById('legacyAuth');
+        if (!el) return;
+        const isHidden = (el.style.display === 'none' || el.style.display === '');
+        el.style.display = isHidden ? 'block' : 'none';
+        // 開いたときは見えるようスクロール
+        if (isHidden) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     },
 
     // タブ切り替え
@@ -2995,7 +3240,7 @@ const App = {
             // 同意チェックの確認
             if (!agreeTerms) {
                 hideLoading();
-                showToast('プライバシーポリシーと利用規約に同意してください', 'error');
+                showToast('「上記に同意して登録する」にチェックしてください', 'error');
                 return;
             }
 
@@ -3058,7 +3303,7 @@ const App = {
             window.location.hash = '#/';
             this.handleRoute();
 
-            showToast('ゲストモードで開始しました', 'success');
+            showToast('安心利用を開始しました', 'success');
         } catch (error) {
             hideLoading();
             Utils.error('ゲストモード開始エラー', error);
@@ -3066,13 +3311,32 @@ const App = {
         }
     },
 
+    // 安心利用バナーの「データの保存とバックアップについて」開閉
+    toggleGuestDataInfo() {
+        const el = document.getElementById('guestDataInfo');
+        const toggle = document.getElementById('guestDataInfoToggle');
+        if (!el) return;
+        const isHidden = (el.style.display === 'none' || el.style.display === '');
+        el.style.display = isHidden ? 'block' : 'none';
+        if (toggle) {
+            toggle.textContent = isHidden
+                ? 'データの保存とバックアップについて ▲'
+                : 'データの保存とバックアップについて ▼';
+        }
+    },
+
     // ゲストモードからアカウント登録画面を表示
     showGuestRegistration() {
-        // ゲストモードを終了せずに新規登録画面を表示
+        // 安心利用を終了せずに新規登録（開発協力）画面を表示
         // 登録完了時にauth.jsのサインアップ処理でデータ移行が行われる
         this.renderLogin();
-        // ログイン画面表示後、新規登録タブに切り替え
-        setTimeout(() => this.switchAuthTab('signup'), 0);
+        // ログイン画面表示後、フッターの折りたたみを開いて新規登録タブに切り替え
+        setTimeout(() => {
+            const legacy = document.getElementById('legacyAuth');
+            if (legacy) legacy.style.display = 'block';
+            this.switchAuthTab('signup');
+            if (legacy) legacy.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 0);
     },
 
     // パスワードリセット表示
@@ -3142,12 +3406,12 @@ const App = {
     async handleLogout() {
         // ゲストモードの場合
         if (Auth.isGuestMode()) {
-            if (!confirm('ゲストモードを終了しますか？\n\n※ データはこの端末に残ります。\n次回「まず試してみる」ボタンで再開できます。')) {
+            if (!confirm('安心利用を終了しますか？\n\n※ データはこの端末に残ります。\n次回「安心利用（登録不要）ではじめる」で再開できます。')) {
                 return;
             }
 
             Auth.exitGuestMode();
-            showToast('ゲストモードを終了しました', 'success');
+            showToast('安心利用を終了しました', 'success');
             this.renderLogin();
             return;
         }

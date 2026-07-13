@@ -15,13 +15,16 @@
 # Windows
 Thumbs.db
 
-# Node modules（将来的に使用する可能性）
+# Node modules（巨大・再生成可能なため除外）
 node_modules/
-package-lock.json
+# package-lock.json は追跡する（複数管理体制で依存バージョンを固定・共有するため）
 
 # ビルド出力
 dist/
 build/
+
+# 生成物（構成図PDF等・HTMLから再生成できるため追跡しない）
+*.pdf
 
 # IDE設定
 .vscode/settings.json

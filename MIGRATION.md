@@ -9,7 +9,7 @@
 - **対象ユーザー**: 22名
 - **更新した人物**: 55名
 - **実施日**: 2026-01-02
-- **ツール**: `migrate-sortorder.js` (Firebase Admin SDK使用)
+- **ツール**: `tools/migrate-sortorder.js` (Firebase Admin SDK使用)
 
 ### 実施結果
 すべてのユーザーデータに対して、`createdAt`順で`sortOrder`を自動付与しました。
@@ -32,7 +32,7 @@ npm install
 ```bash
 npm run migrate
 # または
-node migrate-sortorder.js
+node tools/migrate-sortorder.js
 ```
 
 #### 4. 実行後のクリーンアップ

@@ -834,6 +834,30 @@ const DB = {
             Utils.error('背景画像削除エラー', error);
             throw error;
         }
+    },
+
+    // お知らせ既読ID一覧（協力利用=Firestore settings/appSettings）
+    async getReadAnnouncementIds() {
+        const userId = this.getCurrentUserId();
+        const doc = await db.collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('appSettings')
+            .get();
+        const v = doc.exists ? doc.data().readAnnouncementIds : null;
+        return Array.isArray(v) ? v : [];
+    },
+
+    async saveReadAnnouncementIds(ids) {
+        const userId = this.getCurrentUserId();
+        await db.collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('appSettings')
+            .set({
+                readAnnouncementIds: ids,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
     }
 };
 

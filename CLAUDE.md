@@ -4,10 +4,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**美点発見note** (Biten Note) - A web application for recording virtues/good qualities about people in your life, based on the 美点発見® (Virtue Discovery) methodology used by 43,000 ANA employees.
+**美点発見note** (Biten Note) - A web application for recording virtues/good qualities about people, based on the 美点発見® (Virtue Discovery) methodology.
 
-**Current Version**: 1.9 - 100+ virtues expansion with pagination (production)
+**Current Version**: 3.0 (安心利用・ゲスト主体)
 **Repository**: https://github.com/evahsuga/biten_note.git
+
+## Version Management
+
+バージョン更新時は以下の場所を確認・更新してください：
+
+### 必須更新箇所（チェックリスト）
+
+| 更新箇所 | ファイル | 場所 | 備考 |
+|---------|---------|------|------|
+| ✅ バージョン番号 | `js/config.js` | `CONFIG.VERSION` | **唯一の定義場所** - ホーム画面に自動反映 |
+| ✅ CLAUDE.md | `CLAUDE.md` | `Current Version:` | ドキュメント用 |
+| ✅ 最新情報 | `js/app.js` | `renderReleaseNotesPage()` | NEWバッジ付きの新着情報を追加 |
+| ✅ バージョン履歴 | `js/app.js` | `📋 バージョン履歴` | アコーディオン内の履歴を追加 |
+
+### バージョン更新手順
+
+```bash
+# 1. config.js のバージョンを更新
+#    js/config.js: VERSION: 'X.X'
+
+# 2. CLAUDE.md の Current Version を更新
+
+# 3. app.js の最新情報に新しい記事を追加（最上段に）
+
+# 4. app.js のバージョン履歴に新セクションを追加
+
+# 5. コミット・プッシュ
+git add -A
+git commit -m "Release: バージョン X.X"
+git push origin main
+```
+
+### 現在の参照状況
+
+- **ホーム画面**: `CONFIG.VERSION` を参照（`js/app.js` line ~400）
+- **最新情報ページ**: ハードコードされた日付・内容（`js/app.js` renderReleaseNotesPage内）
 
 ## Development Commands
 
@@ -19,7 +55,7 @@ python3 -m http.server 8000
 # Or use VS Code Live Server extension (recommended for hot reload)
 ```
 
-### Data Migration Commands
+### Data Migration
 
 ```bash
 # Install dependencies (first time only)
@@ -27,33 +63,68 @@ npm install
 
 # Run sortOrder migration for all users (requires service account key)
 npm run migrate
-# or
-node migrate-sortorder.js
 
 # IMPORTANT: Delete service account key after migration
 rm *-firebase-adminsdk-*.json
 ```
 
-**Migration Usage Notes**:
-- Migration script requires Firebase Admin SDK service account key
-- Download key from [Firebase Console](https://console.firebase.google.com/project/biten-note-app/settings/serviceaccounts/adminsdk)
-- Service account keys are excluded from git via `.gitignore`
-- See `MIGRATION.md` for detailed migration documentation
+Migration requires Firebase Admin SDK service account key from [Firebase Console](https://console.firebase.google.com/project/biten-note-app/settings/serviceaccounts/adminsdk). See `MIGRATION.md` for details.
+
+### Cloud Functions
+
+```bash
+cd functions
+
+# Install dependencies
+npm install
+
+# Deploy to Firebase (requires Blaze plan)
+npm run deploy
+# or
+firebase deploy --only functions
+
+# View logs
+npm run logs
+# or
+firebase functions:log
+
+# Local emulator
+npm run serve
+```
+
+**Firebase Project**: `biten-note-app`
+
+```bash
+# Ensure correct project
+firebase use biten-note-app
+```
+
+### Email Notification Setup (Firebase Extension)
+
+Email reminders use Firebase Extension "Trigger Email from Firestore":
+- SMTP: Gmail via App Password (stored in Secret Manager)
+- Config: `extensions/firestore-send-email.env`
+- Mail collection: `mail` (Firestore)
+
+```bash
+# Update SMTP password in Secret Manager
+firebase functions:secrets:set SMTP_PASSWORD --project biten-note-app
+
+# Deploy extension changes
+firebase deploy --only extensions --project biten-note-app
+```
+
+**Note**: Push notifications were investigated but deprioritized due to device compatibility issues. See `docs/PUSH_NOTIFICATION_INVESTIGATION.md` for details.
 
 ## Architecture
 
 ### Technology Stack
 - **Frontend**: Pure HTML/CSS/JavaScript (ES6+), no build process
-- **Storage**:
-  - Firestore (cloud sync for authenticated users)
-  - Firestore offline persistence (local cache)
-  - IndexedDB fallback for anonymous users (v1.0 legacy)
+- **Storage**: Firestore (cloud sync) + IndexedDB fallback (anonymous users)
 - **Authentication**: Firebase Auth (Email/Password + Google OAuth)
-- **Security**: Firebase App Check (currently disabled for performance testing)
-- **External Libraries** (CDN):
-  - Cropper.js v1.6.1 (photo cropping)
-  - jsPDF v2.5.1 (PDF generation)
-  - Firebase SDK v8.x (auth, firestore, app-check)
+- **Notifications**: Email via Firebase Extension "Trigger Email from Firestore", Cloud Functions (scheduled)
+- **PWA**: Service Worker, manifest.json, icons (8 sizes)
+- **External Libraries** (CDN): Cropper.js v1.6.1, jsPDF v2.5.1, Firebase SDK v8.x
 
 ### Module Structure
 
@@ -61,412 +132,198 @@ The app uses global objects exposed via `<script>` tags (no bundler):
 
 ```
 js/
-├── firebase-config.js  # Firebase initialization & App Check
-├── auth.js             # Authentication wrapper (Auth object)
-├── db.js               # Database operations (DB object) - Firestore + IndexedDB
-├── config.js           # Constants (CONFIG object)
-├── app.js              # SPA router & main logic (App object)
-├── person.js           # Person management UI (Person object)
-├── biten.js            # Virtue recording UI (Biten object)
-├── photo.js            # Photo cropping (Photo object)
-└── pdf.js              # PDF generation (PDF object)
+├── firebase-config.js      # Firebase initialization
+├── auth.js                 # Authentication wrapper (Auth object)
+├── db.js                   # Database operations (DB object)
+├── db-local.js             # IndexedDB for guest mode (LocalDB object)
+├── config.js               # Constants (CONFIG object)
+├── app.js                  # SPA router & main logic (App object)
+├── person.js               # Person management UI
+├── biten.js                # Virtue recording UI
+├── photo.js                # Photo cropping
+├── pdf.js                  # PDF generation
+├── notifications.js        # Reminder settings & FCM (Notifications object)
+└── notification-messages.js # Message templates for reminders
+
+functions/
+└── index.js                # Cloud Functions (scheduled notifications, FCM)
+
+tools/
+├── migrate-sortorder.js    # Node script: backfill sortOrder (npm run migrate, needs admin SDK key)
+└── test-data-generator.js  # Browser-console script: seed test persons/bitens for the logged-in user
+
+sw.js                       # Service Worker (PWA, push notifications)
+manifest.json               # PWA manifest
 ```
 
-**CRITICAL - Script Load Order**: Scripts in `index.html` must load in this exact order to avoid undefined errors:
+Note: `app.js` is ~190KB and holds the entire SPA (router + all page renderers like `renderReleaseNotesPage()`). There is no automated test suite — verification is manual (browser + the console tools above); see the Testing Checklist in the workspace-root `../CLAUDE.md`.
+
+**CRITICAL - Script Load Order** in `index.html`:
 1. External libraries (Cropper.js, jsPDF, Firebase SDK v8)
 2. `firebase-config.js` - Initializes Firebase, auth, db globals
-3. `auth.js`, `db.js`, `config.js` - Core services (depend on firebase globals)
-4. `app.js`, `person.js`, `biten.js`, `photo.js`, `pdf.js` - UI modules (depend on Auth/DB/CONFIG)
+3. `auth.js`, `db.js`, `config.js` - Core services
+4. `app.js`, `person.js`, `biten.js`, `photo.js`, `pdf.js` - UI modules
 
-**Never reorder scripts** - the app uses global objects (Auth, DB, CONFIG, etc.) that must be defined before use.
+**Never reorder scripts** - the app uses global objects that must be defined before use.
 
 ### Key Design Patterns
 
-**SPA Routing**: Hash-based routing (`#/home`, `#/person-list`, etc.) handled by `App.router()`
-
-**Authentication Flow**:
-1. Anonymous users → IndexedDB only (Phase 1 behavior)
-2. Signed-up users → Firestore with offline persistence
-3. Migration path: Convert IndexedDB data to Firestore on first login
-
-**Data Sync Strategy**:
-- Firestore real-time listeners for live updates
-- Offline-first with Firestore persistence
-- IndexedDB as fallback for anonymous users
+- **SPA Routing**: Hash-based (`#/home`, `#/person-list`, etc.) via `App.router()`
+- **Authentication Flow**: Anonymous → IndexedDB only; Signed-up → Firestore with offline persistence
+- **Data Migration**: IndexedDB to Firestore on first login (v1.0 legacy support)
 
 ## Important Technical Constraints
 
-### Data Limits (CONFIG.LIMITS)
-- Maximum 3 persons in free version
+### Data Limits (CONFIG.LIMITS in config.js)
 - Maximum 15 characters per virtue entry (`MAX_BITEN_LENGTH`)
-- Default 100 virtues per person, expandable by +100 increments (v1.9+)
+- Default 100 virtues per person, expandable by +100 increments
 - Photo size: 400×400px JPEG, max 150KB
 
 ### Storage Rules
-- ❌ **NEVER use localStorage/sessionStorage for app data** (incompatible with Claude artifacts)
-- ✅ Use Firestore for authenticated users
-- ✅ Use IndexedDB for anonymous users
-- ✅ Use memory variables for temporary data
-- ✅ **Exception**: localStorage IS acceptable for performance flags (e.g., migration status)
+- **NEVER use localStorage/sessionStorage for app data** (incompatible with Claude artifacts)
+- **Exception**: localStorage IS acceptable for performance flags (e.g., migration status)
+- Use Firestore for authenticated users, IndexedDB for anonymous users
+
+### ⚠️ Critical Invariant: 安心利用（ゲスト）は Firestore へ書き込まない
+
+**不変条件**: `Auth.isGuestMode()`（localStorage `bitenNote_guestMode`）が真の間、ユーザーデータ（人物・美点・設定）を Firestore へ書いてはならない。これは公開時の「安心利用＝本人以外は運営者を含め誰も内容を見られない」という説明の**土台**であり、`docs/BACKLOG.md` #8 の正しさ保証そのもの。
+
+**現状これを担保している3層**（2026-07-12 静的監査で漏れ経路なしを確認済み）:
+1. **ルーティング層**: 全データ操作は `App.getDB()`（`js/app.js:46`）を通り、ゲスト中は必ず `LocalDB`(IndexedDB) を返す。`DB`(Firestore) 直書き経路は無い。
+2. **DB層**: `DB` の全メソッドは冒頭で `DB.getCurrentUserId()`（`js/db.js:140`）を呼び、未ログイン時に `throw`。
+3. **サーバ規則層**: `firestore.rules` が `request.auth != null` を要求。ゲストは未認証のため全書込拒否。匿名認証は未使用。
+
+**コードを変更する人への注意（この不変条件を壊さないために）**:
+- ユーザーデータ操作は必ず `App.getDB()` 経由にする。`DB.*`（Firestore）を直接呼ばない。
+- ゲスト→Firestore の唯一の正規経路は、ログイン確定＋`confirm()` 同意後の移行（`Auth.handleGuestDataOnLogin` → `LocalDB.migrateToFirestore`）のみ。
+- 新しい認証経路を足す場合（例: Google を `signInWithRedirect` 方式へ変更）は、ゲストフラグ解除／移行ハンドラ呼び出しを忘れないこと。**現状の `Auth.handleRedirectResult()`（`js/auth.js:68`）は `exitGuestMode`/`handleGuestDataOnLogin` を呼んでいない**（現状 `signInWithRedirect` 未使用のため無害だが、有効化時は要対応）。
+
+**引き継ぎ時の注意**: 現在この不変条件は「規約＋コードレビュー」で担保しており、実行時の強制ガードは**あえて入れていない**（現行コードでは決して発火せず、移行フローへの不要な結合を避けるため。2026-07-12 判断）。**このコードベースが原作者の管理を離れて第三者に保守される段階になったら、強制ガードの導入を検討する**（案: `DB.getCurrentUserId()` に `if (Auth.isGuestMode()) throw` を追加し、移行処理は書き込み前に `exitGuestMode()` するよう並べ替える）。経緯は `docs/notes/検証記録_安心利用Firestore非書込_20260712.md`。
 
 ### Database Schema
 
-**Firestore Structure** (per user):
+**Firestore** (per user):
 ```
 users/{userId}/persons/{personId}
-  - id, name, photo (base64), relationship, metDate, createdAt, updatedAt
+  - id, name, photo (base64), relationship, metDate, sortOrder, createdAt, updatedAt
 
 users/{userId}/bitens/{bitenId}
   - id, personId, content, date, createdAt
 
 users/{userId}/settings/appSettings
   - stats, userPlan, lastSyncAt
+
+users/{userId}/settings/notifications
+  - enabled, style, frequency, customTime, method ('email'), email, lastSentAt
 ```
 
-**IndexedDB Structure** (BitenNoteDB v1):
-- `persons` ObjectStore (keyPath: "id")
-- `bitens` ObjectStore (keyPath: "id", index: "personId")
-- `appSettings` ObjectStore (keyPath: "id")
+**IndexedDB** (BitenNoteDB v1): `persons`, `bitens`, `appSettings` ObjectStores
 
-## Common Development Tasks
+## Documentation & Handoff Map
 
-### Testing Authentication Flow
+This project is maintained under a multi-manager handoff model, so the intent behind decisions lives in `docs/` rather than in code. Consult these before changing related behavior:
+
+- `docs/BACKLOG.md` — ledger of open issues / future work (what, why, planned response)
+- `docs/DEPLOYMENT_NOTES.md` — deployment reality & history; **critical**: production (Netlify) config lives only in the Netlify dashboard, not in the repo
+- `docs/PUSH_NOTIFICATION_INVESTIGATION.md` — why push was dropped in favor of email
+- `docs/specs/` — design specs (phase1, reminders v2.0, guest mode, 安心利用/協力利用 login)
+- `docs/notes/`, `docs/archive/` —壁打ち records and superseded docs
+- `MIGRATION.md` — sortOrder migration runbook (`npm run migrate`)
+
+## Debugging
+
 ```javascript
-// Check current auth state (in browser console)
-Auth.getCurrentUser()  // Returns user object or null
-Auth.getCurrentUserId()  // Returns uid string or null
-Auth.isLoggedIn()  // Returns boolean
+// Check auth state
+Auth.getCurrentUser()
+Auth.isLoggedIn()
 
-// View Firestore data for current user
+// View Firestore data
 firebase.firestore().collection('users').doc(Auth.getCurrentUserId())
   .collection('persons').get().then(snap => console.table(snap.docs.map(d => d.data())))
 
-// View all bitens (virtues) for current user
-firebase.firestore().collection('users').doc(Auth.getCurrentUserId())
-  .collection('bitens').get().then(snap => console.table(snap.docs.map(d => d.data())))
-
-// Check Firestore connection status
-firebase.firestore().enableNetwork().then(() => console.log('Online'))
-firebase.firestore().disableNetwork().then(() => console.log('Offline mode'))
-```
-
-### Debugging IndexedDB
-```javascript
-// Check database exists
+// View IndexedDB
 indexedDB.databases().then(console.log)
 
-// View all persons
-const request = indexedDB.open('BitenNoteDB', 1);
-request.onsuccess = (e) => {
-  const db = e.target.result;
-  const tx = db.transaction(['persons'], 'readonly');
-  const store = tx.objectStore('persons');
-  store.getAll().onsuccess = (e) => console.table(e.target.result);
-};
-
-// Clear all data (use with caution!)
+// Clear IndexedDB (caution!)
 indexedDB.deleteDatabase('BitenNoteDB');
 ```
 
-### Testing PDF Export
-- Navigate to `#/pdf-print` or click "PDF作成" from person detail
-- PDF includes: Cover page, table of contents, individual person pages (100 slots)
-- Uses jsPDF with custom fonts loaded via data URIs
-
-## Key Features
-
-### Person Management
-- Add person with photo (camera/upload → Cropper.js → base64 storage)
-- Edit name, relationship, photo via detail page modals
-- Delete person with confirmation (Firestore + IndexedDB cleanup)
-- List sorted by あいうえお順 (Japanese alphabetical order)
-
-### Virtue Recording
-- LINE-style chat interface with date separators
-- 15-character limit enforced with real-time counter
-- Date selection: Today, Yesterday, Custom date picker
-- Long-press to edit/delete virtues (mobile-first UX)
-- Auto-scroll to latest message
-
-### Progress Tracking
-- Counter display: ○/N virtues per person (N = 100, 200, 300... expandable)
-- Visual progress bar on detail page
-- Statistics on home screen (total persons, total virtues, streak days)
-- +100 expansion button appears when limit is reached
-
-### PDF Export
-- Cover page with summary stats
-- Table of contents with page numbers
-- Individual pages per person (photo + numbered slots matching expanded limit)
-- Pagination support for 100+ virtues (multiple pages per person)
-- Empty slots shown as blank lines with numbers
-- Download or open in new tab
-
 ## Deployment
 
-### Environment Configuration
-
-**Production (Netlify)**:
-- URL: https://biten-note.netlify.app
-- Branch: `production`
-- Auto-deploy: Enabled on push to production branch
-
-**Development (GitHub Pages)**:
-- URL: https://evahpro.github.io/biten_note/
-- Branch: `main`
-- Auto-deploy: Enabled on push to main branch
-
-### Deployment Workflow
+| Environment | Branch | URL | Purpose |
+|-------------|--------|-----|---------|
+| Development | main | https://evahsuga.github.io/biten_note/ | Testing |
+| Production | production | https://bitennote.netlify.app | Public |
 
 ```bash
-# 1. Development & Testing (main → GitHub Pages)
-git add .
-git commit -m "Feature: XXX"
+# Development: push to main → auto-deploy to GitHub Pages
 git push origin main
-# → Auto-deploy to GitHub Pages for testing
 
-# 2. Production Release (main → production → Netlify)
-# After testing on GitHub Pages:
-git checkout production
-git merge main
-git push origin production
-git checkout main
-# → Auto-deploy to Netlify production
+# Production: merge main → production → auto-deploy to Netlify
+git checkout production && git merge main && git push origin production && git checkout main
 ```
 
-**Netlify Configuration**:
-- Build command: (none - static site)
-- Publish directory: . (root)
-- Production branch: `production` (NOT main)
-- Auto-deploy: enabled
+See `DEPLOY.md` for detailed instructions.
 
-**GitHub Pages Configuration**:
-- Source: Deploy from branch `main` / (root)
+### Deployment Safety Model（重要：本番への波及を理解する）
 
-For detailed deployment instructions, see [DEPLOY.md](DEPLOY.md).
+**ブランチ分離により、本番稼働への影響を段階的に隔離できる。** 開発作業（ファイル整理・機能追加・修正）はすべて `main` で行う。`main` への push は開発サイト（GitHub Pages）だけに反映され、**本番（Netlify）は `production` へ明示的にマージするまで一切変化しない。**
 
-**Firebase Configuration**:
-- Project ID: `biten-note-app`
-- Auth Domain: `biten-note-app.firebaseapp.com`
-- App Check: Temporarily disabled (see `firebase-config.js` comments)
-- Firestore Rules: User-scoped security (users can only access their own data)
+推奨フロー（本番リスクをゼロにする手順）：
+1. `main` で作業・push → 開発サイトで動作確認
+2. 問題なければ `main` → `production` へマージ → 本番反映
 
-## Known Issues & Limitations
+**なぜ静的ファイルの削除・移動が稼働に無影響か**：
+- デプロイはビルド無しの純粋な静的配信（`netlify.toml`・`.github/workflows` は存在しない）。ブランチ内のファイルをそのまま配信するだけなので、**どこからも参照されないファイルを消しても配信結果は変わらない**。
+- 削除・移動の前に、`index.html` の `<script>`/`<link>`、`sw.js` のキャッシュ配列（`urlsToCache`）、コード全体の参照（grep）に対象が含まれないことを確認すること。含まれなければ稼働への波及はゼロ。
 
-- **Firebase API Key Exposed**: Public API key in `firebase-config.js` is intentional (protected by Firestore rules)
-- **App Check Disabled**: Currently disabled for performance testing (see `firebase-config.js` line 43-50)
-- **Photo Storage**: Base64 in Firestore (not Cloud Storage) - simple but not scalable for large photos
-- **Offline Limitations**: Firestore persistence works in one tab only (multi-tab causes `failed-precondition` error)
-- **IndexedDB Migration**: One-way migration from IndexedDB to Firestore on first login (legacy v1.0 data)
+### ⚠️ 引き継ぎ最大リスク：Netlify設定はリポジトリ外にある
 
-## Development History
+本番デプロイの設定（公開ディレクトリ・対象ブランチ `production`・環境変数）は**リポジトリ内に無く、Netlify管理画面にのみ存在する**（`netlify.toml` を置いていないため）。管理画面にアクセスできない担当者には本番構成が見えない。複数管理体制では、この設定内容を別途文書化・共有すること。
 
-**Version 1.9 (2025-02)**: 100+ virtues expansion
-- Added +100 expansion feature after reaching 100 virtues
-- Pagination tabs for navigating 1-100, 101-200, etc.
-- PDF export supports expanded virtue limits
-- Version display on home screen
+**Firebase Project**: `biten-note-app` (Blaze plan)
 
-**Version 1.8 (2025-01)**: Background customization & Netlify deployment
-- Background image customization feature
-- Cropper.js integration for image trimming
-- Auto-resize and compression (max 1280px, 300KB)
-- Settings page reorganization with table of contents
-- Default blue gradient background for better readability
-- Netlify deployment started
+## Known Issues
 
-**Version 1.7 (2025-01)**: UI/UX improvements
-- Photo display toggle in person list
-- Checkbox-based view options
-- Privacy protection (photos hidden by default)
-- Scrollable progress section on home
-- Photo data reset fix
-- Password reset email Japanese localization
-- Page top buttons on long pages
-- Mobile UI optimization
+- **Push Notifications Not Working**: FCM sends successfully but devices don't display. Email-only reminder system implemented instead. See `docs/PUSH_NOTIFICATION_INVESTIGATION.md`
+- **App Check Disabled**: Currently disabled for performance testing (see `firebase-config.js`)
+- **Photo Storage**: Base64 in Firestore (not Cloud Storage) - not scalable for large photos
+- **Offline Multi-tab**: Firestore persistence causes `failed-precondition` error with multiple tabs
 
-**Version 1.5 (2024-12)**: Firebase integration
-- Email/Password + Google OAuth
-- Firestore cloud sync with offline persistence
-- Unlimited person registration
-- Account deletion for GDPR compliance
-- Long-press edit/delete for virtues
-- Profile photo upload for developer info
+## Critical Lessons Learned
 
-**Version 1.0 (2024-11)**: IndexedDB-only prototype
-- 3-person limit, 15-char virtues, 100-virtue goal
-- LINE-style chat UI with Apple-inspired design
-- PDF export with custom layout
-- Photo cropping and compression
+### Firestore Query Behavior with Missing Fields
 
-## Testing Checklist
+**Incident (2026-01-02)**: Added `sortOrder` field for drag-and-drop sorting. Used `.orderBy('sortOrder')` query which **excludes documents missing that field**. Result: 19 of 21 persons became invisible.
 
-### Authentication Flow
-1. Sign up with email/password
-2. Sign in with existing account
-3. Google OAuth sign-in
-4. Password reset email
-5. Account deletion flow
+**Solution**:
+1. Remove `.orderBy()` from Firestore query
+2. Sort client-side with fallback:
+```javascript
+persons.sort((a, b) => {
+    if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+        return a.sortOrder - b.sortOrder;
+    } else if (a.sortOrder !== undefined) return -1;
+    else if (b.sortOrder !== undefined) return 1;
+    else return new Date(a.createdAt) - new Date(b.createdAt);
+});
+```
+3. Add automatic migration on login (`DB.migrateSortOrder()`)
 
-### Data Sync
-1. Add person → Verify in Firestore
-2. Add virtue → Real-time update across tabs
-3. Offline mode → Add data → Go online → Auto-sync
-4. Sign out → Data persists on sign-in
+**Key Takeaway**: `orderBy(field)` excludes documents where field is undefined. Always test with production-like data that may lack new fields.
 
-### Person Management
-1. Add person (3-person limit enforcement)
-2. Photo upload/crop/save
-3. Edit name, relationship
-4. Delete person (confirmation + cleanup)
+### Performance with Large Datasets
 
-### Virtue Recording
-1. Add virtue (15-char limit)
-2. Date selection (today/yesterday/custom)
-3. Long-press edit/delete
-4. Chat scroll behavior
+**Issue (2026-01-03)**: User with 19 persons + 1500 bitens experienced 3+ minute login on mobile.
 
-### PDF Export
-1. Generate PDF for single person
-2. Verify layout (cover, TOC, person pages)
-3. Test with 0, 50, 100+ virtues
-4. Download vs. open in tab
+**Root Cause**: Migration check (`DB.migrateSortOrder()`) ran on every login.
 
-### Responsive Design
-1. Mobile (iPhone 12 Pro: 390×844)
-2. Tablet (iPad: 768×1024)
-3. Desktop (1920×1080)
+**Solution**: LocalStorage flag to skip migration after first run:
+```javascript
+const migrationKey = `sortOrder_migrated_${userId}`;
+if (localStorage.getItem(migrationKey) === 'true') return;
+// ... run migration ...
+localStorage.setItem(migrationKey, 'true');
+```
 
-## Security Notes
-
-- **App Check**: Currently disabled (line 43-50 in `firebase-config.js`), to be re-enabled after performance testing
-- **Firestore Rules**: Users can only read/write their own data (`users/{userId}/**`)
-- **No Server**: Pure client-side app, no backend API or secrets to protect
-- **GDPR Compliance**: Account deletion permanently removes all user data from Firestore
-- **Google OAuth**: Uses redirect method on mobile for better compatibility (not popup)
-
-## Support & Documentation
-
-- **Phase 1 Specification**: See `phase1-specification.md` for original design
-- **README**: Japanese user guide in `README.md`
-- **Troubleshooting**: Check browser console for Firebase auth/sync errors
-
-## Important Lessons Learned
-
-### Database Schema Changes & Data Migration (2026-01-02)
-
-**Incident**: Added drag-and-drop sorting feature with new `sortOrder` field, causing existing production data (21 persons) to become invisible. Only newly created test data (2 persons with `sortOrder`) was displayed.
-
-**Root Cause**:
-- Used Firestore query `.orderBy('sortOrder', 'asc')` in `getAllPersons()`
-- Firestore excludes documents that don't have the field specified in `orderBy()`
-- 19 existing persons had no `sortOrder` field → not returned by query
-- Only 2 test persons created after the feature had `sortOrder` → appeared in results
-
-**Impact**: Production users could not see their existing data after deployment
-
-**Solution Implemented**:
-1. Removed `.orderBy('sortOrder')` from Firestore query
-2. Retrieved all documents without filtering
-3. Sorted data client-side with fallback logic:
-   ```javascript
-   persons.sort((a, b) => {
-       if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
-           return a.sortOrder - b.sortOrder;
-       } else if (a.sortOrder !== undefined) {
-           return -1;
-       } else if (b.sortOrder !== undefined) {
-           return 1;
-       } else {
-           // Both missing sortOrder: fallback to createdAt
-           return new Date(a.createdAt) - new Date(b.createdAt);
-       }
-   });
-   ```
-4. Added automatic migration on login (`DB.migrateSortOrder()`):
-   - Detects documents without `sortOrder`
-   - Assigns sequential numbers based on `createdAt` order
-   - Uses batch update for performance
-
-**Key Takeaways**:
-
-1. **Always consider existing data compatibility**
-   - Before adding new fields, check if existing data will still be accessible
-   - Test new features with both old and new data schemas
-
-2. **Firestore query behavior**
-   - `orderBy(field)` excludes documents where `field` is undefined/missing
-   - Use client-side sorting when field might not exist
-   - Or use compound queries with existence checks
-
-3. **Migration strategy**
-   - Deploy schema changes WITH migration code, not separately
-   - Run migrations automatically on user login
-   - Make migrations idempotent (safe to run multiple times)
-   - Log migration results for monitoring
-
-4. **Testing checklist for schema changes**
-   - [ ] Test with existing production-like data
-   - [ ] Verify backward compatibility
-   - [ ] Implement migration before rollout
-   - [ ] Test migration with edge cases (no data, partial data, full data)
-   - [ ] Add logging for migration monitoring
-
-5. **Environment separation**
-   - Local and production should use different Firebase projects for testing
-   - Prevent accidental production data corruption during development
-   - Current setup: Both environments use same Firebase project (risk identified)
-
-**Prevention for Future**:
-- Create data migration checklist for all schema changes
-- Add field existence checks before using in queries
-- Consider using default values or nullable patterns
-- Test locally with copy of production data structure
-- Document all database schema changes in this file
-
-### Performance Optimization for Large Datasets (2026-01-03)
-
-**Issue**: User with 19 persons and 1500 bitens experienced 3+ minute login time on mobile device
-
-**Root Causes Identified**:
-1. **Migration runs on every login**: `DB.migrateSortOrder()` called in `app.js` initialization, checking all persons even if already migrated
-2. **Stats loading blocks UI**: `DB.getStats()` loads all bitens for all persons synchronously on home screen
-3. **No pagination**: Loading all persons and bitens at once for large datasets
-
-**Solutions Implemented**:
-
-**Priority A - Quick Wins (Implemented)**:
-1. **LocalStorage Migration Flag** (`db.js:16-28`):
-   ```javascript
-   const migrationKey = `sortOrder_migrated_${userId}`;
-   const isMigrated = localStorage.getItem(migrationKey);
-
-   if (isMigrated === 'true') {
-       Utils.log('sortOrderマイグレーション済み（スキップ）');
-       return; // Fast exit - saves ~30-60 seconds
-   }
-
-   // ... run migration ...
-
-   localStorage.setItem(migrationKey, 'true'); // Save flag after completion
-   ```
-   - Skips migration check after first successful run
-   - Per-user flag prevents false positives across accounts
-   - Estimated improvement: 30-60 seconds reduction on subsequent logins
-
-**Priority B - Planned Optimizations**:
-2. **Delayed Stats Loading**: Render home screen immediately, load stats asynchronously
-3. **Firestore Stats Caching**: Cache aggregated stats in Firestore (avoid calculating from 1500+ bitens)
-4. **Pagination**: Load persons in batches (e.g., 10 at a time)
-
-**Key Takeaways**:
-1. **Test with production-scale data**: Local tests with 2-3 persons don't reveal performance issues
-2. **Mobile performance != Desktop**: 3+ minutes on mobile, no issue on desktop for same dataset
-3. **Migration should be one-time**: Use flags to skip redundant operations
-4. **Separate read-time optimization from write-time**: Stats can be pre-calculated and cached
-5. **localStorage for performance flags is acceptable**: Despite general rule against localStorage for data
-
-**Monitoring**:
-- Migration flag per user: `sortOrder_migrated_{userId}` in localStorage
-- Check console logs: "sortOrderマイグレーション済み（スキップ）" indicates flag is working
-- User feedback: Monitor login time improvements after optimization deployment
+**Key Takeaway**: Test with production-scale data. Mobile performance != Desktop performance. Migrations should be one-time operations.

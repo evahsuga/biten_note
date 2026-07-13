@@ -5,7 +5,7 @@
 const CONFIG = {
     // アプリ基本情報
     APP_NAME: '美点ノート',
-    VERSION: '1.9',
+    VERSION: '3.0',
     PHASE: 'Phase 1',
 
     // デバッグモード（本番環境では false に設定）
@@ -204,6 +204,13 @@ Object.freeze(CONFIG);
 
 // ユーティリティ関数
 const Utils = {
+    // 開発ホスト（GitHub Pages / ローカル）判定。開発中機能はここでのみ表示する。
+    // fail-closed: 未知のホスト（本番Netlify・将来のカスタムドメイン含む）は false＝非表示側。
+    isDevHost() {
+        const h = window.location.hostname;
+        return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.github.io');
+    },
+
     // UUID生成
     generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

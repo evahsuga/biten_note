@@ -109,6 +109,37 @@ const Auth = {
     },
 
     // ===========================
+    // 安心利用（ゲスト）データの移行ハンドラ（3つの認証入口で共通利用）
+    // ===========================
+
+    // ログイン/登録時、安心利用データがあれば「追加／破棄（端末に残す）」を確認して移行する。
+    // これにより「初めての人＝追加」「既存ユーザーが誤って安心利用に触れた＝追加しない」を
+    // 本人が選べ、本番アカウントへの意図しないデータ混入を防ぐ。
+    async handleGuestDataOnLogin(uid) {
+        if (!this.isGuestMode()) return;
+        try {
+            const hasData = await LocalDB.hasData();
+            if (hasData) {
+                const persons = await LocalDB.getAllPersonsIncludingArchived();
+                const bitens = await LocalDB.getAllBitens();
+                const msg = `この端末に、まだアカウントに紐づいていないデータがあります（人物${persons.length}人・美点${bitens.length}件）。\n\n「OK」：このアカウントに追加します。\n「キャンセル」：追加しません（データはこの端末に残ります）。`;
+                if (confirm(msg)) {
+                    Utils.log('安心利用データをFirestoreへ移行開始');
+                    const result = await LocalDB.migrateToFirestore(uid);
+                    Utils.log('データ移行完了', result);
+                    showToast(`${result.persons}人の人物と${result.bitens}件の美点を追加しました`, 'success');
+                } else {
+                    Utils.log('安心利用データの追加をユーザーがスキップ（端末に保持）');
+                }
+            }
+        } catch (migrationError) {
+            Utils.error('データ移行エラー', migrationError);
+            showToast('データの追加中にエラーが発生しました', 'error');
+        }
+        this.exitGuestMode();
+    },
+
+    // ===========================
     // Email/Password認証
     // ===========================
 
@@ -146,22 +177,8 @@ const Auth = {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // ゲストモードからの登録の場合、データを移行
-            if (this.isGuestMode()) {
-                try {
-                    const hasData = await LocalDB.hasData();
-                    if (hasData) {
-                        Utils.log('ゲストモードのデータをFirestoreへ移行開始');
-                        const result = await LocalDB.migrateToFirestore(user.uid);
-                        Utils.log('データ移行完了', result);
-                        showToast(`${result.persons}人の人物と${result.bitens}件の美点を移行しました`, 'success');
-                    }
-                } catch (migrationError) {
-                    Utils.error('データ移行エラー', migrationError);
-                    showToast('データの移行中にエラーが発生しました', 'error');
-                }
-                this.exitGuestMode();
-            }
+            // 安心利用（ゲスト）データがあれば、追加するか確認して移行
+            await this.handleGuestDataOnLogin(user.uid);
 
             return user;
         } catch (error) {
@@ -186,6 +203,8 @@ const Auth = {
             const user = userCredential.user;
 
             Utils.log('ログイン成功', user.email);
+            // 安心利用（ゲスト）データがあれば、追加するか確認して移行
+            await this.handleGuestDataOnLogin(user.uid);
             return user;
         } catch (error) {
             Utils.error('ログインエラー', error);
@@ -244,6 +263,28 @@ const Auth = {
 
             Utils.log('Googleログイン成功', user.email);
 
+            // 新規ユーザーには協力利用の同意ゲートを挟む（メール登録と同じ同意）
+            // 新規判定は「Firestoreにユーザードキュメントが無ければ新規」で確実に行う
+            // （SDKの additionalUserInfo.isNewUser に依存しない＝新規なのに素通りする穴を塞ぐ）
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            const isNewUser = !userDoc.exists;
+            if (isNewUser) {
+                const agreed = await App.showConsentModal();
+                if (!agreed) {
+                    // 未同意の新規ユーザーは、直後に作られた認証ユーザーを削除して離脱
+                    // （createUserDocument 前なので Firestore は未作成＝クリーン）
+                    try {
+                        await user.delete();
+                    } catch (delErr) {
+                        Utils.error('未同意ユーザーの削除失敗、サインアウトにフォールバック', delErr);
+                        await auth.signOut();
+                    }
+                    hideLoading();
+                    Utils.log('Google新規登録: 同意されなかったため中止');
+                    return null;
+                }
+            }
+
             // Firestoreにユーザードキュメントを作成（存在しない場合）
             await this.createUserDocument(user.uid, {
                 email: user.email,
@@ -253,22 +294,8 @@ const Auth = {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // ゲストモードからの登録の場合、データを移行
-            if (this.isGuestMode()) {
-                try {
-                    const hasData = await LocalDB.hasData();
-                    if (hasData) {
-                        Utils.log('ゲストモードのデータをFirestoreへ移行開始');
-                        const result = await LocalDB.migrateToFirestore(user.uid);
-                        Utils.log('データ移行完了', result);
-                        showToast(`${result.persons}人の人物と${result.bitens}件の美点を移行しました`, 'success');
-                    }
-                } catch (migrationError) {
-                    Utils.error('データ移行エラー', migrationError);
-                    showToast('データの移行中にエラーが発生しました', 'error');
-                }
-                this.exitGuestMode();
-            }
+            // 安心利用（ゲスト）データがあれば、追加するか確認して移行
+            await this.handleGuestDataOnLogin(user.uid);
 
             return user;
         } catch (error) {

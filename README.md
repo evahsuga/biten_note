@@ -10,7 +10,7 @@
 
 ### 環境構成
 
-- **本番環境**: Netlify（https://biten-note.netlify.app）
+- **本番環境**: Netlify（https://bitennote.netlify.app）
   - ブランチ: `production`
   - 自動デプロイ: productionブランチへのpush
 
@@ -29,11 +29,24 @@ main → GitHub Pages → production → Netlify
 
 ## 開発状況
 
-- **バージョン 1.9**（現在）：本番運用中
+- **バージョン 3.0**（現在）：本番運用中
 
 ### バージョン履歴
 
-- **1.9**（2025年2月）
+- **3.0**（2026年7月）
+  - 登録不要の「安心利用」を主導線に（この端末内に保存・運営者は内容を見られない）
+  - 登録・クラウド同期を「開発協力」として同意ベースで提供
+  - ログイン画面を再構成（既存ログインはフッターに集約）
+  - 安心利用でも設定・PDF保存を利用可能に
+  - 使い方・プライバシーポリシーを2つの利用方法に合わせて整理
+- **2.0**（2026年3月）
+  - リマインダー機能を追加（メール通知）
+  - 3種類の通知スタイル（友人、コーチング、お祭り）
+  - 毎日指定時刻にメールでリマインド
+  - PWA対応（ホーム画面に追加可能）
+  - Firebase Cloud Functions によるスケジュール送信
+  - Firebase Extension "Trigger Email" によるメール配信
+- **1.9**（2026年2月）
   - 美点100個以上の拡張機能を追加
   - 100個達成後に+100枠を追加可能に
   - ページネーション機能（1-100、101-200...）
@@ -41,13 +54,14 @@ main → GitHub Pages → production → Netlify
   - 設定ページのUI改善（ホームボタン、スクロール修正）
   - 使い方ページに書籍表紙画像を追加
   - 各種ページのレイアウト・可読性向上
-- **1.8**（2025年1月）
+  - ゲストモード機能の追加
+- **1.8**（2026年1月）
   - 背景画像カスタマイズ機能（トリミング対応）
   - 最新情報ページの実装（News欄追加）
   - 使い方ページの改善（ステップ5追加、自己肯定感キーワード強調）
   - 設定ページの構成改善（目次追加）
   - Netlify本番環境公開開始
-- **1.7**（2025年1月）：UI/UX改善、写真表示機能、モバイル最適化
+- **1.7**（2026年1月）：UI/UX改善、写真表示機能、モバイル最適化
 - **1.5**（2024年12月）：Firebase連携、クラウド同期、無制限登録
 - **1.0**（2024年11月）：初回リリース、IndexedDB版
 
@@ -56,6 +70,9 @@ main → GitHub Pages → production → Netlify
 - HTML/CSS/JavaScript
 - Firebase Authentication
 - Firebase Firestore
+- Firebase Cloud Functions
+- Firebase Extension "Trigger Email from Firestore"
+- PWA (Service Worker)
 - Firebase App Check (reCAPTCHA v3)
 
 ## 提供元
@@ -68,4 +85,4 @@ Evahpro LLC
 
 ## ライセンス
 
-© 2025 あなたと一緒に「美点発見」！
+© 2026 あなたと一緒に「美点発見」！

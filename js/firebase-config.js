@@ -1,8 +1,8 @@
 // ================================
-// 美点ノート Phase 1.5 - Firebase設定
+// 美点ノート - Firebase設定
 // ================================
 
-// Firebase設定
+// Firebase設定（本番環境: biten-note-app）
 const firebaseConfig = {
   apiKey: "AIzaSyCXTjvd__i_8MYDbjGVK9o6nyi5eFFmCyk",
   authDomain: "biten-note-app.firebaseapp.com",
@@ -11,6 +11,8 @@ const firebaseConfig = {
   messagingSenderId: "862949639595",
   appId: "1:862949639595:web:b18a86e318b8ed8091feee"
 };
+
+console.log('🚀 Firebase: biten-note-app');
 
 // Firebase初期化
 firebase.initializeApp(firebaseConfig);

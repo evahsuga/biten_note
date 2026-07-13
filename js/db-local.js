@@ -399,6 +399,16 @@ const LocalDB = {
         });
     },
 
+    // お知らせ既読ID一覧（安心利用=IndexedDB）
+    async getReadAnnouncementIds() {
+        const v = await this.getSetting('readAnnouncementIds');
+        return Array.isArray(v) ? v : [];
+    },
+
+    async saveReadAnnouncementIds(ids) {
+        await this.setSetting('readAnnouncementIds', ids);
+    },
+
     // ================================
     // データ移行（Firestoreへ）
     // ================================

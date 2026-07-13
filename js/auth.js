@@ -264,7 +264,10 @@ const Auth = {
             Utils.log('Googleログイン成功', user.email);
 
             // 新規ユーザーには協力利用の同意ゲートを挟む（メール登録と同じ同意）
-            const isNewUser = result.additionalUserInfo && result.additionalUserInfo.isNewUser;
+            // 新規判定は「Firestoreにユーザードキュメントが無ければ新規」で確実に行う
+            // （SDKの additionalUserInfo.isNewUser に依存しない＝新規なのに素通りする穴を塞ぐ）
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            const isNewUser = !userDoc.exists;
             if (isNewUser) {
                 const agreed = await App.showConsentModal();
                 if (!agreed) {

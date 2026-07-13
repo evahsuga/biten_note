@@ -2931,9 +2931,9 @@ const App = {
                         <p class="auth-subtitle">大切な人の美点を記録しよう</p>
                     </div>
 
-                    <!-- 安心利用（主導線） -->
-                    <button class="btn btn-primary btn-block" onclick="App.enterGuestMode()" style="padding: 16px 10px; font-size: 15px; font-weight: 600;">
-                        安心利用（登録不要）ではじめる
+                    <!-- 安心利用（主導線）: 二段表示ではみ出しを解消 -->
+                    <button class="btn btn-primary btn-block" onclick="App.enterGuestMode()" style="white-space: normal; text-align: center; line-height: 1.5; padding: 18px 16px; font-size: 18px; font-weight: 600;">
+                        安心利用（登録不要）で<br>はじめる
                     </button>
                     <p style="text-align: center; font-size: 13px; color: var(--gray-600); margin-top: 10px;">
                         入力データはこの端末だけに保存されます。

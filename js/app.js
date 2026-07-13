@@ -1608,7 +1608,39 @@ const App = {
                     </div>
                 </div>
 
-                <!-- ステップ4: クラウド同期（開発協力向けのため折り畳み） -->
+                <!-- ステップα（原ステップ5・その他の機能）: 任意で楽しむ内容。上へ移動 -->
+                <div class="card" id="guide-stepalpha">
+                    <div class="card-header">
+                        <h2 class="card-title">🎨 ステップα: お好みで楽しむ（任意）</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="line-height: 1.8; color: var(--gray-600); margin-bottom: 16px; font-size: 14px;">
+                            ここからは必須ではありません。お好みで、自由にお楽しみください 🌱
+                        </p>
+                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">🖼️ 背景画像のカスタマイズ</h3>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            アプリの背景を自分好みの画像に変更できます。
+                        </p>
+                        <ol style="padding-left: 20px; margin-bottom: 20px;">
+                            <li style="margin-bottom: 8px; line-height: 1.8;">ホーム画面で「⚙️ 設定」をクリック</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">「🖼️ 背景画像設定」セクションで「📷 背景画像を選択」をクリック</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">お好みの写真を選択</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">トリミング範囲を調整（ドラッグで移動・リサイズ可能）</li>
+                            <li style="margin-bottom: 8px; line-height: 1.8;">「✂️ トリミングして保存」をクリック</li>
+                        </ol>
+                        <div style="background-color: rgba(33, 150, 243, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                            <p style="margin: 0; line-height: 1.8; color: #2196f3; font-size: 14px;">
+                                💡 <strong>ヒント:</strong> 大きな写真でも自動でリサイズ・圧縮されるので、スマホの写真をそのまま使えます。背景画像を削除して、デフォルトの青色背景に戻すこともできます。
+                            </p>
+                        </div>
+                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px;">
+                            📋 目次に戻る
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 原ステップ4: クラウド同期（開発利用向けのため一時非表示。必要になれば false→true で復帰） -->
+                ${false ? `
                 <details class="card" id="guide-step4">
                     <summary style="cursor: pointer; list-style: none; user-select: none; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
                         <span class="card-title" style="margin: 0;">☁️ ステップ4: 複数デバイスで使う
@@ -1638,34 +1670,7 @@ const App = {
                         </p>
                     </div>
                 </details>
-
-                <!-- ステップ5: その他の機能 -->
-                <div class="card" id="guide-step5">
-                    <div class="card-header">
-                        <h2 class="card-title">🎨 ステップ5: その他の機能</h2>
-                    </div>
-                    <div class="card-body">
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">🖼️ 背景画像のカスタマイズ</h3>
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
-                            アプリの背景を自分好みの画像に変更できます。
-                        </p>
-                        <ol style="padding-left: 20px; margin-bottom: 20px;">
-                            <li style="margin-bottom: 8px; line-height: 1.8;">ホーム画面で「⚙️ 設定」をクリック</li>
-                            <li style="margin-bottom: 8px; line-height: 1.8;">「🖼️ 背景画像設定」セクションで「📷 背景画像を選択」をクリック</li>
-                            <li style="margin-bottom: 8px; line-height: 1.8;">お好みの写真を選択</li>
-                            <li style="margin-bottom: 8px; line-height: 1.8;">トリミング範囲を調整（ドラッグで移動・リサイズ可能）</li>
-                            <li style="margin-bottom: 8px; line-height: 1.8;">「✂️ トリミングして保存」をクリック</li>
-                        </ol>
-                        <div style="background-color: rgba(33, 150, 243, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                            <p style="margin: 0; line-height: 1.8; color: #2196f3; font-size: 14px;">
-                                💡 <strong>ヒント:</strong> 大きな写真でも自動でリサイズ・圧縮されるので、スマホの写真をそのまま使えます。背景画像を削除して、デフォルトの青色背景に戻すこともできます。
-                            </p>
-                        </div>
-                        <button class="btn btn-outline btn-block" onclick="App.scrollToSection('guide-menu')" style="font-size: 14px; padding: 10px 16px;">
-                            📋 目次に戻る
-                        </button>
-                    </div>
-                </div>
+                ` : ''}
 
                 <!-- 美点発見とは -->
                 <div class="card" id="guide-about">

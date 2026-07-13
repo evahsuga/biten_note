@@ -1422,13 +1422,13 @@ const App = {
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
                             「美点発見note」は、大切な人の良いところを記録するアプリです。
                         </p>
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 12px;">
-                            利用方法は2つあります。
+                        <p style="line-height: 1.9; color: var(--gray-700); margin: 0 0 16px;">
+                            <strong>安心利用（登録不要）</strong>で、どなたでもすぐにお使いいただけます。入力したデータはこの端末の中だけに保存され、運営者が内容を見ることはありません。
                         </p>
-                        <ul style="line-height: 1.9; color: var(--gray-700); padding-left: 20px; margin: 0;">
-                            <li><strong>安心利用（登録不要）</strong>：データはこの端末の中だけに保存されます。運営者が内容を見ることはありません。</li>
-                            <li><strong>開発協力（登録）</strong>：メール／Googleで登録すると、データがクラウドに保存され、複数の端末で同期して使えます。</li>
-                        </ul>
+                        <div style="border: 1px solid var(--gray-300); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--gray-500); line-height: 1.7;">
+                            <strong>登録済みの方・開発にご協力の方へ（開発協力）</strong><br>
+                            メール／Googleで登録すると、データがクラウドに保存され、複数の端末で同期して使えます。開発・改善にご協力いただく方向けの利用方法です。
+                        </div>
                     </div>
                 </div>
 
@@ -1458,10 +1458,11 @@ const App = {
 
                 <!-- ステップ0: ログイン -->
                 <details class="card" id="guide-step0">
-                    <summary style="cursor: pointer; list-style: none; user-select: none; display: flex; align-items: center; gap: 8px;">
-                        <span class="card-title" style="flex: 1;">🔐 ステップ0: アカウント作成・ログイン</span>
-                        <span style="font-size: 13px; font-weight: normal; color: var(--gray-600); white-space: nowrap;">（開発協力の方のみ）</span>
-                        <span style="color: var(--gray-600);">▼</span>
+                    <summary style="cursor: pointer; list-style: none; user-select: none; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
+                        <span class="card-title" style="margin: 0;">🔐 ステップ0: アカウント作成・ログイン
+                            <span style="font-size: 13px; font-weight: normal; color: var(--gray-600);">（開発協力の方のみ）</span>
+                        </span>
+                        <span style="color: var(--gray-600); font-size: 14px;">▼ タップで開く</span>
                     </summary>
                     <div class="card-body" style="margin-top: 16px;">
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">初めての方</h3>
@@ -1607,12 +1608,15 @@ const App = {
                     </div>
                 </div>
 
-                <!-- ステップ4: クラウド同期 -->
-                <div class="card" id="guide-step4">
-                    <div class="card-header">
-                        <h2 class="card-title">☁️ ステップ4: 複数デバイスで使う</h2>
-                    </div>
-                    <div class="card-body">
+                <!-- ステップ4: クラウド同期（開発協力向けのため折り畳み） -->
+                <details class="card" id="guide-step4">
+                    <summary style="cursor: pointer; list-style: none; user-select: none; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
+                        <span class="card-title" style="margin: 0;">☁️ ステップ4: 複数デバイスで使う
+                            <span style="font-size: 13px; font-weight: normal; color: var(--gray-600);">（開発協力の方のみ）</span>
+                        </span>
+                        <span style="color: var(--gray-600); font-size: 14px;">▼ タップで開く</span>
+                    </summary>
+                    <div class="card-body" style="margin-top: 16px;">
                         <p style="margin: 0 0 12px; font-size: 13px;"><span onclick="App.scrollToSection('guide-mode-info')" style="cursor: pointer; color: var(--primary); text-decoration: underline;">（開発協力の場合 ※）</span></p>
                         <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">自動同期</h3>
                         <ul style="padding-left: 20px; margin-bottom: 20px;">
@@ -1633,7 +1637,7 @@ const App = {
                             どの端末でも同じデータにアクセスできます。
                         </p>
                     </div>
-                </div>
+                </details>
 
                 <!-- ステップ5: その他の機能 -->
                 <div class="card" id="guide-step5">
@@ -2094,9 +2098,8 @@ const App = {
 
                             <button class="btn btn-outline btn-block"
                                     onclick="App.removeBackgroundImage()"
-                                    id="removeBackgroundBtn"
-                                    style="display: none;">
-                                🗑️ 背景画像を削除
+                                    id="removeBackgroundBtn">
+                                🔄 デフォルトの背景に戻す
                             </button>
 
                             <div style="margin-top: 12px; padding: 12px; background-color: var(--gray-100); border-radius: 8px;">
@@ -2252,7 +2255,7 @@ const App = {
     // 背景画像を削除
     async removeBackgroundImage() {
         try {
-            const confirmed = confirm('背景画像を削除しますか？');
+            const confirmed = confirm('背景をデフォルト（標準）に戻しますか？');
             if (!confirmed) return;
 
             showLoading();
@@ -2272,13 +2275,13 @@ const App = {
             const previewDiv = document.getElementById('backgroundPreview');
             const removeBtn = document.getElementById('removeBackgroundBtn');
 
-            if (previewDiv && removeBtn) {
+            // プレビューは隠すが、「デフォルトに戻す」ボタンは常時表示のままにする
+            if (previewDiv) {
                 previewDiv.style.display = 'none';
-                removeBtn.style.display = 'none';
             }
 
             hideLoading();
-            showToast('背景画像を削除しました', 'success');
+            showToast('デフォルトの背景に戻しました', 'success');
         } catch (error) {
             hideLoading();
             Utils.error('背景画像削除エラー', error);
@@ -2293,7 +2296,8 @@ const App = {
             document.body.style.backgroundImage = `url(${imageDataUrl})`;
             document.body.classList.add('has-background-image');
         } else {
-            document.body.style.backgroundImage = 'none';
+            // 空文字にするとインライン上書きが解除され、CSSのデフォルト背景(var(--gradient-primary))が復活する
+            document.body.style.backgroundImage = '';
             document.body.classList.remove('has-background-image');
         }
     },

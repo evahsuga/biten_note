@@ -2942,8 +2942,8 @@ const App = {
                         以前お試し利用された方も、こちらから続けられます。
                     </p>
 
-                    <!-- フッター：既存ユーザー・開発協力の入口 -->
-                    <div style="margin-top: 32px; text-align: center;">
+                    <!-- フッター：既存ユーザー・開発協力の入口（意図的に大きく下へ離し、注意して見る人だけが気づくように） -->
+                    <div style="margin-top: 96px; text-align: center;">
                         <button type="button" id="legacyAuthToggle" onclick="App.toggleLegacyAuth()" style="background: none; border: none; cursor: pointer; font-size: 13px; color: var(--gray-600); text-decoration: underline; padding: 8px; line-height: 1.6; white-space: normal; max-width: 100%;">
                             登録済みの方・開発にご協力の方はこちら
                         </button>

@@ -2931,12 +2931,12 @@ const App = {
                         <p class="auth-subtitle">大切な人の美点を記録しよう</p>
                     </div>
 
-                    <!-- 安心利用（主導線）: 二段表示ではみ出しを解消 -->
-                    <button class="btn btn-primary btn-block" onclick="App.enterGuestMode()" style="white-space: normal; text-align: center; line-height: 1.5; padding: 18px 16px; font-size: 18px; font-weight: 600;">
-                        安心利用（登録不要）で<br>はじめる
+                    <!-- 安心利用（主導線）: 三段表示できれいに収める（自動折返しは止め<br>のみで改行） -->
+                    <button class="btn btn-primary btn-block" onclick="App.enterGuestMode()" style="white-space: nowrap; text-align: center; line-height: 1.5; padding: 16px; font-size: 18px; font-weight: 600;">
+                        安心利用<br>（登録不要）で<br>はじめる
                     </button>
-                    <p style="text-align: center; font-size: 13px; color: var(--gray-600); margin-top: 10px;">
-                        入力データはこの端末だけに保存されます。
+                    <p style="text-align: center; font-size: 13px; color: var(--gray-600); margin-top: 12px; white-space: nowrap;">
+                        入力データはこの端末だけに保存
                     </p>
                     <p style="text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 6px; line-height: 1.6;">
                         以前お試し利用された方も、こちらから続けられます。

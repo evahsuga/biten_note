@@ -2932,17 +2932,20 @@ const App = {
                     </div>
 
                     <!-- 安心利用（主導線） -->
-                    <button class="btn btn-primary btn-block" onclick="App.enterGuestMode()" style="padding: 16px; font-size: 17px; font-weight: 600;">
+                    <button class="btn btn-primary btn-block" onclick="App.enterGuestMode()" style="padding: 16px 10px; font-size: 15px; font-weight: 600;">
                         安心利用（登録不要）ではじめる
                     </button>
                     <p style="text-align: center; font-size: 13px; color: var(--gray-600); margin-top: 10px;">
                         入力データはこの端末だけに保存されます。
                     </p>
+                    <p style="text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 6px; line-height: 1.6;">
+                        以前お試し利用された方も、こちらから続けられます。
+                    </p>
 
                     <!-- フッター：既存ユーザー・開発協力の入口 -->
                     <div style="margin-top: 32px; text-align: center;">
                         <button type="button" id="legacyAuthToggle" onclick="App.toggleLegacyAuth()" style="background: none; border: none; cursor: pointer; font-size: 13px; color: var(--gray-600); text-decoration: underline; padding: 8px; line-height: 1.6; white-space: normal; max-width: 100%;">
-                            以前からご利用の方・開発にご協力の方はこちら
+                            登録済みの方・開発にご協力の方はこちら
                         </button>
                     </div>
 

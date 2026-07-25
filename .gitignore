@@ -33,3 +33,8 @@ build/
 # ログファイル
 *.log
 npm-debug.log*
+
+# 内部作業メモ（進捗共有・壁打ち記録等）
+# リポジトリが public かつ Pages/Netlify がルートを配信するため、
+# 追跡すると公開URLで取得できてしまう。ローカルには保持し、必要時に手渡す。
+docs/notes/

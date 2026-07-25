@@ -2,7 +2,9 @@
 
 このファイルは、デプロイの**実態と経緯**を記録し、引き継ぎ時の誤解を防ぐためのものです。
 
-**最終更新: 2026-07-12**
+**最終更新: 2026-07-13**
+
+> **✅ 2026-07-13：v3.0 を本番（Netlify）へ昇格済み。** `main`→`production` マージ＆push で反映（マージは衝突なし＝production独自の getPerson 修正は main に同等実装あり）。本番 bitennote.netlify.app が VERSION 3.0・初回お知らせ・通知UI非表示ロジックを配信中（確認済み）。**Cloud Functions（メール）は今回デプロイしていない**（`firebase deploy --only functions` 未実行）。通知設定UIは `Utils.isDevHost()` により本番では自動非表示。
 
 ---
 

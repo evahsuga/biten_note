@@ -223,6 +223,7 @@ users/{userId}/settings/notifications
 
 This project is maintained under a multi-manager handoff model, so the intent behind decisions lives in `docs/` rather than in code. Consult these before changing related behavior:
 
+- `docs/WORKLOG.md` — 作業ログ（進捗・主要な決定・学び・次への申し送りを時系列で。新しい順・先頭に追記）
 - `docs/BACKLOG.md` — ledger of open issues / future work (what, why, planned response)
 - `docs/DEPLOYMENT_NOTES.md` — deployment reality & history; **critical**: production (Netlify) config lives only in the Netlify dashboard, not in the repo
 - `docs/PUSH_NOTIFICATION_INVESTIGATION.md` — why push was dropped in favor of email

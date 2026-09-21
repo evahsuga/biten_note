@@ -211,6 +211,38 @@ const Utils = {
         return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.github.io');
     },
 
+    // iOS端末（iPhone/iPad/iPod）判定。iPadOSの「デスクトップ用サイト」表示も拾う。
+    isIOS() {
+        const ua = navigator.userAgent || '';
+        return /iPhone|iPad|iPod/.test(ua) ||
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    },
+
+    // ホーム画面に追加した状態（スタンドアロン起動）で開いているか
+    isStandalone() {
+        return window.navigator.standalone === true ||
+               (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    },
+
+    // 端末内のデータを、ブラウザの自動削除の対象から外すよう申告する（安心利用向け・best effort）。
+    // 対応していないブラウザでは何も起きない。結果に関わらずアプリの動作は変えない。
+    async requestPersistentStorage() {
+        try {
+            if (!navigator.storage || typeof navigator.storage.persist !== 'function') {
+                return null;  // 非対応ブラウザ：何もしない
+            }
+            if (typeof navigator.storage.persisted === 'function' && await navigator.storage.persisted()) {
+                return true;  // 既に許可済み：再申告しない（確認ダイアログの再表示を避ける）
+            }
+            const granted = await navigator.storage.persist();
+            Utils.log('永続ストレージの申告結果', { granted });
+            return granted;
+        } catch (e) {
+            Utils.log('永続ストレージの申告に失敗（無視して続行）', e);
+            return null;
+        }
+    },
+
     // UUID生成
     generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

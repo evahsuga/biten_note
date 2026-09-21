@@ -54,6 +54,12 @@ const App = {
             mobileDebug('🚀 App.init() 開始');
             showLoading();
 
+            // 安心利用（端末内保存）のデータを、ブラウザの自動削除の対象から外すよう申告する。
+            // 非対応ブラウザでは何も起きない。起動を遅らせないため結果は待たない。
+            if (Auth.isGuestMode()) {
+                Utils.requestPersistentStorage();
+            }
+
             // Firestore初期化
             await DB.init();
             Utils.log('データベース初期化完了');
@@ -311,6 +317,17 @@ const App = {
                                 <li>ただし、ブラウザの「サイトデータ削除」や、別の端末・ブラウザで開いた場合、一部の端末で長期間開かなかった場合には消えることがあります</li>
                                 <li>大切な記録は、PDFで手元に保存しておくと安心です</li>
                             </ul>
+                            ${(Utils.isIOS() && !Utils.isStandalone()) ? `
+                            <div style="background: rgba(255,255,255,0.7); border: 1px solid #ffc107; border-radius: var(--border-radius-md); padding: 10px 12px; margin: 0 0 12px 0;">
+                                <div style="font-weight: 600; color: #856404; font-size: var(--font-size-sm); margin-bottom: 4px;">
+                                    📲 iPhone・iPad をお使いの方へ
+                                </div>
+                                <div style="font-size: var(--font-size-sm); color: #856404; line-height: 1.7;">
+                                    ホーム画面に追加しておくと、長期間開かなかった場合の自動削除を避けられます。<br>
+                                    画面下の共有ボタン（□に↑のマーク）→「ホーム画面に追加」
+                                </div>
+                            </div>
+                            ` : ''}
                             <button class="guest-banner-btn" onclick="App.navigate('#/pdf-select')">
                                 📄 PDFで保存する
                             </button>

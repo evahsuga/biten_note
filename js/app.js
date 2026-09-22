@@ -317,14 +317,15 @@ const App = {
                                 <li>ただし、ブラウザの「サイトデータ削除」や、別の端末・ブラウザで開いた場合、一部の端末で長期間開かなかった場合には消えることがあります</li>
                                 <li>大切な記録は、PDFで手元に保存しておくと安心です</li>
                             </ul>
-                            ${(Utils.isIOS() && !Utils.isStandalone()) ? `
+                            ${(Utils.isIOS() && !Utils.isStandalone() && persons.length === 0) ? `
                             <div style="background: rgba(255,255,255,0.7); border: 1px solid #ffc107; border-radius: var(--border-radius-md); padding: 10px 12px; margin: 0 0 12px 0;">
                                 <div style="font-weight: 600; color: #856404; font-size: var(--font-size-sm); margin-bottom: 4px;">
                                     📲 iPhone・iPad をお使いの方へ
                                 </div>
                                 <div style="font-size: var(--font-size-sm); color: #856404; line-height: 1.7;">
-                                    ホーム画面に追加しておくと、長期間開かなかった場合の自動削除を避けられます。<br>
-                                    画面下の共有ボタン（□に↑のマーク）→「ホーム画面に追加」
+                                    記録を始める前に、ホーム画面に追加しておくのがおすすめです。長期間開かなかった場合の自動削除を避けられます。<br>
+                                    共有ボタン（□に↑のマーク）→「ホーム画面に追加」<br>
+                                    ※追加した後は、ホーム画面のアイコンから開いてください。ブラウザとアイコンでは、保存場所が別になります。
                                 </div>
                             </div>
                             ` : ''}

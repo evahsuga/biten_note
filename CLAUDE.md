@@ -287,7 +287,7 @@ See `DEPLOY.md` for detailed instructions.
 ## Known Issues
 
 - **Push Notifications Not Working**: FCM sends successfully but devices don't display. Email-only reminder system implemented instead. See `docs/PUSH_NOTIFICATION_INVESTIGATION.md`
-- **App Check Disabled**: Currently disabled for performance testing (see `firebase-config.js`)
+- **App Check**: 現在の設定状況は内部資料で管理（`docs/notes/`）
 - **Photo Storage**: Base64 in Firestore (not Cloud Storage) - not scalable for large photos
 - **Offline Multi-tab**: Firestore persistence causes `failed-precondition` error with multiple tabs
 

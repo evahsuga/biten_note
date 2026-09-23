@@ -61,8 +61,7 @@ Firestore: users/{userId}/settings/notifications
 
 ### Cloud Functions
 - `sendScheduledNotifications`: 毎時0分に実行、設定時刻のユーザーに通知送信
-- `registerFcmToken`: FCMトークン登録エンドポイント
-- `testNotification`: 開発用テストエンドポイント
+- （プッシュ通知用のエンドポイントは 2026-09-23 に撤去済み）
 
 ## 今後の対応案
 

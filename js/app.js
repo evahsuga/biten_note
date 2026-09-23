@@ -315,6 +315,10 @@ const App = {
                     </div>`;
             }
 
+            // ホーム画面追加の案内を出すか（＝記録がまだ無い iOS 利用者）。
+            // 出すときは、気づいてほしい場面なので折りたたみを開いた状態で描画する。
+            const showHomeScreenGuide = Utils.isIOS() && !Utils.isStandalone() && persons.length === 0;
+
             // ゲストモードバナーHTML
             const guestBannerHtml = isGuestMode ? `
                 <div class="guest-banner">
@@ -327,23 +331,26 @@ const App = {
                         </div>
                         ${persistDiagHtml}
                         <button id="guestDataInfoToggle" onclick="App.toggleGuestDataInfo()" style="background: none; border: none; color: #856404; text-decoration: underline; cursor: pointer; padding: 4px 0; font-size: var(--font-size-sm); font-weight: 600;">
-                            データの保存とバックアップについて ▼
+                            データの保存とバックアップについて ${showHomeScreenGuide ? '▲' : '▼'}
                         </button>
-                        <div id="guestDataInfo" style="display: none; margin-top: 8px;">
+                        <div id="guestDataInfo" style="display: ${showHomeScreenGuide ? 'block' : 'none'}; margin-top: 8px;">
                             <ul style="margin: 0 0 12px 0; padding-left: 18px; font-size: var(--font-size-sm); color: #856404; line-height: 1.7;">
                                 <li>タブを閉じても、電源を切ってもデータは消えません</li>
                                 <li>ただし、ブラウザの「サイトデータ削除」や、別の端末・ブラウザで開いた場合、一部の端末で長期間開かなかった場合には消えることがあります</li>
                                 <li>大切な記録は、PDFで手元に保存しておくと安心です</li>
                             </ul>
-                            ${(Utils.isIOS() && !Utils.isStandalone() && persons.length === 0) ? `
+                            ${showHomeScreenGuide ? `
                             <div style="background: rgba(255,255,255,0.7); border: 1px solid #ffc107; border-radius: var(--border-radius-md); padding: 10px 12px; margin: 0 0 12px 0;">
                                 <div style="font-weight: 600; color: #856404; font-size: var(--font-size-sm); margin-bottom: 4px;">
                                     📲 iPhone・iPad をお使いの方へ
                                 </div>
                                 <div style="font-size: var(--font-size-sm); color: #856404; line-height: 1.7;">
                                     記録を始める前に、ホーム画面に追加しておくのがおすすめです。長期間開かなかった場合の自動削除を避けられます。<br>
-                                    共有ボタン（□に↑のマーク）→「ホーム画面に追加」<br>
-                                    ※追加した後は、ホーム画面のアイコンから開いてください。ブラウザとアイコンでは、保存場所が別になります。
+                                    共有ボタン（□に↑のマーク）→「ホーム画面に追加」
+                                </div>
+                                <div style="font-size: var(--font-size-sm); color: #C62828; font-weight: 700; line-height: 1.7; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(198,40,40,0.25);">
+                                    ⚠ 追加したあとは、<span style="text-decoration: underline;">ホーム画面のアイコンから開いてください</span>。<br>
+                                    ブラウザとアイコンでは、保存場所が別になります。
                                 </div>
                             </div>
                             ` : ''}

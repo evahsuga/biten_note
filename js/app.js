@@ -54,6 +54,12 @@ const App = {
             mobileDebug('🚀 App.init() 開始');
             showLoading();
 
+            // 安心利用（端末内保存）のデータを、ブラウザの自動削除の対象から外すよう申告する。
+            // 非対応ブラウザでは何も起きない。起動を遅らせないため結果は待たない。
+            if (Auth.isGuestMode()) {
+                Utils.requestPersistentStorage();
+            }
+
             // Firestore初期化
             await DB.init();
             Utils.log('データベース初期化完了');
@@ -292,6 +298,29 @@ const App = {
             // まず人物リストだけ取得（軽量）
             const persons = await database.getAllPersons();
 
+            // 【開発用】永続ストレージの申告が承認されたかを画面で確認できるようにする。
+            // Utils.isDevHost() が真のときだけ（localhost / *.github.io）。本番では表示しない。
+            // ⚠ ここでは待ち合わせをしない（描画をブロックするため）。
+            //    値は描画後に loadPersistDiagAsync() が埋める。
+            // 通常の動作に影響しないよう、URLに ?diag=1 を付けたときだけ表示する。
+            // ただしホーム画面から起動した場合は ?diag=1 が引き継がれないため、
+            // その場合は指定なしでも表示する（開発サイトのみ）。
+            const showPersistDiag = isGuestMode && Utils.isDevHost() &&
+                (new URLSearchParams(window.location.search).get('diag') === '1' || Utils.isStandalone());
+            let persistDiagHtml = '';
+            if (showPersistDiag) {
+                persistDiagHtml = `
+                    <div style="background: #fff; border: 1px dashed #856404; border-radius: var(--border-radius-md); padding: 8px 10px; margin: 8px 0; font-size: var(--font-size-sm); color: #856404; line-height: 1.6;">
+                        <strong>【開発用】永続ストレージ</strong><br>
+                        <span id="persistDiagValues">確認中…</span><br>
+                        ホーム画面から起動: ${Utils.isStandalone() ? 'はい' : 'いいえ'} ／ iOS判定: ${Utils.isIOS() ? 'はい' : 'いいえ'}
+                    </div>`;
+            }
+
+            // ホーム画面追加の案内を出すか（＝記録がまだ無い iOS 利用者）。
+            // 出すときは、気づいてほしい場面なので折りたたみを開いた状態で描画する。
+            const showHomeScreenGuide = Utils.isIOS() && !Utils.isStandalone() && persons.length === 0;
+
             // ゲストモードバナーHTML
             const guestBannerHtml = isGuestMode ? `
                 <div class="guest-banner">
@@ -302,15 +331,31 @@ const App = {
                             このデータは、この端末の中だけに保存されます。<br>
                             （登録不要・運営者が内容を見ることはありません）
                         </div>
+                        ${persistDiagHtml}
                         <button id="guestDataInfoToggle" onclick="App.toggleGuestDataInfo()" style="background: none; border: none; color: #856404; text-decoration: underline; cursor: pointer; padding: 4px 0; font-size: var(--font-size-sm); font-weight: 600;">
-                            データの保存とバックアップについて ▼
+                            データの保存とバックアップについて ${showHomeScreenGuide ? '▲' : '▼'}
                         </button>
-                        <div id="guestDataInfo" style="display: none; margin-top: 8px;">
+                        <div id="guestDataInfo" style="display: ${showHomeScreenGuide ? 'block' : 'none'}; margin-top: 8px;">
                             <ul style="margin: 0 0 12px 0; padding-left: 18px; font-size: var(--font-size-sm); color: #856404; line-height: 1.7;">
                                 <li>タブを閉じても、電源を切ってもデータは消えません</li>
                                 <li>ただし、ブラウザの「サイトデータ削除」や、別の端末・ブラウザで開いた場合、一部の端末で長期間開かなかった場合には消えることがあります</li>
                                 <li>大切な記録は、PDFで手元に保存しておくと安心です</li>
                             </ul>
+                            ${showHomeScreenGuide ? `
+                            <div style="background: rgba(255,255,255,0.7); border: 1px solid #ffc107; border-radius: var(--border-radius-md); padding: 10px 12px; margin: 0 0 12px 0;">
+                                <div style="font-weight: 600; color: #856404; font-size: var(--font-size-sm); margin-bottom: 4px;">
+                                    📲 iPhone・iPad をお使いの方へ
+                                </div>
+                                <div style="font-size: var(--font-size-sm); color: #856404; line-height: 1.7;">
+                                    記録を始める前に、ホーム画面に追加しておくのがおすすめです。長期間開かなかった場合の自動削除を避けられます。<br>
+                                    共有ボタン（□に↑のマーク）→「ホーム画面に追加」
+                                </div>
+                                <div style="font-size: var(--font-size-sm); color: #C62828; font-weight: 700; line-height: 1.7; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(198,40,40,0.25);">
+                                    ⚠ 追加したあとは、<span style="text-decoration: underline;">ホーム画面のアイコンから開いてください</span>。<br>
+                                    ブラウザとアイコンでは、保存場所が別になります。
+                                </div>
+                            </div>
+                            ` : ''}
                             <button class="guest-banner-btn" onclick="App.navigate('#/pdf-select')">
                                 📄 PDFで保存する
                             </button>
@@ -422,6 +467,11 @@ const App = {
             // 画面を即座に表示
             document.getElementById('app').innerHTML = html;
 
+            // 【開発用】永続ストレージの状態を非同期で埋める（描画をブロックしない）
+            if (showPersistDiag) {
+                this.loadPersistDiagAsync();
+            }
+
             // 統計情報を非同期で読み込み
             this.loadStatsAsync(persons);
 
@@ -462,6 +512,28 @@ const App = {
             }
         } catch (e) {
             Utils.error('お知らせ既読化エラー', e);
+        }
+    },
+
+    // 【開発用】永続ストレージの状態を確認して表示する（開発サイトのみ）。
+    // 応答が返らない環境でも画面は止まらないよう、5秒で打ち切る。
+    async loadPersistDiagAsync() {
+        const slot = document.getElementById('persistDiagValues');
+        if (!slot) return;
+        try {
+            if (!navigator.storage || typeof navigator.storage.persist !== 'function') {
+                slot.textContent = 'このブラウザは非対応';
+                return;
+            }
+            const timeout = new Promise((resolve) => setTimeout(() => resolve('時間切れ'), 5000));
+            const probe = (async () => {
+                const granted = await Utils.requestPersistentStorage();
+                const current = await navigator.storage.persisted();
+                return `申告の結果: ${granted} ／ 現在の状態: ${current}`;
+            })();
+            slot.textContent = await Promise.race([probe, timeout]);
+        } catch (e) {
+            slot.textContent = '確認できず';
         }
     },
 

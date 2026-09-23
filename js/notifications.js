@@ -127,12 +127,8 @@ const Notifications = {
 
             Utils.log('通知許可取得成功');
 
-            // FCMトークンの取得
-            const fcmToken = await this.getFCMToken();
-            if (fcmToken) {
-                // Cloud Functionにトークンを登録
-                await this.registerFCMToken(fcmToken);
-            }
+            // FCMトークンの取得（プッシュ通知は廃止済みのため、送信先の登録は行わない）
+            await this.getFCMToken();
 
             return true;
         } catch (error) {
@@ -185,46 +181,6 @@ const Notifications = {
         // 本番用VAPIDキー（biten-note-app）
         // 開発環境でも本番キーを使用（FCMは同じプロジェクトで動作確認）
         return 'BJW71LS5rM79ss4IrZothktWC5S4fBdTecLSlEVuiE2UMDG-xcRiR2TuhxFMs0AYS2Rlp8iQqPY5mtYqyXVurGg';
-    },
-
-    // Cloud FunctionにFCMトークンを登録
-    async registerFCMToken(fcmToken) {
-        try {
-            const userId = Auth.getCurrentUserId();
-            if (!userId) {
-                Utils.log('FCMトークン登録スキップ: 未ログイン');
-                return false;
-            }
-
-            // Cloud Functions URL（biten-note-app）
-            const baseUrl = 'https://registerfcmtoken-khpoqsgq7q-an.a.run.app';
-
-            const response = await fetch(baseUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: userId,
-                    fcmToken: fcmToken
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                Utils.log('FCMトークン登録成功');
-                // ローカル設定にもトークンを保存
-                this.currentSettings.fcmToken = fcmToken;
-                return true;
-            } else {
-                Utils.error('FCMトークン登録失敗', result.error);
-                return false;
-            }
-        } catch (error) {
-            Utils.error('FCMトークン登録エラー', error);
-            return false;
-        }
     },
 
     // ================================

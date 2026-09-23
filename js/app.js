@@ -300,23 +300,14 @@ const App = {
 
             // 【開発用】永続ストレージの申告が承認されたかを画面で確認できるようにする。
             // Utils.isDevHost() が真のときだけ（localhost / *.github.io）。本番では表示しない。
+            // ⚠ ここでは待ち合わせをしない（描画をブロックするため）。
+            //    値は描画後に loadPersistDiagAsync() が埋める。
             let persistDiagHtml = '';
             if (isGuestMode && Utils.isDevHost()) {
-                let granted = '—', current = '—';
-                try {
-                    if (navigator.storage && typeof navigator.storage.persist === 'function') {
-                        granted = String(await Utils.requestPersistentStorage());
-                        current = String(await navigator.storage.persisted());
-                    } else {
-                        granted = current = '非対応';
-                    }
-                } catch (e) {
-                    granted = current = '確認できず';
-                }
                 persistDiagHtml = `
                     <div style="background: #fff; border: 1px dashed #856404; border-radius: var(--border-radius-md); padding: 8px 10px; margin: 8px 0; font-size: var(--font-size-sm); color: #856404; line-height: 1.6;">
                         <strong>【開発用】永続ストレージ</strong><br>
-                        申告の結果: <strong>${granted}</strong> ／ 現在の状態: <strong>${current}</strong><br>
+                        <span id="persistDiagValues">確認中…</span><br>
                         ホーム画面から起動: ${Utils.isStandalone() ? 'はい' : 'いいえ'} ／ iOS判定: ${Utils.isIOS() ? 'はい' : 'いいえ'}
                     </div>`;
             }
@@ -464,6 +455,11 @@ const App = {
             // 画面を即座に表示
             document.getElementById('app').innerHTML = html;
 
+            // 【開発用】永続ストレージの状態を非同期で埋める（描画をブロックしない）
+            if (isGuestMode && Utils.isDevHost()) {
+                this.loadPersistDiagAsync();
+            }
+
             // 統計情報を非同期で読み込み
             this.loadStatsAsync(persons);
 
@@ -504,6 +500,28 @@ const App = {
             }
         } catch (e) {
             Utils.error('お知らせ既読化エラー', e);
+        }
+    },
+
+    // 【開発用】永続ストレージの状態を確認して表示する（開発サイトのみ）。
+    // 応答が返らない環境でも画面は止まらないよう、5秒で打ち切る。
+    async loadPersistDiagAsync() {
+        const slot = document.getElementById('persistDiagValues');
+        if (!slot) return;
+        try {
+            if (!navigator.storage || typeof navigator.storage.persist !== 'function') {
+                slot.textContent = 'このブラウザは非対応';
+                return;
+            }
+            const timeout = new Promise((resolve) => setTimeout(() => resolve('時間切れ'), 5000));
+            const probe = (async () => {
+                const granted = await Utils.requestPersistentStorage();
+                const current = await navigator.storage.persisted();
+                return `申告の結果: ${granted} ／ 現在の状態: ${current}`;
+            })();
+            slot.textContent = await Promise.race([probe, timeout]);
+        } catch (e) {
+            slot.textContent = '確認できず';
         }
     },
 

@@ -1,0 +1,19 @@
+# GitHub Pages（Jekyll）の配信範囲の制限
+#
+# Netlify 側の同等の設定は `netlify.toml`。片方だけ更新すると食い違うので、
+# 必ず両方を揃えること。
+exclude:
+  - docs
+  - functions
+  - tools
+  - extensions
+  - CLAUDE.md
+  - README.md
+  - DEPLOY.md
+  - MIGRATION.md
+  - firebase.json
+  - firestore.rules
+  - firestore.indexes.json
+  - package.json
+  - package-lock.json
+  - node_modules

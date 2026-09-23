@@ -250,12 +250,12 @@ const Auth = {
     // Google認証
     // ===========================
 
-    // Googleログイン（ポップアップ方式に統一 - App Check無効化により安定）
+    // Googleログイン（ポップアップ方式に統一）
     async signInWithGoogle() {
         try {
             Utils.log('Googleログイン開始');
 
-            // App Check無効化後は、モバイルでもポップアップ方式を使用
+            // モバイルでもポップアップ方式を使用
             // リダイレクト方式はセッション問題で失敗していたため
             Utils.log('ポップアップ方式でGoogleログインを実行');
             const result = await auth.signInWithPopup(googleProvider);

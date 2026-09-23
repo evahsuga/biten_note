@@ -298,6 +298,29 @@ const App = {
             // まず人物リストだけ取得（軽量）
             const persons = await database.getAllPersons();
 
+            // 【開発用】永続ストレージの申告が承認されたかを画面で確認できるようにする。
+            // Utils.isDevHost() が真のときだけ（localhost / *.github.io）。本番では表示しない。
+            let persistDiagHtml = '';
+            if (isGuestMode && Utils.isDevHost()) {
+                let granted = '—', current = '—';
+                try {
+                    if (navigator.storage && typeof navigator.storage.persist === 'function') {
+                        granted = String(await Utils.requestPersistentStorage());
+                        current = String(await navigator.storage.persisted());
+                    } else {
+                        granted = current = '非対応';
+                    }
+                } catch (e) {
+                    granted = current = '確認できず';
+                }
+                persistDiagHtml = `
+                    <div style="background: #fff; border: 1px dashed #856404; border-radius: var(--border-radius-md); padding: 8px 10px; margin: 8px 0; font-size: var(--font-size-sm); color: #856404; line-height: 1.6;">
+                        <strong>【開発用】永続ストレージ</strong><br>
+                        申告の結果: <strong>${granted}</strong> ／ 現在の状態: <strong>${current}</strong><br>
+                        ホーム画面から起動: ${Utils.isStandalone() ? 'はい' : 'いいえ'} ／ iOS判定: ${Utils.isIOS() ? 'はい' : 'いいえ'}
+                    </div>`;
+            }
+
             // ゲストモードバナーHTML
             const guestBannerHtml = isGuestMode ? `
                 <div class="guest-banner">
@@ -308,6 +331,7 @@ const App = {
                             このデータは、この端末の中だけに保存されます。<br>
                             （登録不要・運営者が内容を見ることはありません）
                         </div>
+                        ${persistDiagHtml}
                         <button id="guestDataInfoToggle" onclick="App.toggleGuestDataInfo()" style="background: none; border: none; color: #856404; text-decoration: underline; cursor: pointer; padding: 4px 0; font-size: var(--font-size-sm); font-weight: 600;">
                             データの保存とバックアップについて ▼
                         </button>

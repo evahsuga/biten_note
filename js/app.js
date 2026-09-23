@@ -302,8 +302,11 @@ const App = {
             // Utils.isDevHost() が真のときだけ（localhost / *.github.io）。本番では表示しない。
             // ⚠ ここでは待ち合わせをしない（描画をブロックするため）。
             //    値は描画後に loadPersistDiagAsync() が埋める。
+            // 通常の動作に影響しないよう、URLに ?diag=1 を付けたときだけ表示する。
+            const showPersistDiag = isGuestMode && Utils.isDevHost() &&
+                new URLSearchParams(window.location.search).get('diag') === '1';
             let persistDiagHtml = '';
-            if (isGuestMode && Utils.isDevHost()) {
+            if (showPersistDiag) {
                 persistDiagHtml = `
                     <div style="background: #fff; border: 1px dashed #856404; border-radius: var(--border-radius-md); padding: 8px 10px; margin: 8px 0; font-size: var(--font-size-sm); color: #856404; line-height: 1.6;">
                         <strong>【開発用】永続ストレージ</strong><br>
@@ -456,7 +459,7 @@ const App = {
             document.getElementById('app').innerHTML = html;
 
             // 【開発用】永続ストレージの状態を非同期で埋める（描画をブロックしない）
-            if (isGuestMode && Utils.isDevHost()) {
+            if (showPersistDiag) {
                 this.loadPersistDiagAsync();
             }
 

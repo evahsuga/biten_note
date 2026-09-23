@@ -303,8 +303,10 @@ const App = {
             // ⚠ ここでは待ち合わせをしない（描画をブロックするため）。
             //    値は描画後に loadPersistDiagAsync() が埋める。
             // 通常の動作に影響しないよう、URLに ?diag=1 を付けたときだけ表示する。
+            // ただしホーム画面から起動した場合は ?diag=1 が引き継がれないため、
+            // その場合は指定なしでも表示する（開発サイトのみ）。
             const showPersistDiag = isGuestMode && Utils.isDevHost() &&
-                new URLSearchParams(window.location.search).get('diag') === '1';
+                (new URLSearchParams(window.location.search).get('diag') === '1' || Utils.isStandalone());
             let persistDiagHtml = '';
             if (showPersistDiag) {
                 persistDiagHtml = `

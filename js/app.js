@@ -399,8 +399,11 @@ const App = {
                                     📄 PDFで出力
                                 </button>
                             ` : ''}
-                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/guide')">
-                                📖 使い方 <span id="guide-notice-badge"></span>
+                            <button class="btn btn-outline btn-block mb-md" onclick="App.navigate('#/guide')">
+                                📖 使い方
+                            </button>
+                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')">
+                                🔔 最新情報 <span id="news-notice-badge"></span>
                             </button>
                         </div>
                     </div>
@@ -436,14 +439,10 @@ const App = {
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLScPTrRUlyQ5O5xAWK4nwuGktK4XcfhHYe-aSQZI6yPGbSEsZQ/viewform"
                                target="_blank"
                                rel="noopener noreferrer"
-                               class="btn btn-outline btn-block mb-md"
+                               class="btn btn-outline btn-block"
                                style="text-decoration: none;">
                                 💬 ご意見・ご感想をお聞かせください
                             </a>
-                            <button class="btn btn-outline btn-block" onclick="App.navigate('#/release-notes')" style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                <span>🔔 最新情報！</span>
-                                <span style="font-size: 11px; color: var(--gray-500);">（2026/7/11更新）</span>
-                            </button>
                         </div>
                     </div>
 
@@ -494,13 +493,13 @@ const App = {
         return all.filter(a => a.onlyOn !== 'stable');
     },
 
-    // お知らせ未読バッジを非同期で読み込み（「📖 使い方」ボタンに後入れ）
+    // お知らせ未読バッジを非同期で読み込み（「🔔 最新情報」ボタンに後入れ）
     async loadAnnouncementBadgeAsync() {
         try {
             const database = this.getDB();
             const readIds = await database.getReadAnnouncementIds();
             const unread = this.getVisibleAnnouncements().filter(a => !readIds.includes(a.id)).length;
-            const slot = document.getElementById('guide-notice-badge');
+            const slot = document.getElementById('news-notice-badge');
             if (slot) {
                 slot.innerHTML = unread > 0 ? `<span class="notice-badge">${unread}</span>` : '';
             }

@@ -353,7 +353,8 @@ const PDF = {
 
             Utils.log('印刷ページ表示完了');
 
-            // 印刷ダイアログは自動では開かない。ページ上部の［印刷・PDFで保存］ボタンで開く。
+            // 印刷ダイアログは自動では開かない。ページ上部の［印刷・PDFで保存］ボタンで開く
+            // （iPhone・iPad の Safari ではボタンを出さず、Safari の共有ボタン →「プリント」を案内する）。
             // 印刷後も自動では戻らない。［← アプリに戻る］ボタンで戻る。
             // （iPhone の Safari では、印刷を「許可」した直後に印刷終了の合図が届き、
             //   自動で戻る処理が印刷画面より先に走ってしまうため）
@@ -376,19 +377,26 @@ const PDF = {
             });
 
             // 操作欄（画面表示用・印刷時は非表示）
-            let bodyHTML = `
-            <div class="print-toolbar no-print">
-                <div class="print-toolbar-buttons">
+            // iPhone・iPad の Safari では、ページから印刷画面を開くと確認が出て安定しないため、
+            // ボタンは出さず、Safari 自身の共有ボタン →「プリント」を案内する。
+            const isIOSSafari = Utils.isIOS() && !Utils.isStandalone();
+            const printButtonHTML = isIOSSafari ? '' : `
                     <button class="print-button" onclick="window.print();">
                         🖨 印刷・PDFで保存
-                    </button>
+                    </button>`;
+            const firstStepHTML = isIOSSafari
+                ? '① 画面下の共有ボタン（□↑）→「プリント」を押す'
+                : '①［印刷・PDFで保存］を押す';
+            let bodyHTML = `
+            <div class="print-toolbar no-print">
+                <div class="print-toolbar-buttons">${printButtonHTML}
                     <button class="back-button" onclick="location.reload();">
                         ← アプリに戻る
                     </button>
                 </div>
                 <p class="print-toolbar-hint">
                     <strong>iPhone・iPad でPDFにするには</strong><br>
-                    ①［印刷・PDFで保存］を押す<br>
+                    ${firstStepHTML}<br>
                     ② 印刷の画面で、ページの小さな画像を2本指で広げる<br>
                     ③ 共有ボタン（□↑）→「"ファイル"に保存」<br>
                     保存したPDFは「ファイル」アプリの「最近使った項目」から見られます

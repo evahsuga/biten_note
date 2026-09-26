@@ -385,7 +385,7 @@ const PDF = {
                         🖨 印刷・PDFで保存
                     </button>`;
             const firstStepHTML = isIOSSafari
-                ? '① 画面下の共有ボタン（□↑）→「プリント」を押す'
+                ? '① 画面下の共有ボタン（□↑）→ 一覧の下のほうの「プリント」'
                 : '①［印刷・PDFで保存］を押す';
             let bodyHTML = `
             <div class="print-toolbar no-print">
@@ -397,8 +397,8 @@ const PDF = {
                 <p class="print-toolbar-hint">
                     <strong>iPhone・iPad でPDFにするには</strong><br>
                     ${firstStepHTML}<br>
-                    ② 印刷の画面で、ページの小さな画像を2本指で広げる<br>
-                    ③ 共有ボタン（□↑）→「"ファイル"に保存」<br>
+                    ② 印刷の画面の上にある共有ボタン（□↑）を押す<br>
+                    ③「"ファイル"に保存」<br>
                     保存したPDFは「ファイル」アプリの「最近使った項目」から見られます
                 </p>
             </div>

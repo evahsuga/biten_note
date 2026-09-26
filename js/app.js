@@ -483,12 +483,23 @@ const App = {
         }
     },
 
+    // 今開いているサイトで表示するお知らせを返す（未読数・既読化・一覧で共通に使う）。
+    // onlyOn: 'stable' の項目は、開発版（*.github.io）では出さない。
+    // ただし開発版でも URL に ?preview=stable を付けたときは、公開前の確認用に出す。
+    getVisibleAnnouncements() {
+        const all = window.ANNOUNCEMENTS || [];
+        const isDevSite = window.location.hostname.endsWith('.github.io');
+        const preview = new URLSearchParams(window.location.search).get('preview') === 'stable';
+        if (!isDevSite || preview) return all;
+        return all.filter(a => a.onlyOn !== 'stable');
+    },
+
     // お知らせ未読バッジを非同期で読み込み（「📖 使い方」ボタンに後入れ）
     async loadAnnouncementBadgeAsync() {
         try {
             const database = this.getDB();
             const readIds = await database.getReadAnnouncementIds();
-            const unread = (window.ANNOUNCEMENTS || []).filter(a => !readIds.includes(a.id)).length;
+            const unread = this.getVisibleAnnouncements().filter(a => !readIds.includes(a.id)).length;
             const slot = document.getElementById('guide-notice-badge');
             if (slot) {
                 slot.innerHTML = unread > 0 ? `<span class="notice-badge">${unread}</span>` : '';
@@ -501,7 +512,7 @@ const App = {
     // お知らせを全件既読にする（最新情報画面を開いた時に呼ぶ）
     async markAllAnnouncementsRead() {
         const database = this.getDB();
-        const allIds = (window.ANNOUNCEMENTS || []).map(a => a.id);
+        const allIds = this.getVisibleAnnouncements().map(a => a.id);
         if (!allIds.length) return;
         try {
             const readIds = await database.getReadAnnouncementIds();
@@ -2764,7 +2775,7 @@ const App = {
                         <!-- News項目（日付順に新しい順） -->
 
                         <!-- お知らせ（announcements.js データ駆動） -->
-                        ${(window.ANNOUNCEMENTS || []).map(a => `
+                        ${this.getVisibleAnnouncements().map(a => `
                         <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                 <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">NEW</span>

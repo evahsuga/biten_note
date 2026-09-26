@@ -53,7 +53,7 @@ const PDF = {
 
             // ローディングを非表示にしてからページ遷移
             hideLoading();
-            showToast('PDF印刷画面を開きます', 'success');
+            showToast('PDF用のページを開きます', 'success');
 
             // 印刷用HTMLを新しいウィンドウで開く（ページが書き換わる）
             this.openPrintWindow(personsWithBitens);
@@ -346,10 +346,6 @@ const PDF = {
             const htmlContent = this.generatePrintHTML(personsWithBitens);
             Utils.log('HTMLコンテンツ生成完了');
 
-            // 現在のページを一時保存
-            const currentHTML = document.documentElement.innerHTML;
-            const currentTitle = document.title;
-
             // ページを印刷用HTMLに置き換え
             document.open();
             document.write(htmlContent);
@@ -357,24 +353,11 @@ const PDF = {
 
             Utils.log('印刷ページ表示完了');
 
-            // 印刷ダイアログを開く
-            setTimeout(() => {
-                window.print();
-
-                // 印刷後、元のページに戻る
-                window.onafterprint = () => {
-                    Utils.log('印刷完了、元のページに戻ります');
-                    document.open();
-                    document.write('<!DOCTYPE html><html>' + currentHTML.substring(currentHTML.indexOf('<html>') + 6));
-                    document.close();
-                    document.title = currentTitle;
-
-                    // ページをリロードして完全に元に戻す
-                    setTimeout(() => {
-                        location.reload();
-                    }, 100);
-                };
-            }, 500);
+            // 印刷ダイアログは自動では開かない。ページ上部の［印刷・PDFで保存］ボタンで開く
+            // （iPhone・iPad の Safari ではボタンを出さず、Safari の共有ボタン →「プリント」を案内する）。
+            // 印刷後も自動では戻らない。［← アプリに戻る］ボタンで戻る。
+            // （iPhone の Safari では、印刷を「許可」した直後に印刷終了の合図が届き、
+            //   自動で戻る処理が印刷画面より先に走ってしまうため）
 
         } catch (error) {
             Utils.error('印刷ページ作成エラー', error);
@@ -393,7 +376,42 @@ const PDF = {
                 day: 'numeric'
             });
 
-            let bodyHTML = '';
+            // 操作欄（画面表示用・印刷時は非表示）
+            // iPhone・iPad の Safari では、ページから印刷画面を開くと確認が出て安定しないため、
+            // ボタンは出さず、Safari 自身の共有ボタン →「プリント」を案内する。
+            // 手順は iPhone・iPad とそれ以外（パソコン・Android）で出し分ける。
+            const isIOS = Utils.isIOS();
+            const isIOSSafari = isIOS && !Utils.isStandalone();
+            const printButtonHTML = isIOSSafari ? '' : `
+                    <button class="print-button" onclick="window.print();">
+                        🖨 印刷・PDFで保存
+                    </button>`;
+            let hintHTML;
+            if (isIOS) {
+                const firstStepHTML = isIOSSafari
+                    ? '① 共有ボタン（□↑）→ 一覧の下のほうの「プリント」'
+                    : '①［印刷・PDFで保存］を押す';
+                hintHTML = `
+                    <strong>iPhone・iPad でPDFにするには</strong><br>
+                    ${firstStepHTML}<br>
+                    ② 印刷の画面の上にある共有ボタン（□↑）を押す<br>
+                    ③「"ファイル"に保存」<br>
+                    保存したPDFは「ファイル」アプリの「最近使った項目」から見られます`;
+            } else {
+                hintHTML = `
+                    ［印刷・PDFで保存］を押し、印刷の画面で送信先を「PDFに保存」（または「PDFとして保存」）にしてください`;
+            }
+            let bodyHTML = `
+            <div class="print-toolbar no-print">
+                <div class="print-toolbar-buttons">${printButtonHTML}
+                    <button class="back-button" onclick="location.reload();">
+                        ← アプリに戻る
+                    </button>
+                </div>
+                <p class="print-toolbar-hint">${hintHTML}
+                </p>
+            </div>
+        `;
 
         // 表紙ページ
         bodyHTML += `
@@ -451,16 +469,6 @@ const PDF = {
         personPageInfo.forEach(({ item, bitenLimit, pageCount, startPage }) => {
             bodyHTML += this.generatePersonPages(item, bitenLimit, pageCount, startPage);
         });
-
-        // 戻るボタン（印刷時は非表示）
-        bodyHTML += `
-            <div class="back-button-container no-print">
-                <button class="back-button" onclick="location.reload();">
-                    ← アプリに戻る
-                </button>
-                <p class="back-button-hint">または、ブラウザの「印刷」機能でPDFとして保存できます</p>
-            </div>
-        `;
 
         // 完全なHTMLドキュメントを返す
         const html = `
@@ -731,46 +739,65 @@ const PDF = {
             color: #999;
         }
 
-        /* 戻るボタン（画面表示用） */
-        .back-button-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            text-align: center;
+        /* 操作欄（画面表示用・ページ上部） */
+        .print-toolbar {
+            max-width: 560px;
+            margin: 12px 12px 16px;
+            padding: 14px 16px;
+            background: #F4F3FF;
+            border: 1px solid #D6D3FF;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
         }
 
+        .print-toolbar-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .print-button,
         .back-button {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white !important;
-            border: none;
+            flex: 1 1 180px;
+            box-sizing: border-box;
+            min-height: 48px;
+            padding: 12px 16px;
             border-radius: 25px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .print-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            border: none;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            text-decoration: none;
         }
 
-        .back-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-        }
-
-        .back-button:active {
-            transform: translateY(0);
-        }
-
-        .back-button-hint {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #666;
+        .back-button {
             background: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            color: #5A4FCF !important;
+            border: 2px solid #8B85E8;
+        }
+
+        .print-button:active,
+        .back-button:active {
+            transform: translateY(1px);
+        }
+
+        .print-toolbar-hint {
+            margin: 12px 0 0;
+            font-size: 13px;
+            color: #444;
+        }
+
+        @media (min-width: 600px) {
+            .print-toolbar {
+                margin: 16px auto;
+            }
         }
 
         @media print {

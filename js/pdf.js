@@ -346,10 +346,6 @@ const PDF = {
             const htmlContent = this.generatePrintHTML(personsWithBitens);
             Utils.log('HTMLコンテンツ生成完了');
 
-            // 現在のページを一時保存
-            const currentHTML = document.documentElement.innerHTML;
-            const currentTitle = document.title;
-
             // ページを印刷用HTMLに置き換え
             document.open();
             document.write(htmlContent);
@@ -358,21 +354,9 @@ const PDF = {
             Utils.log('印刷ページ表示完了');
 
             // 印刷ダイアログは自動では開かない。ページ上部の［印刷・PDFで保存］ボタンで開く。
-            // （Safari は、ボタン操作の直後でない印刷を「自動的な印刷」として止めるため）
-
-            // 印刷後、元のページに戻る
-            window.onafterprint = () => {
-                Utils.log('印刷完了、元のページに戻ります');
-                document.open();
-                document.write('<!DOCTYPE html><html>' + currentHTML.substring(currentHTML.indexOf('<html>') + 6));
-                document.close();
-                document.title = currentTitle;
-
-                // ページをリロードして完全に元に戻す
-                setTimeout(() => {
-                    location.reload();
-                }, 100);
-            };
+            // 印刷後も自動では戻らない。［← アプリに戻る］ボタンで戻る。
+            // （iPhone の Safari では、印刷を「許可」した直後に印刷終了の合図が届き、
+            //   自動で戻る処理が印刷画面より先に走ってしまうため）
 
         } catch (error) {
             Utils.error('印刷ページ作成エラー', error);

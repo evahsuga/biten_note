@@ -379,14 +379,28 @@ const PDF = {
             // 操作欄（画面表示用・印刷時は非表示）
             // iPhone・iPad の Safari では、ページから印刷画面を開くと確認が出て安定しないため、
             // ボタンは出さず、Safari 自身の共有ボタン →「プリント」を案内する。
-            const isIOSSafari = Utils.isIOS() && !Utils.isStandalone();
+            // 手順は iPhone・iPad とそれ以外（パソコン・Android）で出し分ける。
+            const isIOS = Utils.isIOS();
+            const isIOSSafari = isIOS && !Utils.isStandalone();
             const printButtonHTML = isIOSSafari ? '' : `
                     <button class="print-button" onclick="window.print();">
                         🖨 印刷・PDFで保存
                     </button>`;
-            const firstStepHTML = isIOSSafari
-                ? '① 画面下の共有ボタン（□↑）→ 一覧の下のほうの「プリント」'
-                : '①［印刷・PDFで保存］を押す';
+            let hintHTML;
+            if (isIOS) {
+                const firstStepHTML = isIOSSafari
+                    ? '① 共有ボタン（□↑）→ 一覧の下のほうの「プリント」'
+                    : '①［印刷・PDFで保存］を押す';
+                hintHTML = `
+                    <strong>iPhone・iPad でPDFにするには</strong><br>
+                    ${firstStepHTML}<br>
+                    ② 印刷の画面の上にある共有ボタン（□↑）を押す<br>
+                    ③「"ファイル"に保存」<br>
+                    保存したPDFは「ファイル」アプリの「最近使った項目」から見られます`;
+            } else {
+                hintHTML = `
+                    ［印刷・PDFで保存］を押し、印刷の画面で送信先を「PDFに保存」（または「PDFとして保存」）にしてください`;
+            }
             let bodyHTML = `
             <div class="print-toolbar no-print">
                 <div class="print-toolbar-buttons">${printButtonHTML}
@@ -394,12 +408,7 @@ const PDF = {
                         ← アプリに戻る
                     </button>
                 </div>
-                <p class="print-toolbar-hint">
-                    <strong>iPhone・iPad でPDFにするには</strong><br>
-                    ${firstStepHTML}<br>
-                    ② 印刷の画面の上にある共有ボタン（□↑）を押す<br>
-                    ③「"ファイル"に保存」<br>
-                    保存したPDFは「ファイル」アプリの「最近使った項目」から見られます
+                <p class="print-toolbar-hint">${hintHTML}
                 </p>
             </div>
         `;

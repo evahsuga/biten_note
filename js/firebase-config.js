@@ -24,6 +24,15 @@ const db = firebase.firestore();
 // Firebase Auth の言語設定を日本語に変更
 auth.languageCode = 'ja';
 
+// 【開発用】手元（localhost）で URL に ?emu=1 を付けたときだけ、Firebase Emulator Suite につなぐ。
+// 開発版・安定版では何も変わらない。オフライン永続化より前に呼ぶ必要がある。
+if ((location.hostname === 'localhost' || location.hostname === '127.0.0.1') &&
+    new URLSearchParams(location.search).get('emu') === '1') {
+    auth.useEmulator('http://127.0.0.1:9099');
+    db.useEmulator('127.0.0.1', 8080);
+    console.log('🧪 Firebase Emulator に接続（auth:9099 / firestore:8080）');
+}
+
 // Firestore オフライン永続化を有効化
 db.enablePersistence()
   .catch((err) => {

@@ -201,6 +201,60 @@ const DB = {
     },
 
     // 全人物取得
+    // ===========================
+    // 登録データとアカウントの削除（移行の後始末・設定画面の削除で共通）
+    // ===========================
+
+    // 削除の対象：ユーザー配下のサブコレクション（settings には appSettings・notifications・
+    // background・statsCache などがある。名前を決め打ちせず、サーバにある文書をすべて消す）
+    ACCOUNT_SUBCOLLECTIONS: ['persons', 'bitens', 'notificationHistory', 'settings'],
+
+    // 以降の統計更新を止め、動いている更新と未送信の書き込みが終わるのを待つ
+    async quiesceForAccountDeletion() {
+        this._deletingAccount = true;
+        await Promise.allSettled([...this._pendingStats]);
+        await db.waitForPendingWrites();
+    },
+
+    // 削除を中止したときに統計更新を元に戻す
+    resumeAfterAccountDeletion() {
+        this._deletingAccount = false;
+    },
+
+    // サーバ上の全対象を削除する（500件ごとに分割）。消した件数を返す
+    async deleteAllUserDataOnServer(uid) {
+        const userRef = db.collection('users').doc(uid);
+        const counts = {};
+        for (const name of this.ACCOUNT_SUBCOLLECTIONS) {
+            const snap = await userRef.collection(name).get({ source: 'server' });
+            counts[name] = snap.size;
+            for (let i = 0; i < snap.docs.length; i += 500) {
+                const batch = db.batch();
+                snap.docs.slice(i, i + 500).forEach(d => batch.delete(d.ref));
+                await batch.commit();
+            }
+        }
+        await userRef.delete();
+        return counts;
+    },
+
+    // サーバから取り直して、全対象が0件かを数える（キャッシュを使わない）
+    async countUserDataOnServer(uid) {
+        const userRef = db.collection('users').doc(uid);
+        const result = {};
+        let total = 0;
+        for (const name of this.ACCOUNT_SUBCOLLECTIONS) {
+            const snap = await userRef.collection(name).get({ source: 'server' });
+            result[name] = snap.size;
+            total += snap.size;
+        }
+        const userDoc = await userRef.get({ source: 'server' });
+        result.userDoc = userDoc.exists ? 1 : 0;
+        total += result.userDoc;
+        result.total = total;
+        return result;
+    },
+
     // 【移行用】人物をアーカイブ済みも含めて全件、サーバから取得（キャッシュを使わない）
     async getAllPersonsFromServer() {
         const userId = this.getCurrentUserId();
@@ -666,7 +720,21 @@ const DB = {
     // ===========================
 
     // 統計情報キャッシュを更新
-    async updateStatsCache() {
+    // 統計情報キャッシュの更新（各操作から裏で呼ばれる）。
+    // 削除の直前に「動いている更新が終わるのを待つ」ため、実行中のものを追跡する。
+    _pendingStats: new Set(),
+    _deletingAccount: false,
+
+    updateStatsCache() {
+        if (this._deletingAccount) return Promise.resolve(null);
+        const p = this._updateStatsCacheImpl();
+        this._pendingStats.add(p);
+        const done = () => this._pendingStats.delete(p);
+        p.then(done, done);
+        return p;
+    },
+
+    async _updateStatsCacheImpl() {
         try {
             const userId = this.getCurrentUserId();
             Utils.log('統計情報キャッシュ更新開始');

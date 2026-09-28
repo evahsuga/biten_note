@@ -3551,84 +3551,145 @@ const App = {
         }
     },
 
-    // アカウント削除処理
+    // アカウント削除処理（設定画面の「アカウントを削除」から。確認は confirmDeleteAccount で済んでいる）
     async handleDeleteAccount() {
         try {
-            showLoading();
-
-            const user = Auth.getCurrentUser();
-            if (!user) {
-                hideLoading();
-                showToast('ログインしていません', 'error');
-                return;
-            }
-
-            Utils.log('アカウント削除開始', user.uid);
-
-            // 1. Firestoreのユーザーデータを削除
-            Utils.log('Firestoreデータ削除開始');
-
-            // 1-1. persons コレクションのデータを削除
-            const personsSnapshot = await firebase.firestore()
-                .collection('users')
-                .doc(user.uid)
-                .collection('persons')
-                .get();
-
-            const deletePersonsPromises = personsSnapshot.docs.map(doc => doc.ref.delete());
-            await Promise.all(deletePersonsPromises);
-            Utils.log(`${personsSnapshot.docs.length}件の人物データを削除`);
-
-            // 1-2. bitens コレクションのデータを削除
-            const bitensSnapshot = await firebase.firestore()
-                .collection('users')
-                .doc(user.uid)
-                .collection('bitens')
-                .get();
-
-            const deleteBitensPromises = bitensSnapshot.docs.map(doc => doc.ref.delete());
-            await Promise.all(deleteBitensPromises);
-            Utils.log(`${bitensSnapshot.docs.length}件の美点データを削除`);
-
-            // 1-3. users ドキュメントを削除
-            await firebase.firestore()
-                .collection('users')
-                .doc(user.uid)
-                .delete();
-            Utils.log('ユーザードキュメントを削除');
-
-            // 2. Firebase Authentication のアカウントを削除
-            Utils.log('Firebase Authentication アカウント削除開始');
-            await user.delete();
-            Utils.log('Firebase Authentication アカウント削除完了');
-
+            const result = await this.deleteAccountCompletely({ toGuest: false });
+            if (result === 'cancelled') return;
             hideLoading();
-
-            // 3. 完了メッセージを表示してログイン画面へ
             alert('アカウントを削除しました。\n\nご利用ありがとうございました。');
-
-            // ログイン画面へ遷移（認証状態変化で自動的に遷移）
             this.navigate('#/');
-
         } catch (error) {
             hideLoading();
             Utils.error('アカウント削除エラー', error);
-
-            // エラーの種類に応じたメッセージ
-            if (error.code === 'auth/requires-recent-login') {
-                showToast(
-                    'セキュリティのため、再度ログインしてから削除してください',
-                    'error'
-                );
-                // ログアウトして再ログインを促す
-                await Auth.signOut();
-            } else {
-                showToast(
-                    'アカウント削除に失敗しました。時間をおいて再度お試しください。',
-                    'error'
-                );
-            }
+            showToast(error.userMessage || 'アカウント削除に失敗しました。時間をおいて再度お試しください。', 'error');
         }
+    },
+
+    // 移行の案内の［削除へ進む］：条件①照合・②保護をもう一度確かめ、確認のうえ削除する
+    async startMigrationDelete() {
+        try {
+            const user = Auth.getCurrentUser();
+            if (!user) return;
+            const record = await Migration.getLatestRecord(user.uid);
+            const check = record ? await Migration.verifyRecord(record) : { ok: false };
+            const persisted = (navigator.storage && navigator.storage.persisted) ? await navigator.storage.persisted() : false;
+            if (!check.ok || !persisted) {
+                showToast('この端末では削除へ進めません（移した記録を確かめられませんでした）', 'error');
+                await this.loadMigrationPanelAsync(false);
+                return;
+            }
+            const msg = '登録データとアカウントを削除します。この操作は元に戻せません。\n\n' +
+                `移した記録（人物${check.persons}人・美点${check.bitens}件）がこの端末にあることを確認しました。\n\n` +
+                '続けるには、もう一度ログインしてください。';
+            if (!confirm(msg)) return;
+            const result = await this.deleteAccountCompletely({ toGuest: true });
+            if (result === 'cancelled') return;
+            // 以降の画面は認証リスナー（安心利用の分岐）が描く
+            showToast('登録データとアカウントを削除しました', 'success');
+        } catch (error) {
+            hideLoading();
+            Utils.error('移行後の削除エラー', error);
+            showToast(error.userMessage || '削除できませんでした。時間をおいて再度お試しください。', 'error');
+        }
+    },
+
+    // 登録データとアカウントを削除する本体（移行の後始末・設定画面の削除で共通）。
+    // 順番：再認証（何も消す前）→ 統計更新を止めて待つ → 全対象を削除 → サーバで0件を確認 → アカウント削除
+    // 再認証をやめたときは 'cancelled' を返す。
+    async deleteAccountCompletely({ toGuest }) {
+        const user = Auth.getCurrentUser();
+        if (!user) throw Object.assign(new Error('not-logged-in'), { userMessage: 'ログインしていません' });
+        const uid = user.uid;
+
+        // 1. 再認証（何も消す前に済ませる。やめたら何も消さない）
+        const reauthed = await this.reauthenticateForDeletion(user);
+        if (!reauthed) return 'cancelled';
+
+        showLoading();
+        try {
+            // 2. 裏で動く統計更新を止め、動いている分と未送信の書き込みが終わるのを待つ
+            await DB.quiesceForAccountDeletion();
+
+            // 3. 全対象を削除（500件ごと）
+            const deleted = await DB.deleteAllUserDataOnServer(uid);
+            Utils.log('登録データを削除', deleted);
+
+            // 4. サーバから取り直して0件を確認。残っていたら中止（アカウントは消さない）
+            const remain = await DB.countUserDataOnServer(uid);
+            if (remain.total !== 0) {
+                Utils.error('削除後にデータが残っている', remain);
+                throw Object.assign(new Error('data-remains'), { userMessage: '削除が完了しませんでした。もう一度お試しください。' });
+            }
+        } catch (e) {
+            DB.resumeAfterAccountDeletion();
+            throw e;
+        }
+
+        // 5. 移行の後始末なら、先に安心利用の印を立てる（アカウント削除後の画面をリスナーが安心利用で描く）
+        if (toGuest) Auth.enterGuestMode();
+
+        // 6. アカウントを削除
+        try {
+            await user.delete();
+        } catch (e) {
+            if (toGuest) Auth.exitGuestMode();
+            DB.resumeAfterAccountDeletion();
+            throw Object.assign(e, { userMessage: '登録データは削除しましたが、アカウントの削除が完了しませんでした。もう一度ログインして、設定の「アカウントを削除」からお試しください。' });
+        }
+
+        // 7. この端末に残る、そのアカウント用の印を消す
+        localStorage.removeItem(`sortOrder_migrated_${uid}`);
+        localStorage.removeItem(`status_migrated_${uid}`);
+        DB.resumeAfterAccountDeletion();
+        hideLoading();
+        return 'deleted';
+    },
+
+    // 削除のための再認証。メール＝パスワード入力、Google＝Google の画面。やめたら false
+    async reauthenticateForDeletion(user) {
+        const providers = (user.providerData || []).map(p => p.providerId);
+        try {
+            if (providers.includes('password')) {
+                const password = await this.askPasswordForDeletion(user.email);
+                if (password === null) return false;
+                const cred = firebase.auth.EmailAuthProvider.credential(user.email, password);
+                await user.reauthenticateWithCredential(cred);
+                return true;
+            }
+            await user.reauthenticateWithPopup(googleProvider);
+            return true;
+        } catch (e) {
+            if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return false;
+            if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential' || e.code === 'auth/invalid-login-credentials') {
+                throw Object.assign(e, { userMessage: 'パスワードが正しくありません。何も削除していません。' });
+            }
+            throw Object.assign(e, { userMessage: 'もう一度のログインができませんでした。何も削除していません。' });
+        }
+    },
+
+    // パスワードを入れてもらう小さな画面（入力は伏せ字）。やめたら null
+    askPasswordForDeletion(email) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;';
+            overlay.innerHTML = `
+                <div style="background:#fff;border-radius:12px;padding:20px;max-width:360px;width:100%;line-height:1.7;">
+                    <p style="font-weight:bold;margin:0 0 8px 0;">もう一度ログインしてください</p>
+                    <p style="margin:0 0 12px 0;font-size:14px;color:var(--gray-700);"><span id="reauthEmail"></span> のパスワードを入力してください。</p>
+                    <input type="password" id="reauthPassword" class="form-input" autocomplete="current-password" style="margin-bottom:12px;">
+                    <button id="reauthOk" class="btn btn-primary btn-block mb-md">続ける</button>
+                    <button id="reauthCancel" class="btn btn-outline btn-block">やめる</button>
+                </div>`;
+            document.body.appendChild(overlay);
+            overlay.querySelector('#reauthEmail').textContent = email || '';
+            const input = overlay.querySelector('#reauthPassword');
+            const finish = (v) => { overlay.remove(); resolve(v); };
+            overlay.querySelector('#reauthOk').onclick = () => finish(input.value);
+            overlay.querySelector('#reauthCancel').onclick = () => finish(null);
+            input.addEventListener('keydown', ev => { if (ev.key === 'Enter') finish(input.value); });
+            input.focus();
+        });
     }
 };
 

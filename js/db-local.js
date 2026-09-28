@@ -410,37 +410,37 @@ const LocalDB = {
     },
 
     // ================================
-    // データ移行（Firestoreへ）
+    // 一括書き込み（協力利用からの移行用）
     // ================================
 
-    async migrateToFirestore(userId) {
-        Utils.log('Firestoreへのデータ移行開始');
-        
-        try {
-            // 1. IndexedDBから全データ取得
-            const persons = await this.getAllPersonsIncludingArchived();
-            const bitens = await this.getAllBitens();
-            
-            Utils.log('移行対象データ', { persons: persons.length, bitens: bitens.length });
+    // 人物・美点・設定1件を、1つのトランザクションで書き込む（全か無か）
+    async bulkPutWithSetting(persons, bitens, settingKey, settingValue) {
+        await this.init();
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(
+                [this.STORES.PERSONS, this.STORES.BITENS, this.STORES.SETTINGS],
+                'readwrite'
+            );
+            transaction.oncomplete = () => resolve();
+            transaction.onabort = () => reject(transaction.error || new Error('書き込みが中断されました'));
+            transaction.onerror = (event) => {
+                // onabort で結果を返すため、ここでは記録のみ
+                Utils.error('一括書き込みエラー', event.target.error);
+            };
 
-            // 2. Firestoreへ書き込み
-            for (const person of persons) {
-                await DB.addPerson(person);
+            // 書き込みの命令を出している途中で例外が起きたら、トランザクション全体を中断する
+            // （中断しないと、それまでに出した分だけが確定してしまう）
+            try {
+                const personStore = transaction.objectStore(this.STORES.PERSONS);
+                const bitenStore = transaction.objectStore(this.STORES.BITENS);
+                persons.forEach(p => personStore.put(p));
+                bitens.forEach(b => bitenStore.put(b));
+                transaction.objectStore(this.STORES.SETTINGS).put({ id: settingKey, value: settingValue });
+            } catch (e) {
+                try { transaction.abort(); } catch (abortErr) { /* 既に中断済み */ }
+                reject(e);
             }
-            
-            for (const biten of bitens) {
-                await DB.addBiten(biten);
-            }
-
-            // 3. IndexedDBをクリア
-            await this.clearAll();
-            
-            Utils.log('Firestoreへのデータ移行完了');
-            return { persons: persons.length, bitens: bitens.length };
-        } catch (error) {
-            Utils.error('データ移行エラー', error);
-            throw error;
-        }
+        });
     },
 
     async getAllPersonsIncludingArchived() {

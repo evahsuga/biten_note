@@ -201,6 +201,22 @@ const DB = {
     },
 
     // 全人物取得
+    // 【移行用】人物をアーカイブ済みも含めて全件、サーバから取得（キャッシュを使わない）
+    async getAllPersonsFromServer() {
+        const userId = this.getCurrentUserId();
+        const snapshot = await db.collection('users').doc(userId)
+            .collection('persons').get({ source: 'server' });
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
+    // 【移行用】美点を全件、サーバから取得（キャッシュを使わない）
+    async getAllBitensFromServer() {
+        const userId = this.getCurrentUserId();
+        const snapshot = await db.collection('users').doc(userId)
+            .collection('bitens').get({ source: 'server' });
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
     async getAllPersons(statusFilter = null) {
         try {
             const userId = this.getCurrentUserId();

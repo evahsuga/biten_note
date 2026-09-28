@@ -18,6 +18,7 @@ const STATIC_ASSETS = [
     './js/auth.js',
     './js/db.js',
     './js/db-local.js',
+    './js/migration.js',
     './js/app.js',
     './js/person.js',
     './js/biten.js',

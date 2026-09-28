@@ -10,9 +10,21 @@ const Migration = {
     // コピー記録（この端末の LocalDB 設定に保存）のキー
     RECORDS_KEY: 'migrationCopyRecords',
 
-    // 機能フラグ：CONFIG.MIGRATION の値。確認用の指定（?preview=migration）があれば OFF でも出す
+    // 機能フラグ：CONFIG.MIGRATION の値。確認用の指定があれば OFF でも出す。
+    // 指定の方法：URL に ?preview=migration、またはアプリ内で確認用の表示を ON にする
+    // （ホーム画面アプリは URL に指定を付けられないため。その保存場所の中だけで覚える）
+    PREVIEW_KEY: 'bitenNote_previewMigration',
     isPreview() {
-        return new URLSearchParams(window.location.search).get('preview') === 'migration';
+        if (new URLSearchParams(window.location.search).get('preview') === 'migration') return true;
+        try { return localStorage.getItem(this.PREVIEW_KEY) === 'true'; } catch (e) { return false; }
+    },
+    togglePreview() {
+        const next = !this.isPreview();
+        try {
+            if (next) localStorage.setItem(this.PREVIEW_KEY, 'true');
+            else localStorage.removeItem(this.PREVIEW_KEY);
+        } catch (e) { /* 保存できない環境では URL の指定だけで使う */ }
+        return this.isPreview();
     },
     isCopyEnabled() {
         return !!(CONFIG.MIGRATION && CONFIG.MIGRATION.COPY_ENABLED) || this.isPreview();

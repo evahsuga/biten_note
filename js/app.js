@@ -467,7 +467,7 @@ const App = {
                     </div>
 
                     <!-- バージョン表示 -->
-                    <p class="version-text">ver.${CONFIG.VERSION}</p>
+                    <p class="version-text" onclick="App.onVersionTap()">ver.${CONFIG.VERSION}</p>
                 </div>
             `;
 
@@ -607,6 +607,20 @@ const App = {
             ${doneLine}
             <p style="margin: 0 0 8px 0;">移した記録は、この端末でそのままお使いいただけます。<br>この端末では、元の登録データの削除はできません。記録は ${deadline} まで残り、その後に運営側で消去します。</p>
             ${againLink}${contact}`, laterBtn);
+    },
+
+    // バージョン表示を続けて5回たたくと、移行の確認用の表示を ON／OFF する（試験用）
+    onVersionTap() {
+        const now = Date.now();
+        this._versionTaps = (this._versionTaps || []).filter(t => now - t < 3000);
+        this._versionTaps.push(now);
+        if (this._versionTaps.length < 5 || typeof Migration === 'undefined') return;
+        this._versionTaps = [];
+        const on = Migration.togglePreview();
+        showToast(on ? '確認用の表示：ON' : '確認用の表示：OFF', 'info');
+        this._devNoticeShown = false;
+        this._migrationDismissed = false;
+        this.renderHome();
     },
 
     dismissMigrationPanel() {

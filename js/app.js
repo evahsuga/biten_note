@@ -1508,8 +1508,8 @@ const App = {
                             <strong>安心利用（登録不要）</strong>で、どなたでもすぐにお使いいただけます。入力したデータはこの端末の中だけに保存され、運営者が内容を見ることはありません。
                         </p>
                         <div style="border: 1px solid var(--gray-300); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--gray-500); line-height: 1.7;">
-                            <strong>登録済みの方・開発にご協力の方へ（開発協力）</strong><br>
-                            メール／Googleで登録すると、データがクラウドに保存され、複数の端末で同期して使えます。開発・改善にご協力いただく方向けの利用方法です。
+                            <strong>登録済みの方へ（開発協力）</strong><br>
+                            以前にメール／Googleで登録された方は、これまでどおりログインしてお使いいただけます。新しい登録の受け付けは終了しました。
                         </div>
                     </div>
                 </div>
@@ -1541,30 +1541,17 @@ const App = {
                 <!-- ステップ0: ログイン -->
                 <details class="card" id="guide-step0">
                     <summary style="cursor: pointer; list-style: none; user-select: none; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
-                        <span class="card-title" style="margin: 0;">🔐 ステップ0: アカウント作成・ログイン
-                            <span style="font-size: 13px; font-weight: normal; color: var(--gray-600);">（開発協力の方のみ）</span>
+                        <span class="card-title" style="margin: 0;">🔐 ステップ0: ログイン
+                            <span style="font-size: 13px; font-weight: normal; color: var(--gray-600);">（登録済みの方のみ）</span>
                         </span>
                         <span style="color: var(--gray-600); font-size: 14px;">▼ タップで開く</span>
                     </summary>
                     <div class="card-body" style="margin-top: 16px;">
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">初めての方</h3>
-                        <ol style="padding-left: 20px; margin-bottom: 20px;">
-                            <li style="margin-bottom: 8px; line-height: 1.8;">「新規登録」タブをクリック</li>
-                            <li style="margin-bottom: 8px; line-height: 1.8;">メールアドレスとパスワードを入力</li>
-                            <li style="margin-bottom: 8px; line-height: 1.8;">「新規登録」をクリック</li>
-                        </ol>
-
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px; text-align: center;">
-                            <strong>または</strong>
-                        </p>
-
-                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 20px;">
-                            「Googleでログイン」でより簡単に始められます。
-                        </p>
-
-                        <h3 style="font-size: 16px; font-weight: bold; color: var(--gray-800); margin-bottom: 12px;">2回目以降</h3>
                         <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
-                            登録したメールアドレスとパスワードでログインしてください。
+                            ログイン画面の下の「登録済みの方はこちら（ログイン）」から、登録したメールアドレスとパスワード、または「Googleでログイン」でログインしてください。
+                        </p>
+                        <p style="line-height: 1.8; color: var(--gray-700); margin-bottom: 16px;">
+                            新しい登録の受け付けは終了しました。これからお使いになる方は、登録なしの「安心利用」をご利用ください。
                         </p>
 
                         <div style="background-color: var(--primary-light); padding: 12px; border-radius: 8px; margin-top: 16px;">
@@ -2311,7 +2298,6 @@ const App = {
         } else {
             // 未ログインの場合はログイン画面へ戻る
             this.renderLogin();
-            setTimeout(() => this.switchAuthTab('signup'), 0);
         }
     },
 
@@ -3040,22 +3026,12 @@ const App = {
                     <!-- フッター：既存ユーザー・開発協力の入口（意図的に大きく下へ離し、注意して見る人だけが気づくように） -->
                     <div style="margin-top: 96px; text-align: center;">
                         <button type="button" id="legacyAuthToggle" onclick="App.toggleLegacyAuth()" style="background: none; border: none; cursor: pointer; font-size: 13px; color: var(--gray-600); text-decoration: underline; padding: 8px; line-height: 1.6; white-space: normal; max-width: 100%;">
-                            登録済みの方・開発にご協力の方はこちら
+                            登録済みの方はこちら（ログイン）
                         </button>
                     </div>
 
-                    <!-- 折りたたみ：既存ログイン／新規登録（開発協力）／Google -->
+                    <!-- 折りたたみ：登録済みの方のログイン（メール／Google）。新規登録は受け付けていない -->
                     <div id="legacyAuth" style="margin-top: 8px; display: none;">
-                    <!-- タブ切り替え -->
-                    <div class="auth-tabs">
-                        <button class="auth-tab active" id="loginTab" onclick="App.switchAuthTab('login')">
-                            ログイン
-                        </button>
-                        <button class="auth-tab" id="signupTab" onclick="App.switchAuthTab('signup')">
-                            新規登録
-                        </button>
-                    </div>
-
                     <!-- ログインフォーム -->
                     <form id="loginForm" class="auth-form" onsubmit="App.handleLogin(event)">
                         <div class="form-group">
@@ -3087,77 +3063,10 @@ const App = {
                         </button>
                     </form>
 
-                    <!-- サインアップフォーム -->
-                    <form id="signupForm" class="auth-form hidden" onsubmit="App.handleSignup(event)">
-                        <div class="form-group">
-                            <label class="form-label">メールアドレス</label>
-                            <input
-                                type="email"
-                                class="form-input"
-                                id="signupEmail"
-                                required
-                                placeholder="example@email.com"
-                            >
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">パスワード</label>
-                            <input
-                                type="password"
-                                class="form-input"
-                                id="signupPassword"
-                                required
-                                placeholder="6文字以上"
-                                minlength="6"
-                            >
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">パスワード（確認）</label>
-                            <input
-                                type="password"
-                                class="form-input"
-                                id="signupPasswordConfirm"
-                                required
-                                placeholder="もう一度入力してください"
-                                minlength="6"
-                            >
-                        </div>
-
-                        <!-- 同意（協力利用について＋チェック＋PP/規約リンク）: Google同意モーダルと共通 -->
-                        ${this.consentBodyHtml('agreeTerms')}
-
-                        <button type="submit" class="btn btn-primary btn-block">
-                            新規登録
-                        </button>
-                    </form>
-
                     <!-- または区切り線 -->
                     <div class="auth-divider">
                         <span>または</span>
                     </div>
-
-                    <!-- Googleログイン案内（折りたたみ式） -->
-                    <details class="google-login-guide" style="margin-bottom: 16px; padding: 12px; background-color: #FFF3CD; border: 1px solid #FFE69C; border-radius: 8px;">
-                        <summary style="cursor: pointer; font-weight: 600; color: #856404; list-style: none; display: flex; align-items: center; user-select: none;">
-                            <span style="margin-right: 8px;">⚠️</span>
-                            <span>初回ログインの方へ</span>
-                            <span style="margin-left: auto; font-size: 12px; color: #856404;">▼</span>
-                        </summary>
-                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #FFE69C; font-size: 14px; line-height: 1.6; color: #856404;">
-                            <p style="margin: 0 0 12px 0;">
-                                Googleログインを押すと<strong>英語の確認画面</strong>が表示されますが、これは正常な動作です。安全にご利用いただけます。
-                            </p>
-
-                            <p style="margin: 0 0 8px 0; font-weight: 600;">表示される情報：</p>
-                            <ul style="margin: 0 0 12px 0; padding-left: 20px;">
-                                <li style="margin-bottom: 4px;">✓ お名前とプロフィール写真</li>
-                                <li style="margin-bottom: 4px;">✓ メールアドレス</li>
-                            </ul>
-
-                            <p style="margin: 0; padding: 8px; background-color: rgba(255, 255, 255, 0.5); border-radius: 4px;">
-                                画面下の「<strong>Continue</strong>」ボタンを押して進んでください。
-                            </p>
-                        </div>
-                    </details>
 
                     <!-- Googleログインボタン -->
                     <button class="btn btn-google btn-block" onclick="App.handleGoogleLogin()">
@@ -3179,7 +3088,7 @@ const App = {
         document.getElementById('app').innerHTML = html;
     },
 
-    // フッターの既存ログイン／新規登録（開発協力）エリアの開閉
+    // フッターの登録済みの方のログインエリアの開閉
     toggleLegacyAuth() {
         const el = document.getElementById('legacyAuth');
         if (!el) return;
@@ -3188,26 +3097,6 @@ const App = {
         // 開いたときは見えるようスクロール
         if (isHidden) {
             el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    },
-
-    // タブ切り替え
-    switchAuthTab(tab) {
-        const loginTab = document.getElementById('loginTab');
-        const signupTab = document.getElementById('signupTab');
-        const loginForm = document.getElementById('loginForm');
-        const signupForm = document.getElementById('signupForm');
-
-        if (tab === 'login') {
-            loginTab.classList.add('active');
-            signupTab.classList.remove('active');
-            loginForm.classList.remove('hidden');
-            signupForm.classList.add('hidden');
-        } else {
-            loginTab.classList.remove('active');
-            signupTab.classList.add('active');
-            loginForm.classList.add('hidden');
-            signupForm.classList.remove('hidden');
         }
     },
 
@@ -3307,43 +3196,6 @@ const App = {
         }
     },
 
-    // サインアップ処理
-    async handleSignup(event) {
-        event.preventDefault();
-
-        try {
-            showLoading();
-
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
-            const agreeTerms = document.getElementById('agreeTerms').checked;
-
-            // 同意チェックの確認
-            if (!agreeTerms) {
-                hideLoading();
-                showToast('「上記に同意して登録する」にチェックしてください', 'error');
-                return;
-            }
-
-            // パスワード一致チェック
-            if (password !== passwordConfirm) {
-                hideLoading();
-                showToast('パスワードが一致しません', 'error');
-                return;
-            }
-
-            await Auth.signUpWithEmail(email, password);
-
-            showToast('アカウントを作成しました', 'success');
-
-            // 認証状態変化で自動的にメイン画面へ遷移
-        } catch (error) {
-            hideLoading();
-            showToast(error.message, 'error');
-        }
-    },
-
     // Googleログイン処理
     async handleGoogleLogin() {
         try {
@@ -3407,20 +3259,6 @@ const App = {
         }
     },
 
-    // ゲストモードからアカウント登録画面を表示
-    showGuestRegistration() {
-        // 安心利用を終了せずに新規登録（開発協力）画面を表示
-        // 登録完了時にauth.jsのサインアップ処理でデータ移行が行われる
-        this.renderLogin();
-        // ログイン画面表示後、フッターの折りたたみを開いて新規登録タブに切り替え
-        setTimeout(() => {
-            const legacy = document.getElementById('legacyAuth');
-            if (legacy) legacy.style.display = 'block';
-            this.switchAuthTab('signup');
-            if (legacy) legacy.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 0);
-    },
-
     // パスワードリセット表示
     showPasswordReset() {
         const email = prompt('パスワードリセット用のメールアドレスを入力してください\n\n※ 登録済みのメールアドレスを入力してください');
@@ -3472,7 +3310,7 @@ const App = {
             let errorMessage = error.message;
 
             if (error.code === 'auth/user-not-found') {
-                errorMessage = 'このメールアドレスは登録されていません。\n\n新規登録を行うか、正しいメールアドレスを入力してください。';
+                errorMessage = 'このメールアドレスは登録されていません。\n\n正しいメールアドレスを入力してください。';
             } else if (error.code === 'auth/invalid-email') {
                 errorMessage = 'メールアドレスの形式が正しくありません。';
             } else if (error.code === 'auth/too-many-requests') {

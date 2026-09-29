@@ -390,7 +390,7 @@ const PDF = {
             if (isIOS) {
                 const firstStepHTML = isIOSSafari
                     ? '① 共有ボタン（□↑）→ 一覧の下のほうの「プリント」'
-                    : '①［印刷・PDFで保存］を押す';
+                    : '①［印刷・PDFで保存］を押す（確認が出たら「許可」）';
                 hintHTML = `
                     <strong>iPhone・iPad でPDFにするには</strong><br>
                     ${firstStepHTML}<br>

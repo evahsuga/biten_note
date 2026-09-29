@@ -83,7 +83,10 @@ const Auth = {
                     displayName: user.displayName
                 });
 
-                // Firestoreにユーザードキュメントを作成（存在しない場合）
+                // 協力利用の新規登録は受け付けない（ポップアップ方式と同じ扱い）
+                await this.rejectIfNewUser(user);
+
+                // Firestoreのユーザードキュメントを更新
                 await this.createUserDocument(user.uid, {
                     email: user.email,
                     displayName: user.displayName,
@@ -142,50 +145,6 @@ const Auth = {
     // ===========================
     // Email/Password認証
     // ===========================
-
-    // サインアップ（新規登録）
-    async signUpWithEmail(email, password) {
-        try {
-            // メールアドレスを正規化（小文字化、前後の空白削除）
-            email = email.trim().toLowerCase();
-
-            Utils.log('サインアップ開始', email);
-
-            if (!email || !password) {
-                throw new Error('メールアドレスとパスワードを入力してください');
-            }
-
-            if (password.length < 6) {
-                throw new Error('パスワードは6文字以上で入力してください');
-            }
-
-            // 既存ユーザーチェック（Firebaseの重複チェックに加えて）
-            const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-            if (signInMethods && signInMethods.length > 0) {
-                throw new Error('このメールアドレスは既に登録されています。ログインしてください。');
-            }
-
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-
-            Utils.log('サインアップ成功', user.email);
-
-            // Firestoreにユーザードキュメントを作成
-            await this.createUserDocument(user.uid, {
-                email: user.email,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            // 安心利用（ゲスト）データがあれば、追加するか確認して移行
-            await this.handleGuestDataOnLogin(user.uid);
-
-            return user;
-        } catch (error) {
-            Utils.error('サインアップエラー', error);
-            throw this.handleAuthError(error);
-        }
-    },
 
     // ログイン
     async signInWithEmail(email, password) {
@@ -250,6 +209,23 @@ const Auth = {
     // Google認証
     // ===========================
 
+    // 協力利用の新規登録は受け付けない：Firestoreにユーザードキュメントが無い＝新規なら、
+    // 直後に作られた認証ユーザーを削除して離脱する（ドキュメント作成前なので Firestore は未作成）
+    async rejectIfNewUser(user) {
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (userDoc.exists) return;
+        try {
+            await user.delete();
+        } catch (delErr) {
+            Utils.error('新規ユーザーの削除失敗、サインアウトにフォールバック', delErr);
+            await auth.signOut();
+        }
+        Utils.log('協力利用の新規登録は受け付けていないため中止');
+        const err = new Error(this.SIGNUP_CLOSED_MESSAGE);
+        err.code = 'app/signup-closed';
+        throw err;
+    },
+
     // Googleログイン（ポップアップ方式に統一）
     async signInWithGoogle() {
         try {
@@ -263,27 +239,10 @@ const Auth = {
 
             Utils.log('Googleログイン成功', user.email);
 
-            // 新規ユーザーには協力利用の同意ゲートを挟む（メール登録と同じ同意）
-            // 新規判定は「Firestoreにユーザードキュメントが無ければ新規」で確実に行う
-            // （SDKの additionalUserInfo.isNewUser に依存しない＝新規なのに素通りする穴を塞ぐ）
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            const isNewUser = !userDoc.exists;
-            if (isNewUser) {
-                const agreed = await App.showConsentModal();
-                if (!agreed) {
-                    // 未同意の新規ユーザーは、直後に作られた認証ユーザーを削除して離脱
-                    // （createUserDocument 前なので Firestore は未作成＝クリーン）
-                    try {
-                        await user.delete();
-                    } catch (delErr) {
-                        Utils.error('未同意ユーザーの削除失敗、サインアウトにフォールバック', delErr);
-                        await auth.signOut();
-                    }
-                    hideLoading();
-                    Utils.log('Google新規登録: 同意されなかったため中止');
-                    return null;
-                }
-            }
+            // 協力利用の新規登録は受け付けない（登録済みの方のログインのみ）。
+            // 新規判定は「Firestoreにユーザードキュメントが無ければ新規」で行う
+            // （SDKの additionalUserInfo.isNewUser に依存しない）
+            await this.rejectIfNewUser(user);
 
             // Firestoreにユーザードキュメントを作成（存在しない場合）
             await this.createUserDocument(user.uid, {
@@ -386,10 +345,18 @@ const Auth = {
     // ===========================
 
     // Firebaseエラーメッセージを日本語に変換
+    // 協力利用の新規登録を締め切ったことを伝える文言
+    SIGNUP_CLOSED_MESSAGE: '新規登録の受け付けは終了しました。登録なしの「安心利用」でお使いください。',
+
     handleAuthError(error) {
         let message = 'エラーが発生しました';
 
         switch (error.code) {
+            // 協力利用の新規登録の締め切り（アプリ側の判定／Firebase の設定で作成が止められた場合）
+            case 'app/signup-closed':
+            case 'auth/admin-restricted-operation':
+                message = this.SIGNUP_CLOSED_MESSAGE;
+                break;
             // Email/Password認証エラー
             case 'auth/email-already-in-use':
                 message = 'このメールアドレスは既に登録されています。ログイン画面からログインしてください。';

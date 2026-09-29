@@ -55,6 +55,19 @@ python3 -m http.server 8000
 # Or use VS Code Live Server extension (recommended for hot reload)
 ```
 
+### Local testing with Firebase Emulator
+
+The app connects to the Firebase Emulator Suite **only** when opened on `localhost`/`127.0.0.1` with `?emu=1` (see `js/firebase-config.js`). The dev and production sites are unaffected.
+
+```bash
+# Requires Java (e.g. Homebrew openjdk@21). Ports: auth 9099 / firestore 8080 / UI 4000
+PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH" firebase emulators:start --only auth,firestore --project biten-note-app
+
+# Serve the app on a dedicated port so the browser's Firestore cache never mixes with real data
+python3 -m http.server 8795
+# Open: http://localhost:8795/?emu=1
+```
+
 ### Data Migration
 
 ```bash
@@ -136,6 +149,7 @@ js/
 ├── auth.js                 # Authentication wrapper (Auth object)
 ├── db.js                   # Database operations (DB object)
 ├── db-local.js             # IndexedDB for guest mode (LocalDB object)
+├── migration.js            # Cooperative (Firestore) → guest (IndexedDB) direct copy (Migration object)
 ├── config.js               # Constants (CONFIG object)
 ├── app.js                  # SPA router & main logic (App object)
 ├── person.js               # Person management UI
@@ -170,7 +184,7 @@ Note: `app.js` is ~190KB and holds the entire SPA (router + all page renderers l
 
 - **SPA Routing**: Hash-based (`#/home`, `#/person-list`, etc.) via `App.router()`
 - **Authentication Flow**: Anonymous → IndexedDB only; Signed-up → Firestore with offline persistence
-- **Data Migration**: IndexedDB to Firestore on first login (v1.0 legacy support)
+- **Data Migration**: 協力利用（Firestore）→ 安心利用（IndexedDB）への直接コピー（`js/migration.js`。機能フラグ `CONFIG.MIGRATION`）。ログイン時に IndexedDB から Firestore へ上げる処理は撤去済み
 
 ## Important Technical Constraints
 
@@ -195,10 +209,10 @@ Note: `app.js` is ~190KB and holds the entire SPA (router + all page renderers l
 
 **コードを変更する人への注意（この不変条件を壊さないために）**:
 - ユーザーデータ操作は必ず `App.getDB()` 経由にする。`DB.*`（Firestore）を直接呼ばない。
-- ゲスト→Firestore の唯一の正規経路は、ログイン確定＋`confirm()` 同意後の移行（`Auth.handleGuestDataOnLogin` → `LocalDB.migrateToFirestore`）のみ。
-- 新しい認証経路を足す場合（例: Google を `signInWithRedirect` 方式へ変更）は、ゲストフラグ解除／移行ハンドラ呼び出しを忘れないこと。**現状の `Auth.handleRedirectResult()`（`js/auth.js:68`）は `exitGuestMode`/`handleGuestDataOnLogin` を呼んでいない**（現状 `signInWithRedirect` 未使用のため無害だが、有効化時は要対応）。
+- ゲストのデータを Firestore へ上げる経路は**無い**（ログイン時の取り込み処理は 2026-09 に撤去）。ログインすると、認証リスナー（`App.init`）が安心利用の印を必ず外す。新しい認証経路を足しても、印の解除はこのリスナーが行う。新規ユーザーの扱いは `Auth.rejectIfNewUser` を通す（協力利用の新規登録は終了）。
+- **例外**：協力利用から安心利用への移行（`js/migration.js`）は、ログイン中に Firestore を**読み**、端末（LocalDB）へ直接書く（`App.getDB()` を通らない）。Firestore へは書かない。
 
-**引き継ぎ時の注意**: 現在この不変条件は「規約＋コードレビュー」で担保しており、実行時の強制ガードは**あえて入れていない**（現行コードでは決して発火せず、移行フローへの不要な結合を避けるため。2026-07-12 判断）。**このコードベースが原作者の管理を離れて第三者に保守される段階になったら、強制ガードの導入を検討する**（案: `DB.getCurrentUserId()` に `if (Auth.isGuestMode()) throw` を追加し、移行処理は書き込み前に `exitGuestMode()` するよう並べ替える）。経緯は `docs/notes/検証記録_安心利用Firestore非書込_20260712.md`。
+**引き継ぎ時の注意**: 現在この不変条件は「規約＋コードレビュー」で担保しており、実行時の強制ガードは**あえて入れていない**（現行コードでは決して発火せず、移行フローへの不要な結合を避けるため。2026-07-12 判断）。**このコードベースが原作者の管理を離れて第三者に保守される段階になったら、強制ガードの導入を検討する**（案: `DB.getCurrentUserId()` に `if (Auth.isGuestMode()) throw` を追加する）。経緯は `docs/notes/検証記録_安心利用Firestore非書込_20260712.md`。
 
 ### Database Schema
 
@@ -279,12 +293,12 @@ See `DEPLOY.md` for detailed instructions.
 - 公開後の確認は、公開前に確認した環境（端末・ブラウザ）をすべて含めて行う
 
 **なぜ静的ファイルの削除・移動が稼働に無影響か**：
-- デプロイはビルド無しの純粋な静的配信（`netlify.toml`・`.github/workflows` は存在しない）。ブランチ内のファイルをそのまま配信するだけなので、**どこからも参照されないファイルを消しても配信結果は変わらない**。
+- デプロイはビルド無しの純粋な静的配信（`.github/workflows` は存在しない。`netlify.toml`・`_config.yml` は配信範囲の制限だけを持つ）。ブランチ内のファイルをそのまま配信するだけなので、**どこからも参照されないファイルを消しても配信結果は変わらない**。
 - 削除・移動の前に、`index.html` の `<script>`/`<link>`、`sw.js` のキャッシュ配列（`urlsToCache`）、コード全体の参照（grep）に対象が含まれないことを確認すること。含まれなければ稼働への波及はゼロ。
 
 ### ⚠️ 引き継ぎ最大リスク：Netlify設定はリポジトリ外にある
 
-本番デプロイの設定（公開ディレクトリ・対象ブランチ `production`・環境変数）は**リポジトリ内に無く、Netlify管理画面にのみ存在する**（`netlify.toml` を置いていないため）。管理画面にアクセスできない担当者には本番構成が見えない。複数管理体制では、この設定内容を別途文書化・共有すること。
+本番デプロイの設定（公開ディレクトリ・対象ブランチ `production`・環境変数）は**リポジトリ内に無く、Netlify管理画面にのみ存在する**（`netlify.toml` には配信範囲の制限しか書いていないため）。管理画面にアクセスできない担当者には本番構成が見えない。複数管理体制では、この設定内容を別途文書化・共有すること。
 
 **Firebase Project**: `biten-note-app` (Blaze plan)
 

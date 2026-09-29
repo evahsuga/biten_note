@@ -99,6 +99,16 @@ const CONFIG = {
         GUIDE: '#/guide'
     },
     
+    // 協力利用から安心利用への移行
+    // 公開前は OFF。URL に ?preview=migration を付けたときだけ画面を出す（確認用）
+    MIGRATION: {
+        COPY_ENABLED: false,         // 安定版での「この端末にコピー」
+        DELETE_ENABLED: false,       // 元の登録データの削除
+        DEV_NOTICE_ENABLED: false,   // 開発版を開いたときの案内
+        RETENTION_DEADLINE: '',      // 控えの保管期限（例：'2027年2月16日'）。空の間は「（日付未定）」と出る
+        DEV_CLOSE_DATE: ''           // 開発版の終了日（例：'2026年12月16日'）
+    },
+
     // デフォルト値
     DEFAULTS: {
         RELATIONSHIP: '知人',
